@@ -1,0 +1,25 @@
+scenarios:
+  - name: add_short_task
+    commands:
+      - add --kind short --title "写 Triton vec add benchmark" --due 2026-05-01 --tag triton
+      - validate
+    expect:
+      task_count: 1
+      no_cycles: true
+
+  - name: long_goal_with_children
+    commands:
+      - add --kind long --title "学习 NCCL 拓扑搜索" --tag nccl
+      - add --kind short --title "阅读 ncclTopoCompute" --parent T-0001 --due 2026-05-02 --tag nccl
+      - validate
+    expect:
+      task_count: 2
+      no_cycles: true
+
+  - name: reject_cycle
+    commands:
+      - add --kind short --title A --due 2026-05-01
+      - add --kind short --title B --due 2026-05-01
+      - link --task T-0001 --depends-on T-0002
+      - link --task T-0002 --depends-on T-0001
+    expect_error: cycle

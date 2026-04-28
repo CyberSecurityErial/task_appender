@@ -1,0 +1,88 @@
+flowchart LR
+  classDef long fill:#e0f2fe,stroke:#0369a1,stroke-width:2px,color:#0f172a;
+  classDef milestone fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#422006;
+  classDef daily fill:#dcfce7,stroke:#16a34a,color:#14532d;
+  classDef short fill:#fff7ed,stroke:#ea580c,color:#1f2937;
+  classDef done fill:#f1f5f9,stroke:#94a3b8,color:#64748b;
+  subgraph SG_T_0001["T-0001 学习 KVCache 分布式推理调度"]
+    direction TB
+    T_0001["学习 KVCache 分布式推理调度\nT-0001 · 长期 · 截止 05-19"]
+    T_0002["学习 Mooncake\nT-0002 · 短期 · 截止 05-10"]
+    T_0003["学习 UCX\nT-0003 · 短期 · 截止 05-12"]
+  end
+  subgraph SG_T_0005["T-0005 学习 nccl-gin"]
+    direction TB
+    T_0005["学习 nccl-gin\nT-0005 · 长期 · 截止 -"]
+    T_0006["学习 nccl-gin 具体源码\nT-0006 · 短期 · 截止 -"]
+    T_0007["学习 nccl-gin 原理\nT-0007 · 短期 · 截止 -"]
+  end
+  subgraph SG_T_0008["T-0008 学习 Megatron 训练框架"]
+    direction TB
+    T_0008["学习 Megatron 训练框架\nT-0008 · 长期 · 截止 -"]
+    T_0009["梳理 Megatron 训练架构与并行基础\nT-0009 · 短期 · 截止 -"]
+    T_0010["跑通 Megatron 小规模训练样例\nT-0010 · 短期 · 截止 -"]
+    T_0011["阅读 Megatron 模型、并行与优化器源码主线\nT-0011 · 短期 · 截止 -"]
+    T_0012["完成一次 Megatron 训练调优复盘\nT-0012 · 里程碑 · 截止 -"]
+  end
+  subgraph SG_T_0013["T-0013 维护 task_appender 功能 TODO List"]
+    direction TB
+    T_0013["维护 task_appender 功能 TODO List\nT-0013 · 长期 · 截止 -"]
+    T_0014["实现每日任务创建与展示\nT-0014 · 短期 · 截止 -"]
+    T_0015["支持每日任务分时提醒\nT-0015 · 短期 · 截止 -"]
+    T_0016["支持 DDL 日期手动修改\nT-0016 · 短期 · 截止 -"]
+    T_0017["支持 DDL 日期自动修改策略\nT-0017 · 短期 · 截止 -"]
+  end
+  T_0004["学习 P/D 分离的基础\nT-0004 · 短期 · 截止 05-03"]
+  class T_0001 long;
+  class T_0002 short;
+  class T_0003 short;
+  class T_0004 short;
+  class T_0005 long;
+  class T_0006 short;
+  class T_0007 short;
+  class T_0008 long;
+  class T_0009 short;
+  class T_0010 short;
+  class T_0011 short;
+  class T_0012 milestone;
+  class T_0013 long;
+  class T_0014 short;
+  class T_0015 short;
+  class T_0016 short;
+  class T_0017 short;
+  T_0001 --> T_0002
+  T_0001 --> T_0003
+  T_0004 -.-> T_0002
+  T_0005 --> T_0006
+  T_0005 --> T_0007
+  T_0008 --> T_0009
+  T_0008 --> T_0010
+  T_0008 --> T_0011
+  T_0008 --> T_0012
+  T_0009 -.-> T_0010
+  T_0010 -.-> T_0011
+  T_0011 -.-> T_0012
+  T_0013 --> T_0014
+  T_0013 --> T_0015
+  T_0013 --> T_0016
+  T_0013 --> T_0017
+  T_0014 -.-> T_0015
+  T_0016 -.-> T_0017
+  linkStyle 0 stroke:#2563eb,stroke-width:1.6px;
+  linkStyle 1 stroke:#2563eb,stroke-width:1.6px;
+  linkStyle 2 stroke:#d97706,stroke-width:1.8px,stroke-dasharray:6 4;
+  linkStyle 3 stroke:#2563eb,stroke-width:1.6px;
+  linkStyle 4 stroke:#2563eb,stroke-width:1.6px;
+  linkStyle 5 stroke:#2563eb,stroke-width:1.6px;
+  linkStyle 6 stroke:#2563eb,stroke-width:1.6px;
+  linkStyle 7 stroke:#2563eb,stroke-width:1.6px;
+  linkStyle 8 stroke:#2563eb,stroke-width:1.6px;
+  linkStyle 9 stroke:#d97706,stroke-width:1.8px,stroke-dasharray:6 4;
+  linkStyle 10 stroke:#d97706,stroke-width:1.8px,stroke-dasharray:6 4;
+  linkStyle 11 stroke:#d97706,stroke-width:1.8px,stroke-dasharray:6 4;
+  linkStyle 12 stroke:#2563eb,stroke-width:1.6px;
+  linkStyle 13 stroke:#2563eb,stroke-width:1.6px;
+  linkStyle 14 stroke:#2563eb,stroke-width:1.6px;
+  linkStyle 15 stroke:#2563eb,stroke-width:1.6px;
+  linkStyle 16 stroke:#d97706,stroke-width:1.8px,stroke-dasharray:6 4;
+  linkStyle 17 stroke:#d97706,stroke-width:1.8px,stroke-dasharray:6 4;

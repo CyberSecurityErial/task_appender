@@ -1,0 +1,281 @@
+version: 1
+next_id: 18
+tasks:
+- id: T-0001
+  title: 学习 KVCache 分布式推理调度
+  kind: long
+  status: doing
+  created_at: '2026-04-29'
+  due_at: '2026-05-19'
+  priority: 1
+  tags:
+  - kvcache
+  - inference
+  - scheduling
+  parent: null
+  depends_on: []
+  children:
+  - T-0002
+  - T-0003
+  recurrence: null
+  notes: 长期学习目标：理解分布式模型推理里的 KVCache 调度、P/D 分离、跨节点传输和缓存复用。
+- id: T-0002
+  title: 学习 Mooncake
+  kind: short
+  status: todo
+  created_at: '2026-04-29'
+  due_at: '2026-05-10'
+  priority: 1
+  tags:
+  - mooncake
+  - kvcache
+  - pd-disaggregation
+  parent: T-0001
+  depends_on:
+  - T-0004
+  children: []
+  recurrence: null
+  notes: 重点看 Mooncake 的 P/D 分离、KVCache-centric 调度、Transfer Engine、Mooncake Store 和 Conductor。
+- id: T-0003
+  title: 学习 UCX
+  kind: short
+  status: todo
+  created_at: '2026-04-29'
+  due_at: '2026-05-12'
+  priority: 2
+  tags:
+  - ucx
+  - rdma
+  - transport
+  parent: T-0001
+  depends_on: []
+  children: []
+  recurrence: null
+  notes: 重点理解 UCX 的通信抽象、RDMA/InfiniBand 支持、内存注册、零拷贝和它在分布式推理 KVCache 传输里的作用。
+- id: T-0004
+  title: 学习 P/D 分离的基础
+  kind: short
+  status: todo
+  created_at: '2026-04-29'
+  due_at: '2026-05-03'
+  priority: 1
+  tags:
+  - pd-disaggregation
+  - inference
+  - foundation
+  parent: null
+  depends_on: []
+  children: []
+  recurrence: null
+  notes: Mooncake 的前置基础任务：先理解 prefill/decode 分离、TTFT/TBT、KVCache 生成与传输、prefill pool 和 decode pool 的职责。
+- id: T-0005
+  title: 学习 nccl-gin
+  kind: long
+  status: todo
+  created_at: '2026-04-29'
+  due_at: null
+  priority: 3
+  tags:
+  - nccl-gin
+  parent: null
+  depends_on: []
+  children:
+  - T-0006
+  - T-0007
+  recurrence: null
+  notes: ''
+- id: T-0006
+  title: 学习 nccl-gin 具体源码
+  kind: short
+  status: todo
+  created_at: '2026-04-29'
+  due_at: null
+  priority: 3
+  tags:
+  - nccl-gin
+  parent: T-0005
+  depends_on: []
+  children: []
+  recurrence: null
+  notes: ''
+- id: T-0007
+  title: 学习 nccl-gin 原理
+  kind: short
+  status: todo
+  created_at: '2026-04-29'
+  due_at: null
+  priority: 3
+  tags:
+  - nccl-gin
+  parent: T-0005
+  depends_on: []
+  children: []
+  recurrence: null
+  notes: ''
+- id: T-0008
+  title: 学习 Megatron 训练框架
+  kind: long
+  status: todo
+  created_at: '2026-04-29'
+  due_at: null
+  priority: 2
+  tags:
+  - megatron
+  - distributed-training
+  parent: null
+  depends_on: []
+  children:
+  - T-0009
+  - T-0010
+  - T-0011
+  - T-0012
+  recurrence: null
+  notes: 系统学习 Megatron Core / Megatron-LM 的训练架构、并行策略、配置运行、源码路径和性能调优。
+- id: T-0009
+  title: 梳理 Megatron 训练架构与并行基础
+  kind: short
+  status: todo
+  created_at: '2026-04-29'
+  due_at: null
+  priority: 2
+  tags:
+  - megatron
+  - distributed-training
+  parent: T-0008
+  depends_on: []
+  children: []
+  recurrence: null
+  notes: 明确 Megatron Core / Megatron-LM 关系，理解张量并行、流水线并行、数据并行、序列并行、分布式优化器和训练配置入口。
+- id: T-0010
+  title: 跑通 Megatron 小规模训练样例
+  kind: short
+  status: todo
+  created_at: '2026-04-29'
+  due_at: null
+  priority: 2
+  tags:
+  - megatron
+  - experiment
+  parent: T-0008
+  depends_on:
+  - T-0009
+  children: []
+  recurrence: null
+  notes: 用最小可控配置跑通一次训练，记录数据入口、模型配置、并行参数、启动脚本、checkpoint 和日志位置。
+- id: T-0011
+  title: 阅读 Megatron 模型、并行与优化器源码主线
+  kind: short
+  status: todo
+  created_at: '2026-04-29'
+  due_at: null
+  priority: 2
+  tags:
+  - megatron
+  - source-reading
+  parent: T-0008
+  depends_on:
+  - T-0010
+  children: []
+  recurrence: null
+  notes: 沿训练入口追踪模型构建、forward/backward 调度、并行通信、分布式优化器和 checkpoint 读写，形成源码地图。
+- id: T-0012
+  title: 完成一次 Megatron 训练调优复盘
+  kind: milestone
+  status: todo
+  created_at: '2026-04-29'
+  due_at: null
+  priority: 2
+  tags:
+  - megatron
+  - performance
+  parent: T-0008
+  depends_on:
+  - T-0011
+  children: []
+  recurrence: null
+  notes: 基于一次训练实验复盘吞吐、显存、并行组合、通信瓶颈、checkpoint 成本和后续改进问题，沉淀阶段总结。
+- id: T-0013
+  title: 维护 task_appender 功能 TODO List
+  kind: long
+  status: todo
+  created_at: '2026-04-29'
+  due_at: null
+  priority: 1
+  tags:
+  - task-appender
+  - feature
+  parent: null
+  depends_on: []
+  children:
+  - T-0014
+  - T-0015
+  - T-0016
+  - T-0017
+  recurrence: null
+  notes: 后续要加入的 task_appender 功能集合：每日任务、分时提醒，以及 DDL 日期手动和自动修改能力。
+- id: T-0014
+  title: 实现每日任务创建与展示
+  kind: short
+  status: todo
+  created_at: '2026-04-29'
+  due_at: null
+  priority: 1
+  tags:
+  - task-appender
+  - daily
+  - feature
+  parent: T-0013
+  depends_on: []
+  children: []
+  recurrence: null
+  notes: 完善 daily 任务的创建、校验、列表展示和 today 视图，保证 recurrence 元数据稳定可用。
+- id: T-0015
+  title: 支持每日任务分时提醒
+  kind: short
+  status: todo
+  created_at: '2026-04-29'
+  due_at: null
+  priority: 1
+  tags:
+  - task-appender
+  - daily
+  - reminder
+  parent: T-0013
+  depends_on:
+  - T-0014
+  children: []
+  recurrence: null
+  notes: 为每日任务支持多个提醒时间或时间段配置，并在 today/提醒输出中按时间排序呈现。
+- id: T-0016
+  title: 支持 DDL 日期手动修改
+  kind: short
+  status: todo
+  created_at: '2026-04-29'
+  due_at: null
+  priority: 1
+  tags:
+  - task-appender
+  - ddl
+  - feature
+  parent: T-0013
+  depends_on: []
+  children: []
+  recurrence: null
+  notes: 提供 CLI 能力手动修改任务 due_at，覆盖新增、更新、清空截止日期，并保持校验和导出一致。
+- id: T-0017
+  title: 支持 DDL 日期自动修改策略
+  kind: short
+  status: todo
+  created_at: '2026-04-29'
+  due_at: null
+  priority: 1
+  tags:
+  - task-appender
+  - ddl
+  - automation
+  parent: T-0013
+  depends_on:
+  - T-0016
+  children: []
+  recurrence: null
+  notes: 设计自动调整 due_at 的规则，例如基于依赖完成状态、延期策略或周期任务滚动生成，并提供可解释的预览/确认流程。

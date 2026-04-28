@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>任务关系图</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f8fafc;
+      --panel: #ffffff;
+      --line: #cbd5e1;
+      --text: #0f172a;
+      --muted: #64748b;
+      --blue: #2563eb;
+      --orange: #d97706;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
+    }
+    header {
+      padding: 24px 28px 14px;
+      background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+      border-bottom: 1px solid #e2e8f0;
+    }
+    h1 { margin: 0 0 8px; font-size: 24px; }
+    .meta { color: var(--muted); }
+    .summary {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 16px;
+    }
+    .pill {
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+      padding: 6px 10px;
+      border: 1px solid #e2e8f0;
+      border-radius: 999px;
+      background: #fff;
+      color: #334155;
+      white-space: nowrap;
+    }
+    main { padding: 18px 28px 32px; }
+    .graph-shell {
+      overflow: auto;
+      background: var(--panel);
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+    }
+    .graph-shell svg { display: block; min-width: 100%; }
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin: 14px 0 22px;
+      color: #334155;
+    }
+    .legend span { display: inline-flex; align-items: center; gap: 7px; }
+    .swatch {
+      width: 22px;
+      height: 0;
+      border-top: 3px solid currentColor;
+      display: inline-block;
+    }
+    .dependency { color: var(--orange); border-top-style: dashed; }
+    .child { color: var(--blue); }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--panel);
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    th, td {
+      padding: 9px 10px;
+      border-bottom: 1px solid #e2e8f0;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: #f1f5f9; color: #334155; font-weight: 650; }
+    tr:last-child td { border-bottom: 0; }
+    code {
+      background: #f1f5f9;
+      padding: 1px 5px;
+      border-radius: 5px;
+      color: #334155;
+    }
+    @media print {
+      body { background: #fff; }
+      header, main { padding: 12px; }
+      .graph-shell { overflow: visible; box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>任务关系图</h1>
+    <div class="meta">生成日期：2026-04-29；数据源：<code>data/tasks.yaml</code>；文本图：<code>exports/graph.mmd</code> / <code>exports/graph.dot</code></div>
+    <div class="summary">
+      <span class="pill">总任务 17</span>
+      <span class="pill">短期 12</span>
+      <span class="pill">长期 4</span>
+      <span class="pill">每日 0</span>
+      <span class="pill">里程碑 1</span>
+      <span class="pill">待办 16</span>
+      <span class="pill">进行中 1</span>
+      <span class="pill">已完成 0</span>
+    </div>
+  </header>
+  <main>
+    <div class="legend">
+      <span><i class="swatch child"></i>父子拆解</span>
+      <span><i class="swatch dependency"></i>执行依赖</span>
+      <span>横向滚动可查看完整图；浏览器缩放可放大细节。</span>
+    </div>
+    <section class="graph-shell">
+      <svg viewBox="0 0 1514 1766" width="1514" height="1766" role="img" aria-label="任务关系图">
+        <defs>
+          <marker id="arrow-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#2563eb"/></marker>
+          <marker id="arrow-orange" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#d97706"/></marker>
+        </defs>
+        <rect x="24" y="30" width="760" height="356" rx="18" fill="#f8fafc" stroke="#dbe3ef"/>
+        <text x="42" y="61" fill="#334155" font-size="17" font-weight="700">T-0001 学习 KVCache 分布式推理调度</text>
+        <rect x="24" y="422" width="760" height="356" rx="18" fill="#f8fafc" stroke="#dbe3ef"/>
+        <text x="42" y="453" fill="#334155" font-size="17" font-weight="700">T-0005 学习 nccl-gin</text>
+        <rect x="24" y="814" width="1466" height="234" rx="18" fill="#f8fafc" stroke="#dbe3ef"/>
+        <text x="42" y="845" fill="#334155" font-size="17" font-weight="700">T-0008 学习 Megatron 训练框架</text>
+        <rect x="24" y="1084" width="896" height="356" rx="18" fill="#f8fafc" stroke="#dbe3ef"/>
+        <text x="42" y="1115" fill="#334155" font-size="17" font-weight="700">T-0013 维护 task_appender 功能 TODO List</text>
+        <rect x="24" y="1476" width="760" height="234" rx="18" fill="#f8fafc" stroke="#dbe3ef"/>
+        <text x="42" y="1507" fill="#334155" font-size="17" font-weight="700">独立任务和跨组依赖</text>
+        <path d="M 278 145 C 320 145, 320 145, 333 145" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
+        <path d="M 278 145 C 320 145, 320 267, 333 267" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
+        <path d="M 278 1591 C 320 1591, 320 145, 333 145" fill="none" stroke="#d97706" stroke-width="2.2" stroke-dasharray="7 6" marker-end="url(#arrow-orange)" opacity="0.9"/>
+        <path d="M 278 537 C 320 537, 320 537, 333 537" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
+        <path d="M 278 537 C 320 537, 320 659, 333 659" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
+        <path d="M 278 929 C 320 929, 320 929, 333 929" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
+        <path d="M 278 929 C 448 929, 448 929, 618 929" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
+        <path d="M 278 929 C 590 929, 590 929, 903 929" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
+        <path d="M 278 929 C 733 929, 733 929, 1188 929" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
+        <path d="M 563 929 C 605 929, 605 929, 618 929" fill="none" stroke="#d97706" stroke-width="2.2" stroke-dasharray="7 6" marker-end="url(#arrow-orange)" opacity="0.9"/>
+        <path d="M 848 929 C 890 929, 890 929, 903 929" fill="none" stroke="#d97706" stroke-width="2.2" stroke-dasharray="7 6" marker-end="url(#arrow-orange)" opacity="0.9"/>
+        <path d="M 1133 929 C 1175 929, 1175 929, 1188 929" fill="none" stroke="#d97706" stroke-width="2.2" stroke-dasharray="7 6" marker-end="url(#arrow-orange)" opacity="0.9"/>
+        <path d="M 278 1199 C 320 1199, 320 1199, 333 1199" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
+        <path d="M 278 1199 C 448 1199, 448 1199, 618 1199" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
+        <path d="M 278 1199 C 320 1199, 320 1321, 333 1321" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
+        <path d="M 278 1199 C 448 1199, 448 1321, 618 1321" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
+        <path d="M 563 1199 C 605 1199, 605 1199, 618 1199" fill="none" stroke="#d97706" stroke-width="2.2" stroke-dasharray="7 6" marker-end="url(#arrow-orange)" opacity="0.9"/>
+        <path d="M 563 1321 C 605 1321, 605 1321, 618 1321" fill="none" stroke="#d97706" stroke-width="2.2" stroke-dasharray="7 6" marker-end="url(#arrow-orange)" opacity="0.9"/>
+        <g id="T_0001">
+          <rect x="48" y="102" width="230" height="86" rx="12" fill="#e0f2fe" stroke="#0369a1" stroke-width="2"/>
+          <text x="62" y="123" fill="#0f172a" font-size="14" font-weight="700">T-0001</text>
+          <text x="264" y="123" text-anchor="end" fill="#475569" font-size="12">进行中/长期</text>
+          <text x="62" y="145" fill="#111827" font-size="14">学习 KVCache 分布式推</text>
+          <text x="62" y="162" fill="#111827" font-size="14">理调度</text>
+          <text x="62" y="175" fill="#64748b" font-size="12">截止 05-19 · #kvcache #inference</text>
+        </g>
+        <g id="T_0002">
+          <rect x="333" y="102" width="230" height="86" rx="12" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
+          <text x="347" y="123" fill="#0f172a" font-size="14" font-weight="700">T-0002</text>
+          <text x="549" y="123" text-anchor="end" fill="#475569" font-size="12">待办/短期</text>
+          <text x="347" y="145" fill="#111827" font-size="14">学习 Mooncake</text>
+          <text x="347" y="175" fill="#64748b" font-size="12">截止 05-10 · #mooncake #kvcache</text>
+        </g>
+        <g id="T_0003">
+          <rect x="333" y="224" width="230" height="86" rx="12" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
+          <text x="347" y="245" fill="#0f172a" font-size="14" font-weight="700">T-0003</text>
+          <text x="549" y="245" text-anchor="end" fill="#475569" font-size="12">待办/短期</text>
+          <text x="347" y="267" fill="#111827" font-size="14">学习 UCX</text>
+          <text x="347" y="297" fill="#64748b" font-size="12">截止 05-12 · #ucx #rdma</text>
+        </g>
+        <g id="T_0004">
+          <rect x="48" y="1548" width="230" height="86" rx="12" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
+          <text x="62" y="1569" fill="#0f172a" font-size="14" font-weight="700">T-0004</text>
+          <text x="264" y="1569" text-anchor="end" fill="#475569" font-size="12">待办/短期</text>
+          <text x="62" y="1591" fill="#111827" font-size="14">学习 P/D 分离的基础</text>
+          <text x="62" y="1621" fill="#64748b" font-size="12">截止 05-03 · #pd-disaggregation #inference</text>
+        </g>
+        <g id="T_0005">
+          <rect x="48" y="494" width="230" height="86" rx="12" fill="#e0f2fe" stroke="#0369a1" stroke-width="2"/>
+          <text x="62" y="515" fill="#0f172a" font-size="14" font-weight="700">T-0005</text>
+          <text x="264" y="515" text-anchor="end" fill="#475569" font-size="12">待办/长期</text>
+          <text x="62" y="537" fill="#111827" font-size="14">学习 nccl-gin</text>
+          <text x="62" y="567" fill="#64748b" font-size="12">截止 - · #nccl-gin</text>
+        </g>
+        <g id="T_0006">
+          <rect x="333" y="494" width="230" height="86" rx="12" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
+          <text x="347" y="515" fill="#0f172a" font-size="14" font-weight="700">T-0006</text>
+          <text x="549" y="515" text-anchor="end" fill="#475569" font-size="12">待办/短期</text>
+          <text x="347" y="537" fill="#111827" font-size="14">学习 nccl-gin 具体源码</text>
+          <text x="347" y="567" fill="#64748b" font-size="12">截止 - · #nccl-gin</text>
+        </g>
+        <g id="T_0007">
+          <rect x="333" y="616" width="230" height="86" rx="12" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
+          <text x="347" y="637" fill="#0f172a" font-size="14" font-weight="700">T-0007</text>
+          <text x="549" y="637" text-anchor="end" fill="#475569" font-size="12">待办/短期</text>
+          <text x="347" y="659" fill="#111827" font-size="14">学习 nccl-gin 原理</text>
+          <text x="347" y="689" fill="#64748b" font-size="12">截止 - · #nccl-gin</text>
+        </g>
+        <g id="T_0008">
+          <rect x="48" y="886" width="230" height="86" rx="12" fill="#e0f2fe" stroke="#0369a1" stroke-width="2"/>
+          <text x="62" y="907" fill="#0f172a" font-size="14" font-weight="700">T-0008</text>
+          <text x="264" y="907" text-anchor="end" fill="#475569" font-size="12">待办/长期</text>
+          <text x="62" y="929" fill="#111827" font-size="14">学习 Megatron 训练框架</text>
+          <text x="62" y="959" fill="#64748b" font-size="12">截止 - · #megatron #distributed-training</text>
+        </g>
+        <g id="T_0009">
+          <rect x="333" y="886" width="230" height="86" rx="12" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
+          <text x="347" y="907" fill="#0f172a" font-size="14" font-weight="700">T-0009</text>
+          <text x="549" y="907" text-anchor="end" fill="#475569" font-size="12">待办/短期</text>
+          <text x="347" y="929" fill="#111827" font-size="14">梳理 Megatron 训练架构</text>
+          <text x="347" y="946" fill="#111827" font-size="14">与并行基础</text>
+          <text x="347" y="959" fill="#64748b" font-size="12">截止 - · #megatron #distributed-training</text>
+        </g>
+        <g id="T_0010">
+          <rect x="618" y="886" width="230" height="86" rx="12" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
+          <text x="632" y="907" fill="#0f172a" font-size="14" font-weight="700">T-0010</text>
+          <text x="834" y="907" text-anchor="end" fill="#475569" font-size="12">待办/短期</text>
+          <text x="632" y="929" fill="#111827" font-size="14">跑通 Megatron 小规模训</text>
+          <text x="632" y="946" fill="#111827" font-size="14">练样例</text>
+          <text x="632" y="959" fill="#64748b" font-size="12">截止 - · #megatron #experiment</text>
+        </g>
+        <g id="T_0011">
+          <rect x="903" y="886" width="230" height="86" rx="12" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
+          <text x="917" y="907" fill="#0f172a" font-size="14" font-weight="700">T-0011</text>
+          <text x="1119" y="907" text-anchor="end" fill="#475569" font-size="12">待办/短期</text>
+          <text x="917" y="929" fill="#111827" font-size="14">阅读 Megatron 模型、并</text>
+          <text x="917" y="946" fill="#111827" font-size="14">行与优化器源码主线</text>
+          <text x="917" y="959" fill="#64748b" font-size="12">截止 - · #megatron #source-reading</text>
+        </g>
+        <g id="T_0012">
+          <rect x="1188" y="886" width="230" height="86" rx="12" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+          <text x="1202" y="907" fill="#0f172a" font-size="14" font-weight="700">T-0012</text>
+          <text x="1404" y="907" text-anchor="end" fill="#475569" font-size="12">待办/里程碑</text>
+          <text x="1202" y="929" fill="#111827" font-size="14">完成一次 Megatron 训练</text>
+          <text x="1202" y="946" fill="#111827" font-size="14">调优复盘</text>
+          <text x="1202" y="959" fill="#64748b" font-size="12">截止 - · #megatron #performance</text>
+        </g>
+        <g id="T_0013">
+          <rect x="48" y="1156" width="230" height="86" rx="12" fill="#e0f2fe" stroke="#0369a1" stroke-width="2"/>
+          <text x="62" y="1177" fill="#0f172a" font-size="14" font-weight="700">T-0013</text>
+          <text x="264" y="1177" text-anchor="end" fill="#475569" font-size="12">待办/长期</text>
+          <text x="62" y="1199" fill="#111827" font-size="14">维护 task_appender 功</text>
+          <text x="62" y="1216" fill="#111827" font-size="14">能 TODO List</text>
+          <text x="62" y="1229" fill="#64748b" font-size="12">截止 - · #task-appender #feature</text>
+        </g>
+        <g id="T_0014">
+          <rect x="333" y="1156" width="230" height="86" rx="12" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
+          <text x="347" y="1177" fill="#0f172a" font-size="14" font-weight="700">T-0014</text>
+          <text x="549" y="1177" text-anchor="end" fill="#475569" font-size="12">待办/短期</text>
+          <text x="347" y="1199" fill="#111827" font-size="14">实现每日任务创建与展示</text>
+          <text x="347" y="1229" fill="#64748b" font-size="12">截止 - · #task-appender #daily</text>
+        </g>
+        <g id="T_0015">
+          <rect x="618" y="1156" width="230" height="86" rx="12" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
+          <text x="632" y="1177" fill="#0f172a" font-size="14" font-weight="700">T-0015</text>
+          <text x="834" y="1177" text-anchor="end" fill="#475569" font-size="12">待办/短期</text>
+          <text x="632" y="1199" fill="#111827" font-size="14">支持每日任务分时提醒</text>
+          <text x="632" y="1229" fill="#64748b" font-size="12">截止 - · #task-appender #daily</text>
+        </g>
+        <g id="T_0016">
+          <rect x="333" y="1278" width="230" height="86" rx="12" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
+          <text x="347" y="1299" fill="#0f172a" font-size="14" font-weight="700">T-0016</text>
+          <text x="549" y="1299" text-anchor="end" fill="#475569" font-size="12">待办/短期</text>
+          <text x="347" y="1321" fill="#111827" font-size="14">支持 DDL 日期手动修改</text>
+          <text x="347" y="1351" fill="#64748b" font-size="12">截止 - · #task-appender #ddl</text>
+        </g>
+        <g id="T_0017">
+          <rect x="618" y="1278" width="230" height="86" rx="12" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
+          <text x="632" y="1299" fill="#0f172a" font-size="14" font-weight="700">T-0017</text>
+          <text x="834" y="1299" text-anchor="end" fill="#475569" font-size="12">待办/短期</text>
+          <text x="632" y="1321" fill="#111827" font-size="14">支持 DDL 日期自动修改</text>
+          <text x="632" y="1338" fill="#111827" font-size="14">策略</text>
+          <text x="632" y="1351" fill="#64748b" font-size="12">截止 - · #task-appender #ddl</text>
+        </g>
+      </svg>
+    </section>
+    <h2>任务明细</h2>
+    <table>
+      <thead>
+        <tr><th>ID</th><th>状态</th><th>类型</th><th>截止</th><th>标题</th><th>前置依赖</th><th>子任务</th><th>标签</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>T-0001</code></td><td>进行中</td><td>长期</td><td>2026-05-19</td><td>学习 KVCache 分布式推理调度</td><td>-</td><td>T-0002, T-0003</td><td><code>kvcache</code> <code>inference</code> <code>scheduling</code></td></tr>
+        <tr><td><code>T-0004</code></td><td>待办</td><td>短期</td><td>2026-05-03</td><td>学习 P/D 分离的基础</td><td>-</td><td>-</td><td><code>pd-disaggregation</code> <code>inference</code> <code>foundation</code></td></tr>
+        <tr><td><code>T-0002</code></td><td>待办</td><td>短期</td><td>2026-05-10</td><td>学习 Mooncake</td><td>T-0004</td><td>-</td><td><code>mooncake</code> <code>kvcache</code> <code>pd-disaggregation</code></td></tr>
+        <tr><td><code>T-0003</code></td><td>待办</td><td>短期</td><td>2026-05-12</td><td>学习 UCX</td><td>-</td><td>-</td><td><code>ucx</code> <code>rdma</code> <code>transport</code></td></tr>
+        <tr><td><code>T-0005</code></td><td>待办</td><td>长期</td><td>-</td><td>学习 nccl-gin</td><td>-</td><td>T-0006, T-0007</td><td><code>nccl-gin</code></td></tr>
+        <tr><td><code>T-0006</code></td><td>待办</td><td>短期</td><td>-</td><td>学习 nccl-gin 具体源码</td><td>-</td><td>-</td><td><code>nccl-gin</code></td></tr>
+        <tr><td><code>T-0007</code></td><td>待办</td><td>短期</td><td>-</td><td>学习 nccl-gin 原理</td><td>-</td><td>-</td><td><code>nccl-gin</code></td></tr>
+        <tr><td><code>T-0008</code></td><td>待办</td><td>长期</td><td>-</td><td>学习 Megatron 训练框架</td><td>-</td><td>T-0009, T-0010, T-0011, T-0012</td><td><code>megatron</code> <code>distributed-training</code></td></tr>
+        <tr><td><code>T-0009</code></td><td>待办</td><td>短期</td><td>-</td><td>梳理 Megatron 训练架构与并行基础</td><td>-</td><td>-</td><td><code>megatron</code> <code>distributed-training</code></td></tr>
+        <tr><td><code>T-0010</code></td><td>待办</td><td>短期</td><td>-</td><td>跑通 Megatron 小规模训练样例</td><td>T-0009</td><td>-</td><td><code>megatron</code> <code>experiment</code></td></tr>
+        <tr><td><code>T-0011</code></td><td>待办</td><td>短期</td><td>-</td><td>阅读 Megatron 模型、并行与优化器源码主线</td><td>T-0010</td><td>-</td><td><code>megatron</code> <code>source-reading</code></td></tr>
+        <tr><td><code>T-0012</code></td><td>待办</td><td>里程碑</td><td>-</td><td>完成一次 Megatron 训练调优复盘</td><td>T-0011</td><td>-</td><td><code>megatron</code> <code>performance</code></td></tr>
+        <tr><td><code>T-0013</code></td><td>待办</td><td>长期</td><td>-</td><td>维护 task_appender 功能 TODO List</td><td>-</td><td>T-0014, T-0015, T-0016, T-0017</td><td><code>task-appender</code> <code>feature</code></td></tr>
+        <tr><td><code>T-0014</code></td><td>待办</td><td>短期</td><td>-</td><td>实现每日任务创建与展示</td><td>-</td><td>-</td><td><code>task-appender</code> <code>daily</code> <code>feature</code></td></tr>
+        <tr><td><code>T-0015</code></td><td>待办</td><td>短期</td><td>-</td><td>支持每日任务分时提醒</td><td>T-0014</td><td>-</td><td><code>task-appender</code> <code>daily</code> <code>reminder</code></td></tr>
+        <tr><td><code>T-0016</code></td><td>待办</td><td>短期</td><td>-</td><td>支持 DDL 日期手动修改</td><td>-</td><td>-</td><td><code>task-appender</code> <code>ddl</code> <code>feature</code></td></tr>
+        <tr><td><code>T-0017</code></td><td>待办</td><td>短期</td><td>-</td><td>支持 DDL 日期自动修改策略</td><td>T-0016</td><td>-</td><td><code>task-appender</code> <code>ddl</code> <code>automation</code></td></tr>
+      </tbody>
+    </table>
+  </main>
+</body>
+</html>
