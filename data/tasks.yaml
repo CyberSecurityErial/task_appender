@@ -1,5 +1,5 @@
 version: 1
-next_id: 33
+next_id: 35
 tasks:
 - id: T-0001
   title: 学习 KVCache 分布式推理调度
@@ -226,6 +226,8 @@ tasks:
   - T-0030
   - T-0031
   - T-0032
+  - T-0033
+  - T-0034
   recurrence: null
   completed_at: null
   notes: 后续要加入的 task_appender 功能集合：每日任务、分时提醒，以及 DDL 日期手动和自动修改能力。
@@ -564,3 +566,39 @@ tasks:
   recurrence: null
   completed_at: '2026-05-05'
   notes: 发布里程碑：收获提取、成长计分板、HTML 导出和默认任务库写入后的自动同步全部验证通过后打 tag。
+- id: T-0033
+  title: 实现 v0.1.0rc1 技能树和段位标志补丁
+  kind: short
+  status: done
+  created_at: '2026-05-05'
+  due_at: '2026-05-05'
+  priority: 3
+  tags:
+  - task-appender
+  - feature
+  - scoreboard
+  - release
+  parent: T-0013
+  depends_on:
+  - T-0032
+  children: []
+  recurrence: null
+  completed_at: '2026-05-05'
+  notes: v0.1.0rc1 补丁：成长计分板技能树改为单根树状结构，技能描述更简洁并带科技/魔幻风格，等级增加字符段位标志和等级谱注脚。
+- id: T-0034
+  title: 发布 task_appender v0.1.0rc1
+  kind: milestone
+  status: done
+  created_at: '2026-05-05'
+  due_at: '2026-05-05'
+  priority: 3
+  tags:
+  - task-appender
+  - release
+  parent: T-0013
+  depends_on:
+  - T-0033
+  children: []
+  recurrence: null
+  completed_at: '2026-05-05'
+  notes: 发布候选版本：技能树、段位字符标志、等级谱注脚、导出和测试验证通过后打 v0.1.0rc1 标签并推送主线。

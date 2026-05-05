@@ -50,6 +50,10 @@ class AnalyticsTests(unittest.TestCase):
         self.assertTrue(any(item["label"] == "博客/文章" for item in progress["artifacts"]))
         self.assertEqual(progress["gains"][0]["task_id"], "T-0001")
         self.assertIn("输出", progress["gains"][0]["gain"])
+        self.assertEqual(progress["skill_tree"]["label"], "星核主干")
+        self.assertTrue(progress["skill_tree"]["children"])
+        self.assertIn("badge", progress["level"])
+        self.assertTrue(progress["level_catalog"])
 
 
 if __name__ == "__main__":

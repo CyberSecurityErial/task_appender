@@ -71,6 +71,19 @@
       color: var(--muted);
       font-size: 12px;
     }
+    .rank-badge {
+      display: inline-block;
+      margin: 2px 0 4px;
+      padding: 3px 7px;
+      border: 1px solid #2563eb;
+      border-radius: 6px;
+      color: #1d4ed8;
+      background: #eff6ff;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
     .level-bar {
       height: 10px;
       margin-top: 10px;
@@ -149,27 +162,90 @@
       color: var(--muted);
       font-size: 12px;
     }
-    .score-tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 7px;
-      margin-top: 9px;
+    .skill-tree {
+      margin-top: 14px;
     }
-    .score-tag {
-      display: inline-flex;
-      gap: 5px;
-      align-items: center;
-      padding: 4px 8px;
-      border: 1px solid #dbe3ef;
-      border-radius: 999px;
-      color: #334155;
+    .skill-tree h3,
+    .rank-footnote h3 {
+      margin: 0 0 9px;
+      font-size: 15px;
+    }
+    .skill-tree ul {
+      margin: 0;
+      padding-left: 18px;
+      list-style: none;
+      border-left: 1px solid #dbe3ef;
+    }
+    .skill-tree > ul {
+      padding-left: 0;
+      border-left: 0;
+    }
+    .skill-tree li {
+      position: relative;
+      margin: 8px 0;
+      padding-left: 12px;
+    }
+    .skill-tree li::before {
+      content: "";
+      position: absolute;
+      left: -18px;
+      top: 13px;
+      width: 18px;
+      border-top: 1px solid #dbe3ef;
+    }
+    .skill-tree > ul > li::before {
+      display: none;
+    }
+    .skill-node {
+      display: grid;
+      gap: 2px;
+      padding: 8px 9px;
+      border: 1px solid #e2e8f0;
+      border-radius: 7px;
       background: #f8fafc;
+    }
+    .skill-node.locked {
+      opacity: 0.64;
+    }
+    .skill-node-title {
+      display: flex;
+      gap: 8px;
+      justify-content: space-between;
+      color: #111827;
+      font-weight: 700;
+    }
+    .skill-node-desc {
+      color: var(--muted);
       font-size: 12px;
-      white-space: nowrap;
+    }
+    .rank-footnote {
+      margin-top: 14px;
+      padding: 12px 14px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      background: var(--panel);
+    }
+    .rank-catalog {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(220px, 1fr));
+      gap: 7px 12px;
+    }
+    .rank-row {
+      display: flex;
+      gap: 8px;
+      align-items: baseline;
+      color: #334155;
+      font-size: 12px;
+    }
+    .rank-row code {
+      min-width: 72px;
+      text-align: center;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     }
     @media (max-width: 920px) {
       .score-grid,
-      .progress-columns {
+      .progress-columns,
+      .rank-catalog {
         grid-template-columns: 1fr;
       }
     }
@@ -179,27 +255,29 @@
 <body>
   <header>
     <h1>成长计分板</h1>
-    <div class="meta">生成日期：2026-05-05；等级：Lv.5 任务图构建者；数据源：<code>data/tasks.yaml</code></div>
+    <div class="meta">生成日期：2026-05-05；等级：{== VI ==} Lv.6 长期工程师；数据源：<code>data/tasks.yaml</code></div>
   </header>
   <main>
     <section class="progress-shell" aria-label="成长计分板">
       <div class="score-grid">
         <article class="score-card">
           <p class="score-label">等级</p>
-          <p class="score-value">Lv.5</p>
-          <p class="score-note">任务图构建者</p>
-          <div class="level-bar" aria-label="升级进度"><div class="level-fill" style="width: 30.0%"></div></div>
-          <p class="score-note">132/440 XP，还差 308</p>
+          <span class="rank-badge">{== VI ==}</span>
+          <p class="score-value">Lv.6</p>
+          <p class="score-note">长期工程师</p>
+          <p class="score-note">锻造长期工程核心</p>
+          <div class="level-bar" aria-label="升级进度"><div class="level-fill" style="width: 36.7%"></div></div>
+          <p class="score-note">191/520 XP，还差 329</p>
         </article>
         <article class="score-card">
           <p class="score-label">已获得经验</p>
-          <p class="score-value">1092</p>
+          <p class="score-value">1591</p>
           <p class="score-note">来自已完成和已归档任务</p>
         </article>
         <article class="score-card">
           <p class="score-label">任务完成</p>
-          <p class="score-value">6/32</p>
-          <p class="score-note">完成率 18.8%</p>
+          <p class="score-value">8/34</p>
+          <p class="score-note">完成率 23.5%</p>
         </article>
         <article class="score-card">
           <p class="score-label">任务池经验</p>
@@ -213,24 +291,129 @@
           <table class="compact-table">
             <thead><tr><th>产出</th><th>数量</th><th>经验</th></tr></thead>
             <tbody>
-              <tr><td>工具/版本发布</td><td>3</td><td>+270 XP</td></tr>
+              <tr><td>工具/版本发布</td><td>5</td><td>+450 XP</td></tr>
               <tr><td>博客/文章</td><td>3</td><td>+210 XP</td></tr>
+              <tr><td>源码地图</td><td>1</td><td>+60 XP</td></tr>
               <tr><td>复盘/总结</td><td>1</td><td>+45 XP</td></tr>
             </tbody>
           </table>
-          <div class="score-tags">
-            <span class="score-tag">#blog 3 项 / 350 XP</span>
-            <span class="score-tag">#release 3 项 / 220 XP</span>
-            <span class="score-tag">#task-appender 3 项 / 220 XP</span>
-            <span class="score-tag">#mup 2 项 / 147 XP</span>
-            <span class="score-tag">#feature 2 项 / 74 XP</span>
-            <span class="score-tag">#scoreboard 1 项 / 38 XP</span>
-            <span class="score-tag">#analytics 1 项 / 36 XP</span>
+          <div class="skill-tree">
+            <h3>技能树</h3>
+            <ul>
+              <li>
+                <div class="skill-node">
+                  <div class="skill-node-title"><span>星核主干</span><span>解锁 · 1591 XP</span></div>
+                  <div class="skill-node-desc">XP 汇流核心</div>
+                </div>
+                <ul>
+                  <li>
+                    <div class="skill-node">
+                      <div class="skill-node-title"><span>星文输出</span><span>解锁 · 498 XP</span></div>
+                      <div class="skill-node-desc">知识铸成卷轴</div>
+                    </div>
+                    <ul>
+                      <li>
+                        <div class="skill-node">
+                          <div class="skill-node-title"><span>卷轴写作</span><span>解锁 · 351 XP</span></div>
+                          <div class="skill-node-desc">博客即法术书</div>
+                        </div>
+                      </li>
+                      <li>
+                        <div class="skill-node">
+                          <div class="skill-node-title"><span>MuP 秘典</span><span>解锁 · 147 XP</span></div>
+                          <div class="skill-node-desc">尺度法则觉醒</div>
+                        </div>
+                      </li>
+                    </ul>
+                  </li>
+                  <li>
+                    <div class="skill-node locked">
+                      <div class="skill-node-title"><span>推理秘术</span><span>封印 · 0 XP</span></div>
+                      <div class="skill-node-desc">驱动 KV 星流</div>
+                    </div>
+                    <ul>
+                      <li>
+                        <div class="skill-node locked">
+                          <div class="skill-node-title"><span>缓存咒术</span><span>封印 · 0 XP</span></div>
+                          <div class="skill-node-desc">驯服 KV 星河</div>
+                        </div>
+                      </li>
+                      <li>
+                        <div class="skill-node locked">
+                          <div class="skill-node-title"><span>模型星门</span><span>封印 · 0 XP</span></div>
+                          <div class="skill-node-desc">推理链路展开</div>
+                        </div>
+                      </li>
+                      <li>
+                        <div class="skill-node locked">
+                          <div class="skill-node-title"><span>传输法阵</span><span>封印 · 0 XP</span></div>
+                          <div class="skill-node-desc">RDMA 开门</div>
+                        </div>
+                      </li>
+                    </ul>
+                  </li>
+                  <li>
+                    <div class="skill-node locked">
+                      <div class="skill-node-title"><span>工程炼成</span><span>封印 · 0 XP</span></div>
+                      <div class="skill-node-desc">实验点火成真</div>
+                    </div>
+                    <ul>
+                      <li>
+                        <div class="skill-node locked">
+                          <div class="skill-node-title"><span>实验炉心</span><span>封印 · 0 XP</span></div>
+                          <div class="skill-node-desc">Demo 点燃现实</div>
+                        </div>
+                      </li>
+                      <li>
+                        <div class="skill-node locked">
+                          <div class="skill-node-title"><span>训练矩阵</span><span>封印 · 0 XP</span></div>
+                          <div class="skill-node-desc">并行阵列启动</div>
+                        </div>
+                      </li>
+                      <li>
+                        <div class="skill-node locked">
+                          <div class="skill-node-title"><span>通信锻炉</span><span>封印 · 0 XP</span></div>
+                          <div class="skill-node-desc">拓扑化作武器</div>
+                        </div>
+                      </li>
+                    </ul>
+                  </li>
+                  <li>
+                    <div class="skill-node">
+                      <div class="skill-node-title"><span>工具圣殿</span><span>解锁 · 1093 XP</span></div>
+                      <div class="skill-node-desc">自动化结界</div>
+                    </div>
+                    <ul>
+                      <li>
+                        <div class="skill-node">
+                          <div class="skill-node-title"><span>任务图引擎</span><span>解锁 · 1093 XP</span></div>
+                          <div class="skill-node-desc">本地星图自转</div>
+                        </div>
+                      </li>
+                      <li>
+                        <div class="skill-node locked">
+                          <div class="skill-node-title"><span>日课仪式</span><span>封印 · 0 XP</span></div>
+                          <div class="skill-node-desc">复盘回路充能</div>
+                        </div>
+                      </li>
+                      <li>
+                        <div class="skill-node locked">
+                          <div class="skill-node-title"><span>时钟塔</span><span>封印 · 0 XP</span></div>
+                          <div class="skill-node-desc">DDL 齿轮校准</div>
+                        </div>
+                      </li>
+                    </ul>
+                  </li>
+                </ul>
+              </li>
+            </ul>
           </div>
         </section>
         <section class="progress-panel">
           <h2>已完成任务收获</h2>
           <ul class="gain-list">
+          <li class="gain-item"><div class="gain-head"><span>T-0034 · 源码阅读 / 个人工具演进</span><span>+344 XP</span></div><p class="gain-body">我形成了从入口到关键模块的数据路径和源码地图；我把个人任务管理流程固化到本地优先的工具能力里</p><div class="gain-meta">发布 task_appender v0.1.0rc1；证据：技能树、段位字符标志、等级谱注脚、导出和测试验证通过后打 v0.1.0rc1 标签并推送主线。；产出：源码地图，工具/版本发布；标签：#task-appender #release</div></li>
+          <li class="gain-item"><div class="gain-head"><span>T-0033 · 个人工具演进</span><span>+155 XP</span></div><p class="gain-body">我把个人任务管理流程固化到本地优先的工具能力里</p><div class="gain-meta">实现 v0.1.0rc1 技能树和段位标志补丁；证据：成长计分板技能树改为单根树状结构，技能描述更简洁并带科技/魔幻风格，等级增加字符段位标志和等级谱注脚。；产出：工具/版本发布；标签：#task-appender #feature #scoreboard #release</div></li>
           <li class="gain-item"><div class="gain-head"><span>T-0032 · 个人工具演进</span><span>+292 XP</span></div><p class="gain-body">我把个人任务管理流程固化到本地优先的工具能力里</p><div class="gain-meta">发布 task_appender v0.1；证据：收获提取、成长计分板、HTML 导出和默认任务库写入后的自动同步全部验证通过后打 tag。；产出：工具/版本发布；标签：#task-appender #release</div></li>
           <li class="gain-item"><div class="gain-head"><span>T-0031 · 个人工具演进</span><span>+155 XP</span></div><p class="gain-body">我把个人任务管理流程固化到本地优先的工具能力里</p><div class="gain-meta">实现 v0.1 成长计分板和经验等级导出；证据：把任务和产出量化为 XP、等级、任务池经验、技能标签和产出统计，并提供 exports/scoreboard.html。；产出：工具/版本发布；标签：#task-appender #feature #scoreboard #release</div></li>
           <li class="gain-item"><div class="gain-head"><span>T-0030 · 个人工具演进</span><span>+147 XP</span></div><p class="gain-body">我把个人任务管理流程固化到本地优先的工具能力里</p><div class="gain-meta">实现 v0.1 已完成任务收获提取；证据：从已完成任务的标题、备注和标签中提取用户收获，并导出到 Markdown、图谱 HTML 和成长计分板 HTML。；产出：工具/版本发布；标签：#task-appender #feature #analytics #release</div></li>
@@ -240,6 +423,19 @@
           </ul>
         </section>
       </div>
+      <footer class="rank-footnote">
+        <h3>等级谱注脚</h3>
+        <div class="rank-catalog">
+          <div class="rank-row"><code>&lt; I &gt;</code><span>Lv.1 任务新手，点亮第一枚任务符文，0 XP 起</span></div>
+          <div class="rank-row"><code>&lt; II &gt;</code><span>Lv.2 稳定推进者，启动恒定推进炉，120 XP 起</span></div>
+          <div class="rank-row"><code>[ III ]</code><span>Lv.3 系统学习者，展开系统星图，320 XP 起</span></div>
+          <div class="rank-row"><code>[ IV ]</code><span>Lv.4 输出型学习者，把知识铸成光刃，600 XP 起</span></div>
+          <div class="rank-row"><code>{== V ==}</code><span>Lv.5 任务图构建者，编织任务因果网，960 XP 起</span></div>
+          <div class="rank-row"><code>{== VI ==}</code><span>Lv.6 长期工程师，锻造长期工程核心，1400 XP 起</span></div>
+          <div class="rank-row"><code>&lt;&lt; VII &gt;&gt;</code><span>Lv.7 复盘架构师，重构经验回路，1920 XP 起</span></div>
+          <div class="rank-row"><code>&lt;&lt; VIII &gt;&gt;</code><span>Lv.8 高阶自驱者，进入自驱星域，2520 XP 起</span></div>
+        </div>
+      </footer>
     </section>
   </main>
 </body>

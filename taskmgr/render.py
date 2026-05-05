@@ -5,7 +5,7 @@ from datetime import date
 from pathlib import Path
 from typing import Any
 
-from .analytics import build_progress
+from .analytics import build_progress, format_skill_tree_cli
 from .model import task_sort_key
 
 
@@ -110,7 +110,8 @@ def render_markdown(data: dict[str, Any]) -> str:
         "",
         "## 成长计分板",
         "",
-        f"- 等级：Lv.{level['level']} {level['title']}",
+        f"- 等级：{level['badge']} Lv.{level['level']} {level['title']}",
+        f"- 段位铭文：{level['motto']}",
         f"- 已获得经验：{progress['earned_xp']} XP",
         f"- 下一级进度：{level['current_xp']}/{level['next_level_xp']} XP，还差 {level['remaining_xp']} XP",
         f"- 任务完成：{progress['completed_tasks']}/{progress['total_tasks']}（{progress['completion_rate']}%）",
@@ -119,11 +120,9 @@ def render_markdown(data: dict[str, Any]) -> str:
     if progress["artifacts"]:
         artifacts = "；".join(f"{item['label']} x{item['count']}（+{item['xp']} XP）" for item in progress["artifacts"])
         lines.append(f"- 产出：{artifacts}")
-    if progress["tag_scores"]:
-        tags = "；".join(
-            f"`{item['tag']}` {item['completed']} 项/{item['xp']} XP" for item in progress["tag_scores"][:8]
-        )
-        lines.append(f"- 技能标签：{tags}")
+    lines.extend(["", "## 技能树", "", "```text"])
+    lines.extend(format_skill_tree_cli(progress["skill_tree"]))
+    lines.append("```")
 
     lines.extend(["", "## 已完成任务收获", ""])
     if progress["gains"]:
@@ -148,6 +147,9 @@ def render_markdown(data: dict[str, Any]) -> str:
             lines.append(f"  前置依赖：{', '.join(task['depends_on'])}")
         if task.get("children"):
             lines.append(f"  子任务：{', '.join(task['children'])}")
+    lines.extend(["", "## 等级谱注脚", ""])
+    for row in progress["level_catalog"]:
+        lines.append(f"- {row['badge']} Lv.{row['level']} {row['title']}：{row['motto']}；{row['min_xp']} XP 起")
     return "\n".join(lines) + "\n"
 
 
@@ -295,7 +297,7 @@ def render_html(data: dict[str, Any]) -> str:
       <span class="pill">待办 {status_counts.get("todo", 0)}</span>
       <span class="pill">进行中 {status_counts.get("doing", 0)}</span>
       <span class="pill">已完成 {status_counts.get("done", 0)}</span>
-      <span class="pill">Lv.{level["level"]} {html.escape(str(level["title"]))}</span>
+      <span class="pill">{html.escape(str(level["badge"]))} Lv.{level["level"]} {html.escape(str(level["title"]))}</span>
       <span class="pill">经验 {progress["earned_xp"]} XP</span>
     </div>
   </header>
@@ -372,7 +374,7 @@ def render_scoreboard_html(data: dict[str, Any]) -> str:
 <body>
   <header>
     <h1>成长计分板</h1>
-    <div class="meta">生成日期：{html.escape(today)}；等级：Lv.{level["level"]} {html.escape(str(level["title"]))}；数据源：<code>data/tasks.yaml</code></div>
+    <div class="meta">生成日期：{html.escape(today)}；等级：{html.escape(str(level["badge"]))} Lv.{level["level"]} {html.escape(str(level["title"]))}；数据源：<code>data/tasks.yaml</code></div>
   </header>
   <main>
 {render_progress_sections(progress)}
@@ -417,6 +419,19 @@ def progress_css() -> str:
       margin: 6px 0 0;
       color: var(--muted);
       font-size: 12px;
+    }
+    .rank-badge {
+      display: inline-block;
+      margin: 2px 0 4px;
+      padding: 3px 7px;
+      border: 1px solid #2563eb;
+      border-radius: 6px;
+      color: #1d4ed8;
+      background: #eff6ff;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0;
     }
     .level-bar {
       height: 10px;
@@ -496,27 +511,90 @@ def progress_css() -> str:
       color: var(--muted);
       font-size: 12px;
     }
-    .score-tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 7px;
-      margin-top: 9px;
+    .skill-tree {
+      margin-top: 14px;
     }
-    .score-tag {
-      display: inline-flex;
-      gap: 5px;
-      align-items: center;
-      padding: 4px 8px;
-      border: 1px solid #dbe3ef;
-      border-radius: 999px;
-      color: #334155;
+    .skill-tree h3,
+    .rank-footnote h3 {
+      margin: 0 0 9px;
+      font-size: 15px;
+    }
+    .skill-tree ul {
+      margin: 0;
+      padding-left: 18px;
+      list-style: none;
+      border-left: 1px solid #dbe3ef;
+    }
+    .skill-tree > ul {
+      padding-left: 0;
+      border-left: 0;
+    }
+    .skill-tree li {
+      position: relative;
+      margin: 8px 0;
+      padding-left: 12px;
+    }
+    .skill-tree li::before {
+      content: "";
+      position: absolute;
+      left: -18px;
+      top: 13px;
+      width: 18px;
+      border-top: 1px solid #dbe3ef;
+    }
+    .skill-tree > ul > li::before {
+      display: none;
+    }
+    .skill-node {
+      display: grid;
+      gap: 2px;
+      padding: 8px 9px;
+      border: 1px solid #e2e8f0;
+      border-radius: 7px;
       background: #f8fafc;
+    }
+    .skill-node.locked {
+      opacity: 0.64;
+    }
+    .skill-node-title {
+      display: flex;
+      gap: 8px;
+      justify-content: space-between;
+      color: #111827;
+      font-weight: 700;
+    }
+    .skill-node-desc {
+      color: var(--muted);
       font-size: 12px;
-      white-space: nowrap;
+    }
+    .rank-footnote {
+      margin-top: 14px;
+      padding: 12px 14px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      background: var(--panel);
+    }
+    .rank-catalog {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(220px, 1fr));
+      gap: 7px 12px;
+    }
+    .rank-row {
+      display: flex;
+      gap: 8px;
+      align-items: baseline;
+      color: #334155;
+      font-size: 12px;
+    }
+    .rank-row code {
+      min-width: 72px;
+      text-align: center;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     }
     @media (max-width: 920px) {
       .score-grid,
-      .progress-columns {
+      .progress-columns,
+      .rank-catalog {
         grid-template-columns: 1fr;
       }
     }
@@ -530,8 +608,10 @@ def render_progress_sections(progress: dict[str, Any]) -> str:
       <div class="score-grid">
         <article class="score-card">
           <p class="score-label">等级</p>
+          <span class="rank-badge">{html.escape(str(level["badge"]))}</span>
           <p class="score-value">Lv.{level["level"]}</p>
           <p class="score-note">{html.escape(str(level["title"]))}</p>
+          <p class="score-note">{html.escape(str(level["motto"]))}</p>
           <div class="level-bar" aria-label="升级进度"><div class="level-fill" style="width: {progress_pct}%"></div></div>
           <p class="score-note">{level["current_xp"]}/{level["next_level_xp"]} XP，还差 {level["remaining_xp"]}</p>
         </article>
@@ -560,8 +640,9 @@ def render_progress_sections(progress: dict[str, Any]) -> str:
 {render_artifact_rows(progress)}
             </tbody>
           </table>
-          <div class="score-tags">
-{render_tag_badges(progress)}
+          <div class="skill-tree">
+            <h3>技能树</h3>
+{render_skill_tree_html(progress["skill_tree"])}
           </div>
         </section>
         <section class="progress-panel">
@@ -569,6 +650,7 @@ def render_progress_sections(progress: dict[str, Any]) -> str:
 {render_gain_list(progress)}
         </section>
       </div>
+{render_level_footnote_html(progress)}
     </section>"""
 
 
@@ -587,16 +669,48 @@ def render_artifact_rows(progress: dict[str, Any]) -> str:
     return "\n".join(rows)
 
 
-def render_tag_badges(progress: dict[str, Any]) -> str:
-    if not progress["tag_scores"]:
-        return '            <span class="score-tag">暂无技能标签</span>'
-    badges = []
-    for item in progress["tag_scores"][:10]:
-        badges.append(
-            f'            <span class="score-tag">#{html.escape(str(item["tag"]))} '
-            f'{item["completed"]} 项 / {item["xp"]} XP</span>'
+def render_skill_tree_html(node: dict[str, Any]) -> str:
+    return "            <ul>\n" + render_skill_node_html(node, 14) + "\n            </ul>"
+
+
+def render_skill_node_html(node: dict[str, Any], indent: int) -> str:
+    pad = " " * indent
+    state_class = "" if node.get("unlocked") else " locked"
+    state = "解锁" if node.get("unlocked") else "封印"
+    parts = [
+        f'{pad}<li>',
+        f'{pad}  <div class="skill-node{state_class}">',
+        f'{pad}    <div class="skill-node-title"><span>{html.escape(str(node["label"]))}</span><span>{state} · {node["xp"]} XP</span></div>',
+        f'{pad}    <div class="skill-node-desc">{html.escape(str(node["description"]))}</div>',
+        f'{pad}  </div>',
+    ]
+    children = node.get("children", [])
+    if children:
+        parts.append(f"{pad}  <ul>")
+        for child in children:
+            parts.append(render_skill_node_html(child, indent + 4))
+        parts.append(f"{pad}  </ul>")
+    parts.append(f"{pad}</li>")
+    return "\n".join(parts)
+
+
+def render_level_footnote_html(progress: dict[str, Any]) -> str:
+    rows = []
+    for row in progress["level_catalog"]:
+        rows.append(
+            "          <div class=\"rank-row\">"
+            f"<code>{html.escape(str(row['badge']))}</code>"
+            f"<span>Lv.{row['level']} {html.escape(str(row['title']))}，{html.escape(str(row['motto']))}，{row['min_xp']} XP 起</span>"
+            "</div>"
         )
-    return "\n".join(badges)
+    return (
+        "      <footer class=\"rank-footnote\">\n"
+        "        <h3>等级谱注脚</h3>\n"
+        "        <div class=\"rank-catalog\">\n"
+        + "\n".join(rows)
+        + "\n        </div>\n"
+        "      </footer>"
+    )
 
 
 def render_gain_list(progress: dict[str, Any]) -> str:

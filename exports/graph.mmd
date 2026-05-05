@@ -28,6 +28,8 @@ flowchart LR
     T_0030["实现 v0.1 已完成任务收获提取\nT-0030 · 短期 · 截止 05-05"]
     T_0031["实现 v0.1 成长计分板和经验等级导出\nT-0031 · 短期 · 截止 05-05"]
     T_0032["发布 task_appender v0.1\nT-0032 · 里程碑 · 截止 05-05"]
+    T_0033["实现 v0.1.0rc1 技能树和段位标志补丁\nT-0033 · 短期 · 截止 05-05"]
+    T_0034["发布 task_appender v0.1.0rc1\nT-0034 · 里程碑 · 截止 05-05"]
   end
   subgraph SG_T_0020["T-0020 llm推理"]
     direction TB
@@ -83,6 +85,8 @@ flowchart LR
   class T_0030 done;
   class T_0031 done;
   class T_0032 done;
+  class T_0033 done;
+  class T_0034 done;
   T_0001 --> T_0002
   T_0001 --> T_0003
   T_0004 -.-> T_0002
@@ -102,6 +106,8 @@ flowchart LR
   T_0013 --> T_0030
   T_0013 --> T_0031
   T_0013 --> T_0032
+  T_0013 --> T_0033
+  T_0013 --> T_0034
   T_0014 -.-> T_0015
   T_0016 -.-> T_0017
   T_0018 --> T_0001
@@ -122,6 +128,8 @@ flowchart LR
   T_0030 -.-> T_0031
   T_0030 -.-> T_0032
   T_0031 -.-> T_0032
+  T_0032 -.-> T_0033
+  T_0033 -.-> T_0034
   linkStyle 0 stroke:#2563eb,stroke-width:1.6px;
   linkStyle 1 stroke:#2563eb,stroke-width:1.6px;
   linkStyle 2 stroke:#d97706,stroke-width:1.8px,stroke-dasharray:6 4;
@@ -141,10 +149,10 @@ flowchart LR
   linkStyle 16 stroke:#2563eb,stroke-width:1.6px;
   linkStyle 17 stroke:#2563eb,stroke-width:1.6px;
   linkStyle 18 stroke:#2563eb,stroke-width:1.6px;
-  linkStyle 19 stroke:#d97706,stroke-width:1.8px,stroke-dasharray:6 4;
-  linkStyle 20 stroke:#d97706,stroke-width:1.8px,stroke-dasharray:6 4;
-  linkStyle 21 stroke:#2563eb,stroke-width:1.6px;
-  linkStyle 22 stroke:#2563eb,stroke-width:1.6px;
+  linkStyle 19 stroke:#2563eb,stroke-width:1.6px;
+  linkStyle 20 stroke:#2563eb,stroke-width:1.6px;
+  linkStyle 21 stroke:#d97706,stroke-width:1.8px,stroke-dasharray:6 4;
+  linkStyle 22 stroke:#d97706,stroke-width:1.8px,stroke-dasharray:6 4;
   linkStyle 23 stroke:#2563eb,stroke-width:1.6px;
   linkStyle 24 stroke:#2563eb,stroke-width:1.6px;
   linkStyle 25 stroke:#2563eb,stroke-width:1.6px;
@@ -152,8 +160,8 @@ flowchart LR
   linkStyle 27 stroke:#2563eb,stroke-width:1.6px;
   linkStyle 28 stroke:#2563eb,stroke-width:1.6px;
   linkStyle 29 stroke:#2563eb,stroke-width:1.6px;
-  linkStyle 30 stroke:#d97706,stroke-width:1.8px,stroke-dasharray:6 4;
-  linkStyle 31 stroke:#d97706,stroke-width:1.8px,stroke-dasharray:6 4;
+  linkStyle 30 stroke:#2563eb,stroke-width:1.6px;
+  linkStyle 31 stroke:#2563eb,stroke-width:1.6px;
   linkStyle 32 stroke:#d97706,stroke-width:1.8px,stroke-dasharray:6 4;
   linkStyle 33 stroke:#d97706,stroke-width:1.8px,stroke-dasharray:6 4;
   linkStyle 34 stroke:#d97706,stroke-width:1.8px,stroke-dasharray:6 4;
@@ -161,3 +169,7 @@ flowchart LR
   linkStyle 36 stroke:#d97706,stroke-width:1.8px,stroke-dasharray:6 4;
   linkStyle 37 stroke:#d97706,stroke-width:1.8px,stroke-dasharray:6 4;
   linkStyle 38 stroke:#d97706,stroke-width:1.8px,stroke-dasharray:6 4;
+  linkStyle 39 stroke:#d97706,stroke-width:1.8px,stroke-dasharray:6 4;
+  linkStyle 40 stroke:#d97706,stroke-width:1.8px,stroke-dasharray:6 4;
+  linkStyle 41 stroke:#d97706,stroke-width:1.8px,stroke-dasharray:6 4;
+  linkStyle 42 stroke:#d97706,stroke-width:1.8px,stroke-dasharray:6 4;

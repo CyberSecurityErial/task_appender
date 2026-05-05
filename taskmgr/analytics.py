@@ -38,16 +38,88 @@ PRIORITY_MULTIPLIERS = {
     5: 0.7,
 }
 
-LEVEL_TITLES = [
-    "任务新手",
-    "稳定推进者",
-    "系统学习者",
-    "输出型学习者",
-    "任务图构建者",
-    "长期工程师",
-    "复盘架构师",
-    "高阶自驱者",
+LEVEL_RANKS = [
+    {"title": "任务新手", "badge": "< I >", "motto": "点亮第一枚任务符文"},
+    {"title": "稳定推进者", "badge": "< II >", "motto": "启动恒定推进炉"},
+    {"title": "系统学习者", "badge": "[ III ]", "motto": "展开系统星图"},
+    {"title": "输出型学习者", "badge": "[ IV ]", "motto": "把知识铸成光刃"},
+    {"title": "任务图构建者", "badge": "{== V ==}", "motto": "编织任务因果网"},
+    {"title": "长期工程师", "badge": "{== VI ==}", "motto": "锻造长期工程核心"},
+    {"title": "复盘架构师", "badge": "<< VII >>", "motto": "重构经验回路"},
+    {"title": "高阶自驱者", "badge": "<< VIII >>", "motto": "进入自驱星域"},
 ]
+
+SKILL_TREE_SPEC = {
+    "id": "core",
+    "label": "星核主干",
+    "description": "XP 汇流核心",
+    "tags": [],
+    "children": [
+        {
+            "id": "output",
+            "label": "星文输出",
+            "description": "知识铸成卷轴",
+            "tags": [],
+            "children": [
+                {"id": "blog", "label": "卷轴写作", "description": "博客即法术书", "tags": ["blog", "writing"]},
+                {"id": "mup", "label": "MuP 秘典", "description": "尺度法则觉醒", "tags": ["mup"]},
+            ],
+        },
+        {
+            "id": "systems",
+            "label": "推理秘术",
+            "description": "驱动 KV 星流",
+            "tags": [],
+            "children": [
+                {
+                    "id": "kvcache",
+                    "label": "缓存咒术",
+                    "description": "驯服 KV 星河",
+                    "tags": ["kvcache", "vllm", "sglang", "paged-attention"],
+                },
+                {
+                    "id": "inference",
+                    "label": "模型星门",
+                    "description": "推理链路展开",
+                    "tags": ["llm", "inference", "mooncake", "pd-disaggregation", "foundation"],
+                },
+                {
+                    "id": "transport",
+                    "label": "传输法阵",
+                    "description": "RDMA 开门",
+                    "tags": ["ucx", "rdma", "transport"],
+                },
+            ],
+        },
+        {
+            "id": "forge",
+            "label": "工程炼成",
+            "description": "实验点火成真",
+            "tags": [],
+            "children": [
+                {"id": "experiment", "label": "实验炉心", "description": "Demo 点燃现实", "tags": ["experiment", "demo"]},
+                {"id": "training", "label": "训练矩阵", "description": "并行阵列启动", "tags": ["megatron", "distributed-training", "performance"]},
+                {"id": "comm_lib", "label": "通信锻炉", "description": "拓扑化作武器", "tags": ["nccl-gin"]},
+            ],
+        },
+        {
+            "id": "tooling",
+            "label": "工具圣殿",
+            "description": "自动化结界",
+            "tags": [],
+            "children": [
+                {
+                    "id": "task_graph",
+                    "label": "任务图引擎",
+                    "description": "本地星图自转",
+                    "tags": ["task-appender", "feature", "scoreboard", "analytics", "release"],
+                },
+                {"id": "ritual", "label": "日课仪式", "description": "复盘回路充能", "tags": ["daily", "review", "reminder"]},
+                {"id": "deadline", "label": "时钟塔", "description": "DDL 齿轮校准", "tags": ["ddl", "automation"]},
+            ],
+        },
+    ],
+}
 
 ARTIFACT_RULES = [
     {
@@ -150,6 +222,7 @@ def build_progress(data: dict[str, Any]) -> dict[str, Any]:
     artifacts = artifact_summary(completed_details)
     gains = extract_gains(completed_details)
     tag_scores = tag_scoreboard(completed_details)
+    skill_tree = build_skill_tree(tag_scores)
 
     return {
         "generated_at": date.today().isoformat(),
@@ -165,6 +238,8 @@ def build_progress(data: dict[str, Any]) -> dict[str, Any]:
         "artifacts": artifacts,
         "gains": gains,
         "tag_scores": tag_scores,
+        "skill_tree": skill_tree,
+        "level_catalog": level_catalog(),
         "completed_details": sorted(
             completed_details,
             key=lambda detail: (
@@ -298,14 +373,83 @@ def tag_scoreboard(completed_details: list[dict[str, Any]]) -> list[dict[str, An
         tags = [str(tag) for tag in detail["task"].get("tags", []) if str(tag).strip()]
         if not tags:
             continue
-        share = max(1, detail["total_xp"] // len(tags))
-        for tag in tags:
+        share = detail["total_xp"] // len(tags)
+        remainder = detail["total_xp"] % len(tags)
+        for index, tag in enumerate(tags):
             counts[tag] += 1
-            xp_by_tag[tag] += share
+            xp_by_tag[tag] += share + (1 if index < remainder else 0)
     return [
         {"tag": tag, "completed": counts[tag], "xp": xp_by_tag[tag]}
         for tag in sorted(counts, key=lambda item: (-xp_by_tag[item], item))
     ]
+
+
+def build_skill_tree(tag_scores: list[dict[str, Any]]) -> dict[str, Any]:
+    tag_stats = {str(item["tag"]): {"completed": int(item["completed"]), "xp": int(item["xp"])} for item in tag_scores}
+    assigned = collect_tree_tags(SKILL_TREE_SPEC)
+    unknown_tags = sorted(tag for tag in tag_stats if tag not in assigned)
+    return build_skill_node(SKILL_TREE_SPEC, tag_stats, unknown_tags)
+
+
+def build_skill_node(
+    spec: dict[str, Any],
+    tag_stats: dict[str, dict[str, int]],
+    unknown_tags: list[str],
+) -> dict[str, Any]:
+    child_specs = list(spec.get("children", []))
+    if spec.get("id") == "core" and unknown_tags:
+        child_specs.append(
+            {
+                "id": "wild_runes",
+                "label": "游离符文",
+                "description": "未归档能量",
+                "tags": unknown_tags,
+                "children": [],
+            }
+        )
+    children = [build_skill_node(child, tag_stats, unknown_tags) for child in child_specs]
+    direct_tags = [str(tag) for tag in spec.get("tags", [])]
+    direct_xp = sum(tag_stats.get(tag, {}).get("xp", 0) for tag in direct_tags)
+    direct_completed = sum(tag_stats.get(tag, {}).get("completed", 0) for tag in direct_tags)
+    total_xp = direct_xp + sum(int(child["xp"]) for child in children)
+    total_completed = direct_completed + sum(int(child["completed"]) for child in children)
+    return {
+        "id": str(spec["id"]),
+        "label": str(spec["label"]),
+        "description": str(spec["description"]),
+        "tags": direct_tags,
+        "direct_xp": direct_xp,
+        "direct_completed": direct_completed,
+        "xp": total_xp,
+        "completed": total_completed,
+        "unlocked": total_xp > 0,
+        "children": children,
+    }
+
+
+def collect_tree_tags(spec: dict[str, Any]) -> set[str]:
+    tags = {str(tag) for tag in spec.get("tags", [])}
+    for child in spec.get("children", []):
+        tags.update(collect_tree_tags(child))
+    return tags
+
+
+def format_skill_tree_cli(node: dict[str, Any]) -> list[str]:
+    lines: list[str] = []
+
+    def walk(current: dict[str, Any], prefix: str, is_last: bool, is_root: bool) -> None:
+        connector = "" if is_root else ("└─ " if is_last else "├─ ")
+        state = "解锁" if current["unlocked"] else "封印"
+        lines.append(
+            f"{prefix}{connector}{current['label']} [{state}] {current['xp']} XP - {current['description']}"
+        )
+        child_prefix = prefix if is_root else prefix + ("   " if is_last else "│  ")
+        children = current.get("children", [])
+        for index, child in enumerate(children):
+            walk(child, child_prefix, index == len(children) - 1, False)
+
+    walk(node, "", True, True)
+    return lines
 
 
 def level_for_xp(xp: int) -> dict[str, Any]:
@@ -318,9 +462,12 @@ def level_for_xp(xp: int) -> dict[str, Any]:
         next_cost = level_cost(level)
     current = xp - floor_xp
     progress = round(current / next_cost * 100, 1) if next_cost else 100.0
+    rank = rank_for_level(level)
     return {
         "level": level,
-        "title": level_title(level),
+        "title": rank["title"],
+        "badge": rank["badge"],
+        "motto": rank["motto"],
         "floor_xp": floor_xp,
         "current_xp": current,
         "next_level_xp": next_cost,
@@ -333,15 +480,38 @@ def level_cost(level: int) -> int:
     return 120 + (level - 1) * 80
 
 
-def level_title(level: int) -> str:
-    index = min(max(level, 1), len(LEVEL_TITLES)) - 1
-    return LEVEL_TITLES[index]
+def rank_for_level(level: int) -> dict[str, str]:
+    if level <= len(LEVEL_RANKS):
+        return LEVEL_RANKS[max(level, 1) - 1]
+    return {
+        "title": "星界自驱者",
+        "badge": f"<< {level} >>",
+        "motto": "继续扩展未知星域",
+    }
+
+
+def level_catalog() -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    floor_xp = 0
+    for level, rank in enumerate(LEVEL_RANKS, start=1):
+        rows.append(
+            {
+                "level": level,
+                "title": rank["title"],
+                "badge": rank["badge"],
+                "motto": rank["motto"],
+                "min_xp": floor_xp,
+            }
+        )
+        floor_xp += level_cost(level)
+    return rows
 
 
 def format_progress_cli(progress: dict[str, Any]) -> str:
     level = progress["level"]
     lines = [
-        f"Lv.{level['level']} {level['title']}  XP {progress['earned_xp']} (+{progress['available_xp']} 可领取)",
+        f"{level['badge']} Lv.{level['level']} {level['title']}  XP {progress['earned_xp']} (+{progress['available_xp']} 可领取)",
+        f"段位铭文：{level['motto']}",
         f"升级进度 {level['current_xp']}/{level['next_level_xp']}，还差 {level['remaining_xp']} XP",
         f"任务完成 {progress['completed_tasks']}/{progress['total_tasks']}（{progress['completion_rate']}%）",
     ]
@@ -352,6 +522,11 @@ def format_progress_cli(progress: dict[str, Any]) -> str:
         lines.append("最近收获：")
         for gain in progress["gains"][:5]:
             lines.append(f"- {gain['task_id']} {gain['area']}：{gain['gain']}")
+    lines.append("技能树：")
+    lines.extend(format_skill_tree_cli(progress["skill_tree"]))
+    lines.append("等级谱：")
+    for row in progress["level_catalog"]:
+        lines.append(f"- {row['badge']} Lv.{row['level']} {row['title']}（{row['min_xp']} XP+）")
     return "\n".join(lines)
 
 

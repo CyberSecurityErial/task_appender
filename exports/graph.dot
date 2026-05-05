@@ -33,6 +33,8 @@ digraph Tasks {
   "T-0030" [label="T-0030\\n实现 v0.1 已完成任务收获提取"];
   "T-0031" [label="T-0031\\n实现 v0.1 成长计分板和经验等级导出"];
   "T-0032" [label="T-0032\\n发布 task_appender v0.1"];
+  "T-0033" [label="T-0033\\n实现 v0.1.0rc1 技能树和段位标志补丁"];
+  "T-0034" [label="T-0034\\n发布 task_appender v0.1.0rc1"];
   "T-0001" -> "T-0002" [color="#2563eb", label="child"];
   "T-0001" -> "T-0003" [color="#2563eb", label="child"];
   "T-0004" -> "T-0002" [style=dashed, color="#d97706", label="depends"];
@@ -52,6 +54,8 @@ digraph Tasks {
   "T-0013" -> "T-0030" [color="#2563eb", label="child"];
   "T-0013" -> "T-0031" [color="#2563eb", label="child"];
   "T-0013" -> "T-0032" [color="#2563eb", label="child"];
+  "T-0013" -> "T-0033" [color="#2563eb", label="child"];
+  "T-0013" -> "T-0034" [color="#2563eb", label="child"];
   "T-0014" -> "T-0015" [style=dashed, color="#d97706", label="depends"];
   "T-0016" -> "T-0017" [style=dashed, color="#d97706", label="depends"];
   "T-0018" -> "T-0001" [color="#2563eb", label="child"];
@@ -72,4 +76,6 @@ digraph Tasks {
   "T-0030" -> "T-0031" [style=dashed, color="#d97706", label="depends"];
   "T-0030" -> "T-0032" [style=dashed, color="#d97706", label="depends"];
   "T-0031" -> "T-0032" [style=dashed, color="#d97706", label="depends"];
+  "T-0032" -> "T-0033" [style=dashed, color="#d97706", label="depends"];
+  "T-0033" -> "T-0034" [style=dashed, color="#d97706", label="depends"];
 }

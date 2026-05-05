@@ -144,6 +144,8 @@ python -m taskmgr.cli done T-0003
 - `todo` / `doing` / `blocked` 任务会计入任务池待领取 XP。
 - XP 由任务类型、优先级、依赖、子任务、标签和产出类型共同决定。
 - 产出类型包括博客/文章、Demo/实验、源码地图、复盘/总结、工具/版本发布。
+- v0.1.0rc1 起，技能以“星核主干”为根节点渲染成树，分支描述采用短句风格。
+- 每个等级都有字符段位标志，完整等级谱会出现在 Markdown/HTML 导出的注脚。
 - HTML 计分板输出到 `exports/scoreboard.html`。
 
 ## 从 TASK_INBOX.md 导入

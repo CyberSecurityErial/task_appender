@@ -63,6 +63,8 @@ class CliTests(unittest.TestCase):
             scoreboard = scoreboard_out.read_text(encoding="utf-8")
             self.assertIn("成长计分板", scoreboard)
             self.assertIn("任务池经验", scoreboard)
+            self.assertIn("技能树", scoreboard)
+            self.assertIn("等级谱注脚", scoreboard)
 
     def test_done_sets_completed_at_and_scoreboard(self):
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -98,6 +100,8 @@ class CliTests(unittest.TestCase):
             self.assertEqual(code, 0, err)
             self.assertIn("Lv.", stdout)
             self.assertIn("最近收获", stdout)
+            self.assertIn("星核主干", stdout)
+            self.assertIn("等级谱", stdout)
 
     def test_reject_cycle(self):
         with tempfile.TemporaryDirectory() as tmpdir:
