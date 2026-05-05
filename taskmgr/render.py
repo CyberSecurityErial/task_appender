@@ -5,6 +5,7 @@ from datetime import date
 from pathlib import Path
 from typing import Any
 
+from .analytics import build_progress
 from .model import task_sort_key
 
 
@@ -102,14 +103,47 @@ def render_dot(data: dict[str, Any]) -> str:
 
 
 def render_markdown(data: dict[str, Any]) -> str:
-    lines = ["# 任务列表", ""]
+    progress = build_progress(data)
+    level = progress["level"]
+    lines = [
+        "# 任务列表",
+        "",
+        "## 成长计分板",
+        "",
+        f"- 等级：Lv.{level['level']} {level['title']}",
+        f"- 已获得经验：{progress['earned_xp']} XP",
+        f"- 下一级进度：{level['current_xp']}/{level['next_level_xp']} XP，还差 {level['remaining_xp']} XP",
+        f"- 任务完成：{progress['completed_tasks']}/{progress['total_tasks']}（{progress['completion_rate']}%）",
+        f"- 任务池待领取：{progress['available_xp']} XP",
+    ]
+    if progress["artifacts"]:
+        artifacts = "；".join(f"{item['label']} x{item['count']}（+{item['xp']} XP）" for item in progress["artifacts"])
+        lines.append(f"- 产出：{artifacts}")
+    if progress["tag_scores"]:
+        tags = "；".join(
+            f"`{item['tag']}` {item['completed']} 项/{item['xp']} XP" for item in progress["tag_scores"][:8]
+        )
+        lines.append(f"- 技能标签：{tags}")
+
+    lines.extend(["", "## 已完成任务收获", ""])
+    if progress["gains"]:
+        for gain in progress["gains"]:
+            tags = " ".join(f"`{tag}`" for tag in gain["tags"]) or "-"
+            artifacts = "，".join(gain["artifacts"]) or "-"
+            lines.append(f"- **{gain['task_id']}** {gain['area']}：{gain['gain']}（+{gain['xp']} XP）")
+            lines.append(f"  证据：{gain['evidence']}；产出：{artifacts}；标签：{tags}")
+    else:
+        lines.append("- 暂无已完成任务收获。")
+
+    lines.extend(["", "## 任务明细", ""])
     for task in sorted(data.get("tasks", []), key=task_sort_key):
         tags = " ".join(f"`{tag}`" for tag in task.get("tags", [])) or "-"
         due = task.get("due_at") or "-"
         status = STATUS_LABELS.get(task.get("status"), task.get("status"))
         kind = KIND_LABELS.get(task.get("kind"), task.get("kind"))
-        lines.append(f"- **{task['id']}** [{status}/{kind}] {task['title']}  ")
-        lines.append(f"  截止：{due}；优先级：{task.get('priority', 3)}；标签：{tags}")
+        lines.append(f"- **{task['id']}** [{status}/{kind}] {task['title']}")
+        completed_at = task.get("completed_at") or "-"
+        lines.append(f"  截止：{due}；完成：{completed_at}；优先级：{task.get('priority', 3)}；标签：{tags}")
         if task.get("depends_on"):
             lines.append(f"  前置依赖：{', '.join(task['depends_on'])}")
         if task.get("children"):
@@ -126,6 +160,8 @@ def write_rendered(data: dict[str, Any], fmt: str, output: Path) -> str:
         content = render_markdown(data)
     elif fmt == "html":
         content = render_html(data)
+    elif fmt == "scoreboard":
+        content = render_scoreboard_html(data)
     else:
         raise ValueError(f"unsupported render format: {fmt}")
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -135,11 +171,14 @@ def write_rendered(data: dict[str, Any], fmt: str, output: Path) -> str:
 
 def render_html(data: dict[str, Any]) -> str:
     tasks = sorted(data.get("tasks", []), key=lambda task: str(task.get("id", "")))
+    progress = build_progress(data)
     svg = render_svg_graph(data)
     task_rows = "\n".join(render_html_task_row(task) for task in sorted(tasks, key=task_sort_key))
     counts = count_by(tasks, "kind")
     status_counts = count_by(tasks, "status")
     today = date.today().isoformat()
+    level = progress["level"]
+    progress_sections = render_progress_sections(progress)
     return f"""<!doctype html>
 <html lang="zh-CN">
 <head>
@@ -240,6 +279,7 @@ def render_html(data: dict[str, Any]) -> str:
       header, main {{ padding: 12px; }}
       .graph-shell {{ overflow: visible; box-shadow: none; }}
     }}
+{progress_css()}
   </style>
 </head>
 <body>
@@ -255,9 +295,12 @@ def render_html(data: dict[str, Any]) -> str:
       <span class="pill">待办 {status_counts.get("todo", 0)}</span>
       <span class="pill">进行中 {status_counts.get("doing", 0)}</span>
       <span class="pill">已完成 {status_counts.get("done", 0)}</span>
+      <span class="pill">Lv.{level["level"]} {html.escape(str(level["title"]))}</span>
+      <span class="pill">经验 {progress["earned_xp"]} XP</span>
     </div>
   </header>
   <main>
+{progress_sections}
     <div class="legend">
       <span><i class="swatch child"></i>父子拆解</span>
       <span><i class="swatch dependency"></i>执行依赖</span>
@@ -279,6 +322,301 @@ def render_html(data: dict[str, Any]) -> str:
 </body>
 </html>
 """
+
+
+def render_scoreboard_html(data: dict[str, Any]) -> str:
+    progress = build_progress(data)
+    today = date.today().isoformat()
+    level = progress["level"]
+    return f"""<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>成长计分板</title>
+  <style>
+    :root {{
+      color-scheme: light;
+      --bg: #f8fafc;
+      --panel: #ffffff;
+      --line: #cbd5e1;
+      --text: #0f172a;
+      --muted: #64748b;
+      --blue: #2563eb;
+      --orange: #d97706;
+    }}
+    * {{ box-sizing: border-box; }}
+    body {{
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
+    }}
+    header {{
+      padding: 24px 28px 14px;
+      background: #ffffff;
+      border-bottom: 1px solid #e2e8f0;
+    }}
+    h1 {{ margin: 0 0 8px; font-size: 24px; }}
+    .meta {{ color: var(--muted); }}
+    main {{ padding: 18px 28px 32px; }}
+    code {{
+      background: #f1f5f9;
+      padding: 1px 5px;
+      border-radius: 5px;
+      color: #334155;
+    }}
+{progress_css()}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>成长计分板</h1>
+    <div class="meta">生成日期：{html.escape(today)}；等级：Lv.{level["level"]} {html.escape(str(level["title"]))}；数据源：<code>data/tasks.yaml</code></div>
+  </header>
+  <main>
+{render_progress_sections(progress)}
+  </main>
+</body>
+</html>
+"""
+
+
+def progress_css() -> str:
+    return """
+    .progress-shell {
+      display: grid;
+      gap: 14px;
+      margin: 0 0 22px;
+    }
+    .score-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(160px, 1fr));
+      gap: 10px;
+    }
+    .score-card {
+      background: var(--panel);
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 12px 14px;
+      min-height: 92px;
+    }
+    .score-label {
+      margin: 0 0 6px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .score-value {
+      margin: 0;
+      color: #111827;
+      font-size: 24px;
+      font-weight: 750;
+      letter-spacing: 0;
+    }
+    .score-note {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .level-bar {
+      height: 10px;
+      margin-top: 10px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: #e2e8f0;
+    }
+    .level-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #2563eb, #16a34a);
+    }
+    .progress-columns {
+      display: grid;
+      grid-template-columns: minmax(260px, 1.05fr) minmax(300px, 1.4fr);
+      gap: 12px;
+    }
+    .progress-panel {
+      background: var(--panel);
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 14px;
+    }
+    .progress-panel h2 {
+      margin: 0 0 10px;
+      font-size: 17px;
+      letter-spacing: 0;
+    }
+    .compact-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 0;
+      background: transparent;
+    }
+    .compact-table th,
+    .compact-table td {
+      padding: 7px 6px;
+      border-bottom: 1px solid #e2e8f0;
+      text-align: left;
+      vertical-align: top;
+    }
+    .compact-table th {
+      background: #f8fafc;
+      color: #334155;
+      font-weight: 650;
+    }
+    .compact-table tr:last-child td {
+      border-bottom: 0;
+    }
+    .gain-list {
+      display: grid;
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    .gain-item {
+      padding: 10px 0;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .gain-item:last-child {
+      border-bottom: 0;
+    }
+    .gain-head {
+      display: flex;
+      gap: 8px;
+      align-items: baseline;
+      justify-content: space-between;
+      color: #111827;
+      font-weight: 700;
+    }
+    .gain-body {
+      margin: 5px 0;
+      color: #334155;
+    }
+    .gain-meta {
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .score-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 9px;
+    }
+    .score-tag {
+      display: inline-flex;
+      gap: 5px;
+      align-items: center;
+      padding: 4px 8px;
+      border: 1px solid #dbe3ef;
+      border-radius: 999px;
+      color: #334155;
+      background: #f8fafc;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    @media (max-width: 920px) {
+      .score-grid,
+      .progress-columns {
+        grid-template-columns: 1fr;
+      }
+    }
+"""
+
+
+def render_progress_sections(progress: dict[str, Any]) -> str:
+    level = progress["level"]
+    progress_pct = max(0.0, min(100.0, float(level["progress_pct"])))
+    return f"""    <section class="progress-shell" aria-label="成长计分板">
+      <div class="score-grid">
+        <article class="score-card">
+          <p class="score-label">等级</p>
+          <p class="score-value">Lv.{level["level"]}</p>
+          <p class="score-note">{html.escape(str(level["title"]))}</p>
+          <div class="level-bar" aria-label="升级进度"><div class="level-fill" style="width: {progress_pct}%"></div></div>
+          <p class="score-note">{level["current_xp"]}/{level["next_level_xp"]} XP，还差 {level["remaining_xp"]}</p>
+        </article>
+        <article class="score-card">
+          <p class="score-label">已获得经验</p>
+          <p class="score-value">{progress["earned_xp"]}</p>
+          <p class="score-note">来自已完成和已归档任务</p>
+        </article>
+        <article class="score-card">
+          <p class="score-label">任务完成</p>
+          <p class="score-value">{progress["completed_tasks"]}/{progress["total_tasks"]}</p>
+          <p class="score-note">完成率 {progress["completion_rate"]}%</p>
+        </article>
+        <article class="score-card">
+          <p class="score-label">任务池经验</p>
+          <p class="score-value">{progress["available_xp"]}</p>
+          <p class="score-note">待办、进行中和阻塞任务可领取</p>
+        </article>
+      </div>
+      <div class="progress-columns">
+        <section class="progress-panel">
+          <h2>产出量化</h2>
+          <table class="compact-table">
+            <thead><tr><th>产出</th><th>数量</th><th>经验</th></tr></thead>
+            <tbody>
+{render_artifact_rows(progress)}
+            </tbody>
+          </table>
+          <div class="score-tags">
+{render_tag_badges(progress)}
+          </div>
+        </section>
+        <section class="progress-panel">
+          <h2>已完成任务收获</h2>
+{render_gain_list(progress)}
+        </section>
+      </div>
+    </section>"""
+
+
+def render_artifact_rows(progress: dict[str, Any]) -> str:
+    if not progress["artifacts"]:
+        return '              <tr><td colspan="3">暂无可量化产出</td></tr>'
+    rows = []
+    for item in progress["artifacts"]:
+        rows.append(
+            "              <tr>"
+            f"<td>{html.escape(str(item['label']))}</td>"
+            f"<td>{item['count']}</td>"
+            f"<td>+{item['xp']} XP</td>"
+            "</tr>"
+        )
+    return "\n".join(rows)
+
+
+def render_tag_badges(progress: dict[str, Any]) -> str:
+    if not progress["tag_scores"]:
+        return '            <span class="score-tag">暂无技能标签</span>'
+    badges = []
+    for item in progress["tag_scores"][:10]:
+        badges.append(
+            f'            <span class="score-tag">#{html.escape(str(item["tag"]))} '
+            f'{item["completed"]} 项 / {item["xp"]} XP</span>'
+        )
+    return "\n".join(badges)
+
+
+def render_gain_list(progress: dict[str, Any]) -> str:
+    if not progress["gains"]:
+        return '          <p class="gain-body">暂无已完成任务收获。</p>'
+    items = []
+    for gain in progress["gains"][:12]:
+        tags = " ".join(f"#{tag}" for tag in gain["tags"]) or "-"
+        artifacts = "，".join(gain["artifacts"]) or "-"
+        items.append(
+            "          <li class=\"gain-item\">"
+            "<div class=\"gain-head\">"
+            f"<span>{html.escape(gain['task_id'])} · {html.escape(gain['area'])}</span>"
+            f"<span>+{gain['xp']} XP</span>"
+            "</div>"
+            f"<p class=\"gain-body\">{html.escape(gain['gain'])}</p>"
+            f"<div class=\"gain-meta\">{html.escape(gain['title'])}；证据：{html.escape(gain['evidence'])}；产出：{html.escape(artifacts)}；标签：{html.escape(tags)}</div>"
+            "</li>"
+        )
+    return "          <ul class=\"gain-list\">\n" + "\n".join(items) + "\n          </ul>"
 
 
 def render_svg_graph(data: dict[str, Any]) -> str:

@@ -1,5 +1,5 @@
 version: 1
-next_id: 18
+next_id: 33
 tasks:
 - id: T-0001
   title: 学习 KVCache 分布式推理调度
@@ -12,12 +12,13 @@ tasks:
   - kvcache
   - inference
   - scheduling
-  parent: null
+  parent: T-0018
   depends_on: []
   children:
   - T-0002
   - T-0003
   recurrence: null
+  completed_at: null
   notes: 长期学习目标：理解分布式模型推理里的 KVCache 调度、P/D 分离、跨节点传输和缓存复用。
 - id: T-0002
   title: 学习 Mooncake
@@ -35,6 +36,7 @@ tasks:
   - T-0004
   children: []
   recurrence: null
+  completed_at: null
   notes: 重点看 Mooncake 的 P/D 分离、KVCache-centric 调度、Transfer Engine、Mooncake Store 和 Conductor。
 - id: T-0003
   title: 学习 UCX
@@ -51,6 +53,7 @@ tasks:
   depends_on: []
   children: []
   recurrence: null
+  completed_at: null
   notes: 重点理解 UCX 的通信抽象、RDMA/InfiniBand 支持、内存注册、零拷贝和它在分布式推理 KVCache 传输里的作用。
 - id: T-0004
   title: 学习 P/D 分离的基础
@@ -67,6 +70,7 @@ tasks:
   depends_on: []
   children: []
   recurrence: null
+  completed_at: null
   notes: Mooncake 的前置基础任务：先理解 prefill/decode 分离、TTFT/TBT、KVCache 生成与传输、prefill pool 和 decode pool 的职责。
 - id: T-0005
   title: 学习 nccl-gin
@@ -83,6 +87,7 @@ tasks:
   - T-0006
   - T-0007
   recurrence: null
+  completed_at: null
   notes: ''
 - id: T-0006
   title: 学习 nccl-gin 具体源码
@@ -97,6 +102,7 @@ tasks:
   depends_on: []
   children: []
   recurrence: null
+  completed_at: null
   notes: ''
 - id: T-0007
   title: 学习 nccl-gin 原理
@@ -111,6 +117,7 @@ tasks:
   depends_on: []
   children: []
   recurrence: null
+  completed_at: null
   notes: ''
 - id: T-0008
   title: 学习 Megatron 训练框架
@@ -130,6 +137,7 @@ tasks:
   - T-0011
   - T-0012
   recurrence: null
+  completed_at: null
   notes: 系统学习 Megatron Core / Megatron-LM 的训练架构、并行策略、配置运行、源码路径和性能调优。
 - id: T-0009
   title: 梳理 Megatron 训练架构与并行基础
@@ -145,6 +153,7 @@ tasks:
   depends_on: []
   children: []
   recurrence: null
+  completed_at: null
   notes: 明确 Megatron Core / Megatron-LM 关系，理解张量并行、流水线并行、数据并行、序列并行、分布式优化器和训练配置入口。
 - id: T-0010
   title: 跑通 Megatron 小规模训练样例
@@ -161,6 +170,7 @@ tasks:
   - T-0009
   children: []
   recurrence: null
+  completed_at: null
   notes: 用最小可控配置跑通一次训练，记录数据入口、模型配置、并行参数、启动脚本、checkpoint 和日志位置。
 - id: T-0011
   title: 阅读 Megatron 模型、并行与优化器源码主线
@@ -177,6 +187,7 @@ tasks:
   - T-0010
   children: []
   recurrence: null
+  completed_at: null
   notes: 沿训练入口追踪模型构建、forward/backward 调度、并行通信、分布式优化器和 checkpoint 读写，形成源码地图。
 - id: T-0012
   title: 完成一次 Megatron 训练调优复盘
@@ -193,6 +204,7 @@ tasks:
   - T-0011
   children: []
   recurrence: null
+  completed_at: null
   notes: 基于一次训练实验复盘吞吐、显存、并行组合、通信瓶颈、checkpoint 成本和后续改进问题，沉淀阶段总结。
 - id: T-0013
   title: 维护 task_appender 功能 TODO List
@@ -211,7 +223,11 @@ tasks:
   - T-0015
   - T-0016
   - T-0017
+  - T-0030
+  - T-0031
+  - T-0032
   recurrence: null
+  completed_at: null
   notes: 后续要加入的 task_appender 功能集合：每日任务、分时提醒，以及 DDL 日期手动和自动修改能力。
 - id: T-0014
   title: 实现每日任务创建与展示
@@ -228,6 +244,7 @@ tasks:
   depends_on: []
   children: []
   recurrence: null
+  completed_at: null
   notes: 完善 daily 任务的创建、校验、列表展示和 today 视图，保证 recurrence 元数据稳定可用。
 - id: T-0015
   title: 支持每日任务分时提醒
@@ -245,6 +262,7 @@ tasks:
   - T-0014
   children: []
   recurrence: null
+  completed_at: null
   notes: 为每日任务支持多个提醒时间或时间段配置，并在 today/提醒输出中按时间排序呈现。
 - id: T-0016
   title: 支持 DDL 日期手动修改
@@ -261,6 +279,7 @@ tasks:
   depends_on: []
   children: []
   recurrence: null
+  completed_at: null
   notes: 提供 CLI 能力手动修改任务 due_at，覆盖新增、更新、清空截止日期，并保持校验和导出一致。
 - id: T-0017
   title: 支持 DDL 日期自动修改策略
@@ -278,4 +297,270 @@ tasks:
   - T-0016
   children: []
   recurrence: null
+  completed_at: null
   notes: 设计自动调整 due_at 的规则，例如基于依赖完成状态、延期策略或周期任务滚动生成，并提供可解释的预览/确认流程。
+- id: T-0018
+  title: 学习 KVCache 调度
+  kind: long
+  status: doing
+  created_at: '2026-04-29'
+  due_at: null
+  priority: 1
+  tags:
+  - kvcache
+  - scheduling
+  - inference
+  parent: T-0020
+  depends_on: []
+  children:
+  - T-0001
+  - T-0019
+  recurrence: null
+  completed_at: null
+  notes: 总目标：系统理解 KVCache 调度问题，包括单机 KV 管理、缓存复用、调度策略，以及分布式推理中的 KVCache 分配、迁移和传输。
+- id: T-0019
+  title: 学习 PagedAttention(vLLM) 和 Radix Tree(SGLang) 对 KV 的管理
+  kind: short
+  status: todo
+  created_at: '2026-04-29'
+  due_at: null
+  priority: 1
+  tags:
+  - kvcache
+  - vllm
+  - sglang
+  - paged-attention
+  parent: T-0018
+  depends_on: []
+  children: []
+  recurrence: null
+  completed_at: null
+  notes: 对比 vLLM 的 PagedAttention 和 SGLang 的 Radix Tree/KV cache 管理方式，重点理解 KV block/page 的组织、复用、回收和命中路径。
+- id: T-0020
+  title: llm推理
+  kind: long
+  status: doing
+  created_at: '2026-04-29'
+  due_at: null
+  priority: 1
+  tags:
+  - llm
+  - inference
+  parent: null
+  depends_on: []
+  children:
+  - T-0018
+  recurrence: null
+  completed_at: null
+  notes: 总目标：系统理解 LLM 推理链路，包括模型推理、KVCache、调度、吞吐和延迟优化。
+- id: T-0021
+  title: 搭建个人博客
+  kind: long
+  status: done
+  created_at: '2026-05-04'
+  due_at: null
+  priority: 3
+  tags:
+  - blog
+  parent: null
+  depends_on: []
+  children: []
+  recurrence: null
+  completed_at: null
+  notes: ''
+- id: T-0022
+  title: 写 MuP 博客
+  kind: long
+  status: doing
+  created_at: '2026-05-04'
+  due_at: null
+  priority: 3
+  tags:
+  - blog
+  - mup
+  parent: null
+  depends_on: []
+  children:
+  - T-0023
+  - T-0024
+  - T-0025
+  - T-0026
+  - T-0027
+  - T-0028
+  recurrence: null
+  completed_at: null
+  notes: MuP 博客系列总任务：覆盖初探 MuP、高阶 MuP，以及 MuP 之上四部曲。
+- id: T-0023
+  title: 初探 MuP
+  kind: short
+  status: done
+  created_at: '2026-05-04'
+  due_at: null
+  priority: 3
+  tags:
+  - blog
+  - mup
+  parent: T-0022
+  depends_on: []
+  children: []
+  recurrence: null
+  completed_at: null
+  notes: MuP 博客系列第 1 篇：整理 MuP 的核心问题、直觉、基本概念和入门示例。
+- id: T-0024
+  title: 高阶 MuP
+  kind: short
+  status: done
+  created_at: '2026-05-04'
+  due_at: null
+  priority: 3
+  tags:
+  - blog
+  - mup
+  parent: T-0022
+  depends_on:
+  - T-0023
+  children: []
+  recurrence: null
+  completed_at: null
+  notes: MuP 博客系列第 2 篇：深入讨论更高阶的 MuP 机制、实践细节和常见坑点。
+- id: T-0025
+  title: MuP 之上 1
+  kind: short
+  status: todo
+  created_at: '2026-05-04'
+  due_at: null
+  priority: 3
+  tags:
+  - blog
+  - mup
+  parent: T-0022
+  depends_on:
+  - T-0024
+  children: []
+  recurrence: null
+  completed_at: null
+  notes: MuP 博客系列第 3 篇：在 MuP 基础上展开第一篇延展主题。
+- id: T-0026
+  title: MuP 之上 2
+  kind: short
+  status: todo
+  created_at: '2026-05-04'
+  due_at: null
+  priority: 3
+  tags:
+  - blog
+  - mup
+  parent: T-0022
+  depends_on:
+  - T-0025
+  children: []
+  recurrence: null
+  completed_at: null
+  notes: MuP 博客系列第 4 篇：在 MuP 基础上展开第二篇延展主题。
+- id: T-0027
+  title: MuP 之上 3
+  kind: short
+  status: todo
+  created_at: '2026-05-04'
+  due_at: null
+  priority: 3
+  tags:
+  - blog
+  - mup
+  parent: T-0022
+  depends_on:
+  - T-0026
+  children: []
+  recurrence: null
+  completed_at: null
+  notes: MuP 博客系列第 5 篇：在 MuP 基础上展开第三篇延展主题，并收束系列总结。
+- id: T-0028
+  title: MuP 之上 4
+  kind: short
+  status: todo
+  created_at: '2026-05-05'
+  due_at: null
+  priority: 3
+  tags:
+  - blog
+  - mup
+  parent: T-0022
+  depends_on:
+  - T-0027
+  children: []
+  recurrence: null
+  completed_at: null
+  notes: MuP 之上四部曲第 4 篇：完成最后一篇延展主题，并收束 MuP 之上系列。
+- id: T-0029
+  title: 编写 UCX 源码解读博客
+  kind: short
+  status: todo
+  created_at: '2026-05-05'
+  due_at: null
+  priority: 2
+  tags:
+  - blog
+  - ucx
+  - source-reading
+  parent: null
+  depends_on:
+  - T-0003
+  children: []
+  recurrence: null
+  completed_at: null
+  notes: 围绕 UCX 源码主线写一篇解读博客，梳理通信抽象、关键模块、数据路径和与 RDMA/KVCache 传输相关的实现细节。
+- id: T-0030
+  title: 实现 v0.1 已完成任务收获提取
+  kind: short
+  status: done
+  created_at: '2026-05-05'
+  due_at: '2026-05-05'
+  priority: 3
+  tags:
+  - task-appender
+  - feature
+  - analytics
+  - release
+  parent: T-0013
+  depends_on: []
+  children: []
+  recurrence: null
+  completed_at: '2026-05-05'
+  notes: v0.1 功能：从已完成任务的标题、备注和标签中提取用户收获，并导出到 Markdown、图谱 HTML 和成长计分板 HTML。
+- id: T-0031
+  title: 实现 v0.1 成长计分板和经验等级导出
+  kind: short
+  status: done
+  created_at: '2026-05-05'
+  due_at: '2026-05-05'
+  priority: 3
+  tags:
+  - task-appender
+  - feature
+  - scoreboard
+  - release
+  parent: T-0013
+  depends_on:
+  - T-0030
+  children: []
+  recurrence: null
+  completed_at: '2026-05-05'
+  notes: v0.1 功能：把任务和产出量化为 XP、等级、任务池经验、技能标签和产出统计，并提供 exports/scoreboard.html。
+- id: T-0032
+  title: 发布 task_appender v0.1
+  kind: milestone
+  status: done
+  created_at: '2026-05-05'
+  due_at: '2026-05-05'
+  priority: 3
+  tags:
+  - task-appender
+  - release
+  parent: T-0013
+  depends_on:
+  - T-0030
+  - T-0031
+  children: []
+  recurrence: null
+  completed_at: '2026-05-05'
+  notes: 发布里程碑：收获提取、成长计分板、HTML 导出和默认任务库写入后的自动同步全部验证通过后打 tag。

@@ -44,6 +44,7 @@ class Task:
     depends_on: list[str] = field(default_factory=list)
     children: list[str] = field(default_factory=list)
     recurrence: dict[str, Any] | None = None
+    completed_at: str | None = None
     notes: str = ""
 
     @classmethod
@@ -61,6 +62,7 @@ class Task:
             depends_on=dedupe([str(ref).strip() for ref in raw.get("depends_on", []) if str(ref).strip()]),
             children=dedupe([str(ref).strip() for ref in raw.get("children", []) if str(ref).strip()]),
             recurrence=raw.get("recurrence"),
+            completed_at=none_if_empty(raw.get("completed_at")),
             notes=str(raw.get("notes", "")),
         )
 
@@ -78,6 +80,7 @@ class Task:
             "depends_on": list(self.depends_on),
             "children": list(self.children),
             "recurrence": self.recurrence,
+            "completed_at": self.completed_at,
             "notes": self.notes,
         }
 

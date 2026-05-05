@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from .graph import validate_data
+from .analytics import build_progress, format_progress_cli
 from .model import Task, TaskError, VALID_KINDS, VALID_STATUSES, dedupe, task_sort_key, today_iso
 from .recurrence import parse_daily_time, parse_due_text
 from .render import write_rendered
@@ -29,6 +30,7 @@ DEFAULT_EXPORTS = {
     "dot": APP_ROOT / "exports" / "graph.dot",
     "markdown": APP_ROOT / "exports" / "tasks.md",
     "html": APP_ROOT / "exports" / "graph.html",
+    "scoreboard": APP_ROOT / "exports" / "scoreboard.html",
 }
 
 
@@ -71,6 +73,9 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("today", help="list due and daily tasks for today")
     p.set_defaults(func=cmd_today)
 
+    p = sub.add_parser("scoreboard", help="show XP, levels, outputs, and gains")
+    p.set_defaults(func=cmd_scoreboard)
+
     p = sub.add_parser("done", help="mark task done")
     p.add_argument("ref")
     p.set_defaults(func=cmd_done)
@@ -85,6 +90,13 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--depends-on", required=True)
     p.set_defaults(func=cmd_unlink)
 
+    p = sub.add_parser("move", help="set or clear a task parent")
+    p.add_argument("--task", required=True)
+    parent_group = p.add_mutually_exclusive_group(required=True)
+    parent_group.add_argument("--parent", help="new parent task")
+    parent_group.add_argument("--root", "--clear-parent", action="store_true", help="move task to root level")
+    p.set_defaults(func=cmd_move)
+
     p = sub.add_parser("validate", help="validate task graph")
     p.set_defaults(func=cmd_validate)
 
@@ -92,6 +104,10 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--format", choices=sorted(DEFAULT_EXPORTS), default="mermaid")
     p.add_argument("--output", "-o")
     p.set_defaults(func=cmd_render)
+
+    p = sub.add_parser("sync", help="validate and render all exports")
+    p.add_argument("--output-dir", help="directory for all rendered export files")
+    p.set_defaults(func=cmd_sync)
 
     p = sub.add_parser("apply-inbox", help="parse markdown inbox bullets into tasks")
     p.add_argument("path", nargs="?", default=str(APP_ROOT / "TASK_INBOX.md"))
@@ -120,12 +136,13 @@ def cmd_add(args: argparse.Namespace, db_path: Path) -> int:
         parent=parent,
         depends_on=dependencies,
         recurrence=recurrence,
+        completed_at=today_iso() if args.status == "done" else None,
         notes=args.notes,
     )
     data["tasks"].append(task.to_dict())
     normalize_for_save(data)
     ensure_valid(data)
-    save_data(data, db_path)
+    save_data_and_autosync(data, db_path)
     print(f"created {task.id}: {task.title}")
     return 0
 
@@ -160,13 +177,22 @@ def cmd_today(args: argparse.Namespace, db_path: Path) -> int:
     return 0
 
 
+def cmd_scoreboard(args: argparse.Namespace, db_path: Path) -> int:
+    data = load_data(db_path)
+    normalize_for_save(data)
+    print(format_progress_cli(build_progress(data)))
+    return 0
+
+
 def cmd_done(args: argparse.Namespace, db_path: Path) -> int:
     data = load_data(db_path)
     task_id = resolve_task(data, args.ref)
-    tasks_by_id(data)[task_id]["status"] = "done"
+    task = tasks_by_id(data)[task_id]
+    task["status"] = "done"
+    task["completed_at"] = task.get("completed_at") or today_iso()
     normalize_for_save(data)
     ensure_valid(data)
-    save_data(data, db_path)
+    save_data_and_autosync(data, db_path)
     print(f"done {task_id}")
     return 0
 
@@ -181,7 +207,7 @@ def cmd_link(args: argparse.Namespace, db_path: Path) -> int:
     task["depends_on"] = dedupe(task.get("depends_on", []) + [dependency])
     normalize_for_save(data)
     ensure_valid(data)
-    save_data(data, db_path)
+    save_data_and_autosync(data, db_path)
     print(f"linked {dependency} -> {task_id}")
     return 0
 
@@ -194,8 +220,24 @@ def cmd_unlink(args: argparse.Namespace, db_path: Path) -> int:
     task["depends_on"] = [ref for ref in task.get("depends_on", []) if ref != dependency]
     normalize_for_save(data)
     ensure_valid(data)
-    save_data(data, db_path)
+    save_data_and_autosync(data, db_path)
     print(f"unlinked {dependency} -> {task_id}")
+    return 0
+
+
+def cmd_move(args: argparse.Namespace, db_path: Path) -> int:
+    data = load_data(db_path)
+    normalize_for_save(data)
+    task_id = resolve_task(data, args.task)
+    parent_id = None if args.root else resolve_task(data, args.parent)
+    if task_id == parent_id:
+        raise TaskError("task cannot be its own parent")
+    tasks_by_id(data)[task_id]["parent"] = parent_id
+    normalize_for_save(data)
+    ensure_valid(data)
+    save_data_and_autosync(data, db_path)
+    destination = parent_id if parent_id else "root"
+    print(f"moved {task_id} under {destination}")
     return 0
 
 
@@ -215,9 +257,26 @@ def cmd_validate(args: argparse.Namespace, db_path: Path) -> int:
 def cmd_render(args: argparse.Namespace, db_path: Path) -> int:
     data = load_data(db_path)
     ensure_valid(data)
-    output = Path(args.output).expanduser() if args.output else DEFAULT_EXPORTS[args.format]
+    output = Path(args.output).expanduser() if args.output else exports_for_db(db_path)[args.format]
     write_rendered(data, args.format, output)
     print(f"wrote {output}")
+    return 0
+
+
+def cmd_sync(args: argparse.Namespace, db_path: Path) -> int:
+    data = load_data(db_path)
+    result = validate_data(data)
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    if result.errors:
+        raise TaskError("; ".join(result.errors))
+    print("valid")
+    output_dir = Path(args.output_dir).expanduser() if args.output_dir else None
+    export_targets = exports_for_db(db_path)
+    for format_name, default_output in export_targets.items():
+        output = output_dir / default_output.name if output_dir else default_output
+        write_rendered(data, format_name, output)
+        print(f"wrote {output}")
     return 0
 
 
@@ -237,9 +296,26 @@ def cmd_apply_inbox(args: argparse.Namespace, db_path: Path) -> int:
         created.append(task.id)
     normalize_for_save(data)
     ensure_valid(data)
-    save_data(data, db_path)
+    save_data_and_autosync(data, db_path)
     print(f"created {len(created)} task(s): {', '.join(created) if created else '-'}")
     return 0
+
+
+def save_data_and_autosync(data: dict[str, Any], db_path: Path) -> None:
+    save_data(data, db_path)
+    for format_name, output in exports_for_db(db_path).items():
+        write_rendered(data, format_name, output)
+
+
+def is_default_db(db_path: Path) -> bool:
+    return db_path.expanduser().resolve() == DEFAULT_DATA_PATH.resolve()
+
+
+def exports_for_db(db_path: Path) -> dict[str, Path]:
+    if is_default_db(db_path):
+        return dict(DEFAULT_EXPORTS)
+    output_dir = db_path.expanduser().resolve().parent / "exports"
+    return {format_name: output_dir / default_output.name for format_name, default_output in DEFAULT_EXPORTS.items()}
 
 
 def ensure_valid(data: dict[str, Any]) -> None:

@@ -4,12 +4,6 @@ flowchart LR
   classDef daily fill:#dcfce7,stroke:#16a34a,color:#14532d;
   classDef short fill:#fff7ed,stroke:#ea580c,color:#1f2937;
   classDef done fill:#f1f5f9,stroke:#94a3b8,color:#64748b;
-  subgraph SG_T_0001["T-0001 学习 KVCache 分布式推理调度"]
-    direction TB
-    T_0001["学习 KVCache 分布式推理调度\nT-0001 · 长期 · 截止 05-19"]
-    T_0002["学习 Mooncake\nT-0002 · 短期 · 截止 05-10"]
-    T_0003["学习 UCX\nT-0003 · 短期 · 截止 05-12"]
-  end
   subgraph SG_T_0005["T-0005 学习 nccl-gin"]
     direction TB
     T_0005["学习 nccl-gin\nT-0005 · 长期 · 截止 -"]
@@ -31,8 +25,32 @@ flowchart LR
     T_0015["支持每日任务分时提醒\nT-0015 · 短期 · 截止 -"]
     T_0016["支持 DDL 日期手动修改\nT-0016 · 短期 · 截止 -"]
     T_0017["支持 DDL 日期自动修改策略\nT-0017 · 短期 · 截止 -"]
+    T_0030["实现 v0.1 已完成任务收获提取\nT-0030 · 短期 · 截止 05-05"]
+    T_0031["实现 v0.1 成长计分板和经验等级导出\nT-0031 · 短期 · 截止 05-05"]
+    T_0032["发布 task_appender v0.1\nT-0032 · 里程碑 · 截止 05-05"]
   end
+  subgraph SG_T_0020["T-0020 llm推理"]
+    direction TB
+    T_0020["llm推理\nT-0020 · 长期 · 截止 -"]
+    T_0018["学习 KVCache 调度\nT-0018 · 长期 · 截止 -"]
+  end
+  subgraph SG_T_0022["T-0022 写 MuP 博客"]
+    direction TB
+    T_0022["写 MuP 博客\nT-0022 · 长期 · 截止 -"]
+    T_0023["初探 MuP\nT-0023 · 短期 · 截止 -"]
+    T_0024["高阶 MuP\nT-0024 · 短期 · 截止 -"]
+    T_0025["MuP 之上 1\nT-0025 · 短期 · 截止 -"]
+    T_0026["MuP 之上 2\nT-0026 · 短期 · 截止 -"]
+    T_0027["MuP 之上 3\nT-0027 · 短期 · 截止 -"]
+    T_0028["MuP 之上 4\nT-0028 · 短期 · 截止 -"]
+  end
+  T_0001["学习 KVCache 分布式推理调度\nT-0001 · 长期 · 截止 05-19"]
+  T_0002["学习 Mooncake\nT-0002 · 短期 · 截止 05-10"]
+  T_0003["学习 UCX\nT-0003 · 短期 · 截止 05-12"]
   T_0004["学习 P/D 分离的基础\nT-0004 · 短期 · 截止 05-03"]
+  T_0019["学习 PagedAttention(vLLM) 和 Radix Tree(SGLang) 对 KV 的管理\nT-0019 · 短期 · 截止 -"]
+  T_0021["搭建个人博客\nT-0021 · 长期 · 截止 -"]
+  T_0029["编写 UCX 源码解读博客\nT-0029 · 短期 · 截止 -"]
   class T_0001 long;
   class T_0002 short;
   class T_0003 short;
@@ -50,6 +68,21 @@ flowchart LR
   class T_0015 short;
   class T_0016 short;
   class T_0017 short;
+  class T_0018 long;
+  class T_0019 short;
+  class T_0020 long;
+  class T_0021 done;
+  class T_0022 long;
+  class T_0023 done;
+  class T_0024 done;
+  class T_0025 short;
+  class T_0026 short;
+  class T_0027 short;
+  class T_0028 short;
+  class T_0029 short;
+  class T_0030 done;
+  class T_0031 done;
+  class T_0032 done;
   T_0001 --> T_0002
   T_0001 --> T_0003
   T_0004 -.-> T_0002
@@ -66,8 +99,29 @@ flowchart LR
   T_0013 --> T_0015
   T_0013 --> T_0016
   T_0013 --> T_0017
+  T_0013 --> T_0030
+  T_0013 --> T_0031
+  T_0013 --> T_0032
   T_0014 -.-> T_0015
   T_0016 -.-> T_0017
+  T_0018 --> T_0001
+  T_0018 --> T_0019
+  T_0020 --> T_0018
+  T_0022 --> T_0023
+  T_0022 --> T_0024
+  T_0022 --> T_0025
+  T_0022 --> T_0026
+  T_0022 --> T_0027
+  T_0022 --> T_0028
+  T_0023 -.-> T_0024
+  T_0024 -.-> T_0025
+  T_0025 -.-> T_0026
+  T_0026 -.-> T_0027
+  T_0027 -.-> T_0028
+  T_0003 -.-> T_0029
+  T_0030 -.-> T_0031
+  T_0030 -.-> T_0032
+  T_0031 -.-> T_0032
   linkStyle 0 stroke:#2563eb,stroke-width:1.6px;
   linkStyle 1 stroke:#2563eb,stroke-width:1.6px;
   linkStyle 2 stroke:#d97706,stroke-width:1.8px,stroke-dasharray:6 4;
@@ -84,5 +138,26 @@ flowchart LR
   linkStyle 13 stroke:#2563eb,stroke-width:1.6px;
   linkStyle 14 stroke:#2563eb,stroke-width:1.6px;
   linkStyle 15 stroke:#2563eb,stroke-width:1.6px;
-  linkStyle 16 stroke:#d97706,stroke-width:1.8px,stroke-dasharray:6 4;
-  linkStyle 17 stroke:#d97706,stroke-width:1.8px,stroke-dasharray:6 4;
+  linkStyle 16 stroke:#2563eb,stroke-width:1.6px;
+  linkStyle 17 stroke:#2563eb,stroke-width:1.6px;
+  linkStyle 18 stroke:#2563eb,stroke-width:1.6px;
+  linkStyle 19 stroke:#d97706,stroke-width:1.8px,stroke-dasharray:6 4;
+  linkStyle 20 stroke:#d97706,stroke-width:1.8px,stroke-dasharray:6 4;
+  linkStyle 21 stroke:#2563eb,stroke-width:1.6px;
+  linkStyle 22 stroke:#2563eb,stroke-width:1.6px;
+  linkStyle 23 stroke:#2563eb,stroke-width:1.6px;
+  linkStyle 24 stroke:#2563eb,stroke-width:1.6px;
+  linkStyle 25 stroke:#2563eb,stroke-width:1.6px;
+  linkStyle 26 stroke:#2563eb,stroke-width:1.6px;
+  linkStyle 27 stroke:#2563eb,stroke-width:1.6px;
+  linkStyle 28 stroke:#2563eb,stroke-width:1.6px;
+  linkStyle 29 stroke:#2563eb,stroke-width:1.6px;
+  linkStyle 30 stroke:#d97706,stroke-width:1.8px,stroke-dasharray:6 4;
+  linkStyle 31 stroke:#d97706,stroke-width:1.8px,stroke-dasharray:6 4;
+  linkStyle 32 stroke:#d97706,stroke-width:1.8px,stroke-dasharray:6 4;
+  linkStyle 33 stroke:#d97706,stroke-width:1.8px,stroke-dasharray:6 4;
+  linkStyle 34 stroke:#d97706,stroke-width:1.8px,stroke-dasharray:6 4;
+  linkStyle 35 stroke:#d97706,stroke-width:1.8px,stroke-dasharray:6 4;
+  linkStyle 36 stroke:#d97706,stroke-width:1.8px,stroke-dasharray:6 4;
+  linkStyle 37 stroke:#d97706,stroke-width:1.8px,stroke-dasharray:6 4;
+  linkStyle 38 stroke:#d97706,stroke-width:1.8px,stroke-dasharray:6 4;

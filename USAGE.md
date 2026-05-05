@@ -26,6 +26,12 @@ python -m taskmgr.cli list
 python -m taskmgr.cli today
 ```
 
+查看成长计分板：
+
+```bash
+python -m taskmgr.cli scoreboard
+```
+
 查看被前置任务阻塞的任务：
 
 ```bash
@@ -48,6 +54,18 @@ python -m taskmgr.cli render --format mermaid
 
 ```bash
 python -m taskmgr.cli render --format html
+```
+
+生成成长计分板 HTML：
+
+```bash
+python -m taskmgr.cli render --format scoreboard
+```
+
+校验并重新生成全部导出：
+
+```bash
+python -m taskmgr.cli sync
 ```
 
 ## 新增任务
@@ -94,11 +112,39 @@ python -m taskmgr.cli unlink --task T-0003 --depends-on T-0002
 
 CLI 会拒绝形成环的依赖。
 
+## 父子关系
+
+把任务移动到新的父任务下面：
+
+```bash
+python -m taskmgr.cli move --task T-0003 --parent T-0001
+```
+
+把任务移动回根层级：
+
+```bash
+python -m taskmgr.cli move --task T-0003 --root
+```
+
+CLI 只更新子任务的 `parent` 字段，并自动重建父任务的 `children`，同时拒绝形成环的父子关系。
+
 ## 完成任务
 
 ```bash
 python -m taskmgr.cli done T-0003
 ```
+
+`done` 会记录 `completed_at`。`add`、`done`、`link`、`unlink`、`move`、`apply-inbox` 成功写入后会自动重建任务图、Markdown 摘要和成长计分板导出。默认任务库写到仓库 `exports/`；使用 `--db` 指向其他任务库时，写到该任务库旁边的 `exports/`。
+
+## 成长系统
+
+成长系统是 v0.1 的派生视图，不需要手工维护第二份数据：
+
+- `done` / `archived` 任务会计入已获得 XP，并用于提取“我”的收获。
+- `todo` / `doing` / `blocked` 任务会计入任务池待领取 XP。
+- XP 由任务类型、优先级、依赖、子任务、标签和产出类型共同决定。
+- 产出类型包括博客/文章、Demo/实验、源码地图、复盘/总结、工具/版本发布。
+- HTML 计分板输出到 `exports/scoreboard.html`。
 
 ## 从 TASK_INBOX.md 导入
 
@@ -144,12 +190,25 @@ python -m taskmgr.cli render --format markdown
 python -m taskmgr.cli render --format html
 ```
 
+生成成长计分板 HTML：
+
+```bash
+python -m taskmgr.cli render --format scoreboard
+```
+
+一次生成全部导出：
+
+```bash
+python -m taskmgr.cli sync
+```
+
 对应输出：
 
 - `exports/graph.mmd`
 - `exports/graph.dot`
 - `exports/tasks.md`
 - `exports/graph.html`
+- `exports/scoreboard.html`
 
 ## 测试
 

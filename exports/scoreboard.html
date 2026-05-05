@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>成长计分板</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f8fafc;
+      --panel: #ffffff;
+      --line: #cbd5e1;
+      --text: #0f172a;
+      --muted: #64748b;
+      --blue: #2563eb;
+      --orange: #d97706;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
+    }
+    header {
+      padding: 24px 28px 14px;
+      background: #ffffff;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    h1 { margin: 0 0 8px; font-size: 24px; }
+    .meta { color: var(--muted); }
+    main { padding: 18px 28px 32px; }
+    code {
+      background: #f1f5f9;
+      padding: 1px 5px;
+      border-radius: 5px;
+      color: #334155;
+    }
+
+    .progress-shell {
+      display: grid;
+      gap: 14px;
+      margin: 0 0 22px;
+    }
+    .score-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(160px, 1fr));
+      gap: 10px;
+    }
+    .score-card {
+      background: var(--panel);
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 12px 14px;
+      min-height: 92px;
+    }
+    .score-label {
+      margin: 0 0 6px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .score-value {
+      margin: 0;
+      color: #111827;
+      font-size: 24px;
+      font-weight: 750;
+      letter-spacing: 0;
+    }
+    .score-note {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .level-bar {
+      height: 10px;
+      margin-top: 10px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: #e2e8f0;
+    }
+    .level-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #2563eb, #16a34a);
+    }
+    .progress-columns {
+      display: grid;
+      grid-template-columns: minmax(260px, 1.05fr) minmax(300px, 1.4fr);
+      gap: 12px;
+    }
+    .progress-panel {
+      background: var(--panel);
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 14px;
+    }
+    .progress-panel h2 {
+      margin: 0 0 10px;
+      font-size: 17px;
+      letter-spacing: 0;
+    }
+    .compact-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 0;
+      background: transparent;
+    }
+    .compact-table th,
+    .compact-table td {
+      padding: 7px 6px;
+      border-bottom: 1px solid #e2e8f0;
+      text-align: left;
+      vertical-align: top;
+    }
+    .compact-table th {
+      background: #f8fafc;
+      color: #334155;
+      font-weight: 650;
+    }
+    .compact-table tr:last-child td {
+      border-bottom: 0;
+    }
+    .gain-list {
+      display: grid;
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    .gain-item {
+      padding: 10px 0;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .gain-item:last-child {
+      border-bottom: 0;
+    }
+    .gain-head {
+      display: flex;
+      gap: 8px;
+      align-items: baseline;
+      justify-content: space-between;
+      color: #111827;
+      font-weight: 700;
+    }
+    .gain-body {
+      margin: 5px 0;
+      color: #334155;
+    }
+    .gain-meta {
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .score-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 9px;
+    }
+    .score-tag {
+      display: inline-flex;
+      gap: 5px;
+      align-items: center;
+      padding: 4px 8px;
+      border: 1px solid #dbe3ef;
+      border-radius: 999px;
+      color: #334155;
+      background: #f8fafc;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    @media (max-width: 920px) {
+      .score-grid,
+      .progress-columns {
+        grid-template-columns: 1fr;
+      }
+    }
+
+  </style>
+</head>
+<body>
+  <header>
+    <h1>成长计分板</h1>
+    <div class="meta">生成日期：2026-05-05；等级：Lv.5 任务图构建者；数据源：<code>data/tasks.yaml</code></div>
+  </header>
+  <main>
+    <section class="progress-shell" aria-label="成长计分板">
+      <div class="score-grid">
+        <article class="score-card">
+          <p class="score-label">等级</p>
+          <p class="score-value">Lv.5</p>
+          <p class="score-note">任务图构建者</p>
+          <div class="level-bar" aria-label="升级进度"><div class="level-fill" style="width: 30.0%"></div></div>
+          <p class="score-note">132/440 XP，还差 308</p>
+        </article>
+        <article class="score-card">
+          <p class="score-label">已获得经验</p>
+          <p class="score-value">1092</p>
+          <p class="score-note">来自已完成和已归档任务</p>
+        </article>
+        <article class="score-card">
+          <p class="score-label">任务完成</p>
+          <p class="score-value">6/32</p>
+          <p class="score-note">完成率 18.8%</p>
+        </article>
+        <article class="score-card">
+          <p class="score-label">任务池经验</p>
+          <p class="score-value">4296</p>
+          <p class="score-note">待办、进行中和阻塞任务可领取</p>
+        </article>
+      </div>
+      <div class="progress-columns">
+        <section class="progress-panel">
+          <h2>产出量化</h2>
+          <table class="compact-table">
+            <thead><tr><th>产出</th><th>数量</th><th>经验</th></tr></thead>
+            <tbody>
+              <tr><td>工具/版本发布</td><td>3</td><td>+270 XP</td></tr>
+              <tr><td>博客/文章</td><td>3</td><td>+210 XP</td></tr>
+              <tr><td>复盘/总结</td><td>1</td><td>+45 XP</td></tr>
+            </tbody>
+          </table>
+          <div class="score-tags">
+            <span class="score-tag">#blog 3 项 / 350 XP</span>
+            <span class="score-tag">#release 3 项 / 220 XP</span>
+            <span class="score-tag">#task-appender 3 项 / 220 XP</span>
+            <span class="score-tag">#mup 2 项 / 147 XP</span>
+            <span class="score-tag">#feature 2 项 / 74 XP</span>
+            <span class="score-tag">#scoreboard 1 项 / 38 XP</span>
+            <span class="score-tag">#analytics 1 项 / 36 XP</span>
+          </div>
+        </section>
+        <section class="progress-panel">
+          <h2>已完成任务收获</h2>
+          <ul class="gain-list">
+          <li class="gain-item"><div class="gain-head"><span>T-0032 · 个人工具演进</span><span>+292 XP</span></div><p class="gain-body">我把个人任务管理流程固化到本地优先的工具能力里</p><div class="gain-meta">发布 task_appender v0.1；证据：收获提取、成长计分板、HTML 导出和默认任务库写入后的自动同步全部验证通过后打 tag。；产出：工具/版本发布；标签：#task-appender #release</div></li>
+          <li class="gain-item"><div class="gain-head"><span>T-0031 · 个人工具演进</span><span>+155 XP</span></div><p class="gain-body">我把个人任务管理流程固化到本地优先的工具能力里</p><div class="gain-meta">实现 v0.1 成长计分板和经验等级导出；证据：把任务和产出量化为 XP、等级、任务池经验、技能标签和产出统计，并提供 exports/scoreboard.html。；产出：工具/版本发布；标签：#task-appender #feature #scoreboard #release</div></li>
+          <li class="gain-item"><div class="gain-head"><span>T-0030 · 个人工具演进</span><span>+147 XP</span></div><p class="gain-body">我把个人任务管理流程固化到本地优先的工具能力里</p><div class="gain-meta">实现 v0.1 已完成任务收获提取；证据：从已完成任务的标题、备注和标签中提取用户收获，并导出到 Markdown、图谱 HTML 和成长计分板 HTML。；产出：工具/版本发布；标签：#task-appender #feature #analytics #release</div></li>
+          <li class="gain-item"><div class="gain-head"><span>T-0024 · 可复用输出 / MuP 知识体系</span><span>+129 XP</span></div><p class="gain-body">我把学习内容组织成可以复用和分享的输出；我沉淀 MuP 的核心直觉、机制细节和延展主题</p><div class="gain-meta">高阶 MuP；证据：深入讨论更高阶的 MuP 机制、实践细节和常见坑点。；产出：博客/文章；标签：#blog #mup</div></li>
+          <li class="gain-item"><div class="gain-head"><span>T-0023 · 可复用输出 / MuP 知识体系 / 复盘习惯</span><span>+166 XP</span></div><p class="gain-body">我把学习内容组织成可以复用和分享的输出；我沉淀 MuP 的核心直觉、机制细节和延展主题；我加强了持续记录、每日回顾和知识沉淀的节奏</p><div class="gain-meta">初探 MuP；证据：整理 MuP 的核心问题、直觉、基本概念和入门示例。；产出：博客/文章，复盘/总结；标签：#blog #mup</div></li>
+          <li class="gain-item"><div class="gain-head"><span>T-0021 · 可复用输出</span><span>+203 XP</span></div><p class="gain-body">我把学习内容组织成可以复用和分享的输出</p><div class="gain-meta">搭建个人博客；证据：搭建个人博客；产出：博客/文章；标签：#blog</div></li>
+          </ul>
+        </section>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

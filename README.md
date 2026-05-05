@@ -41,6 +41,7 @@ exports/graph.mmd
 exports/graph.dot
 exports/tasks.md
 exports/graph.html
+exports/scoreboard.html
 ```
 
 主要源码：
@@ -49,6 +50,7 @@ exports/graph.html
 taskmgr/model.py       # 任务模型
 taskmgr/store.py       # YAML 读写和 ID 分配
 taskmgr/graph.py       # 校验和环检测
+taskmgr/analytics.py   # 收获提取、经验、等级和产出量化
 taskmgr/render.py      # Mermaid / DOT / Markdown / HTML 导出
 taskmgr/recurrence.py  # 每日任务和简单日期解析
 taskmgr/cli.py         # CLI 入口
@@ -80,12 +82,20 @@ python -m taskmgr.cli add --kind daily --title "每天复盘工程实验" --time
 python -m taskmgr.cli link --task T-0002 --depends-on T-0001
 ```
 
+调整父任务：
+
+```bash
+python -m taskmgr.cli move --task T-0002 --parent T-0001
+python -m taskmgr.cli move --task T-0002 --root
+```
+
 查看任务：
 
 ```bash
 python -m taskmgr.cli list
 python -m taskmgr.cli list --blocked
 python -m taskmgr.cli today
+python -m taskmgr.cli scoreboard
 ```
 
 校验和导出：
@@ -96,15 +106,32 @@ python -m taskmgr.cli render --format mermaid
 python -m taskmgr.cli render --format dot
 python -m taskmgr.cli render --format markdown
 python -m taskmgr.cli render --format html
+python -m taskmgr.cli render --format scoreboard
+```
+
+也可以一次完成校验和全部导出：
+
+```bash
+python -m taskmgr.cli sync
 ```
 
 HTML 输出是自包含文件：
 
 ```text
 exports/graph.html
+exports/scoreboard.html
 ```
 
-它内嵌 SVG 和 CSS，不需要浏览器插件。下载或拷贝后直接拖进浏览器即可查看。
+它们内嵌 SVG/HTML/CSS，不需要浏览器插件。`graph.html` 侧重任务图，`scoreboard.html` 侧重成长计分板、等级、经验、产出和已完成任务收获。
+
+## v0.1 成长系统
+
+v0.1 会从任务库自动推导两个激励视图：
+
+- 已完成任务收获：从 `done` / `archived` 任务的标题、备注和标签中提取“我完成了什么、沉淀了什么”。
+- 成长计分板：按任务类型、优先级、依赖复杂度、子任务数量、标签和产出类型计算 XP、等级、待领取经验、技能标签和产出数量。
+
+`add`、`done`、`link`、`unlink`、`move`、`apply-inbox` 成功写入后会自动重建全部导出文件，保证计分板和任务图同步。默认任务库写到仓库 `exports/`；使用 `--db` 指向其他任务库时，写到该任务库旁边的 `exports/`。
 
 从收件箱导入自然语言任务：
 

@@ -11,6 +11,7 @@ class TaskModelTests(unittest.TestCase):
             kind="long",
             tags=["triton", "gpu", "triton"],
             depends_on=["T-0002", "T-0002"],
+            completed_at="2026-05-05",
         )
 
         raw = task.to_dict()
@@ -20,6 +21,7 @@ class TaskModelTests(unittest.TestCase):
         self.assertEqual(restored.title, "学习 Triton")
         self.assertEqual(restored.tags, ["triton", "gpu"])
         self.assertEqual(restored.depends_on, ["T-0002"])
+        self.assertEqual(restored.completed_at, "2026-05-05")
 
 
 if __name__ == "__main__":

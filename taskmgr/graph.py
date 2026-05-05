@@ -49,6 +49,9 @@ def validate_data(data: dict[str, Any]) -> ValidationResult:
             result.errors.append(f"{task_id} invalid status: {task.get('status')}")
         validate_date_field(result, task_id, "created_at", task.get("created_at"), required=True)
         validate_date_field(result, task_id, "due_at", task.get("due_at"), required=False)
+        validate_date_field(result, task_id, "completed_at", task.get("completed_at"), required=False)
+        if task.get("completed_at") and task.get("status") not in {"done", "archived"}:
+            result.warnings.append(f"{task_id} completed_at is set but status is {task.get('status')}")
         if not isinstance(task.get("priority"), int) or not 1 <= task.get("priority") <= 5:
             result.errors.append(f"{task_id} priority must be an integer from 1 to 5")
         if not isinstance(task.get("tags"), list):
