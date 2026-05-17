@@ -255,7 +255,7 @@
 <body>
   <header>
     <h1>成长计分板</h1>
-    <div class="meta">生成日期：2026-05-05；等级：{== VI ==} Lv.6 长期工程师；数据源：<code>data/tasks.yaml</code></div>
+    <div class="meta">生成日期：2026-05-17；等级：{== VI ==} Lv.6 长期工程师；数据源：<code>data/tasks.yaml</code></div>
   </header>
   <main>
     <section class="progress-shell" aria-label="成长计分板">
@@ -266,22 +266,22 @@
           <p class="score-value">Lv.6</p>
           <p class="score-note">长期工程师</p>
           <p class="score-note">锻造长期工程核心</p>
-          <div class="level-bar" aria-label="升级进度"><div class="level-fill" style="width: 36.7%"></div></div>
-          <p class="score-note">191/520 XP，还差 329</p>
+          <div class="level-bar" aria-label="升级进度"><div class="level-fill" style="width: 98.8%"></div></div>
+          <p class="score-note">514/520 XP，还差 6</p>
         </article>
         <article class="score-card">
           <p class="score-label">已获得经验</p>
-          <p class="score-value">1591</p>
+          <p class="score-value">1914</p>
           <p class="score-note">来自已完成和已归档任务</p>
         </article>
         <article class="score-card">
           <p class="score-label">任务完成</p>
-          <p class="score-value">8/34</p>
-          <p class="score-note">完成率 23.5%</p>
+          <p class="score-value">11/50</p>
+          <p class="score-note">完成率 22.0%</p>
         </article>
         <article class="score-card">
           <p class="score-label">任务池经验</p>
-          <p class="score-value">4296</p>
+          <p class="score-value">6281</p>
           <p class="score-note">待办、进行中和阻塞任务可领取</p>
         </article>
       </div>
@@ -302,7 +302,7 @@
             <ul>
               <li>
                 <div class="skill-node">
-                  <div class="skill-node-title"><span>星核主干</span><span>解锁 · 1591 XP</span></div>
+                  <div class="skill-node-title"><span>星核主干</span><span>解锁 · 1914 XP</span></div>
                   <div class="skill-node-desc">XP 汇流核心</div>
                 </div>
                 <ul>
@@ -327,20 +327,20 @@
                     </ul>
                   </li>
                   <li>
-                    <div class="skill-node locked">
-                      <div class="skill-node-title"><span>推理秘术</span><span>封印 · 0 XP</span></div>
+                    <div class="skill-node">
+                      <div class="skill-node-title"><span>推理秘术</span><span>解锁 · 52 XP</span></div>
                       <div class="skill-node-desc">驱动 KV 星流</div>
                     </div>
                     <ul>
                       <li>
-                        <div class="skill-node locked">
-                          <div class="skill-node-title"><span>缓存咒术</span><span>封印 · 0 XP</span></div>
+                        <div class="skill-node">
+                          <div class="skill-node-title"><span>缓存咒术</span><span>解锁 · 26 XP</span></div>
                           <div class="skill-node-desc">驯服 KV 星河</div>
                         </div>
                       </li>
                       <li>
-                        <div class="skill-node locked">
-                          <div class="skill-node-title"><span>模型星门</span><span>封印 · 0 XP</span></div>
+                        <div class="skill-node">
+                          <div class="skill-node-title"><span>模型星门</span><span>解锁 · 26 XP</span></div>
                           <div class="skill-node-desc">推理链路展开</div>
                         </div>
                       </li>
@@ -404,6 +404,12 @@
                       </li>
                     </ul>
                   </li>
+                  <li>
+                    <div class="skill-node">
+                      <div class="skill-node-title"><span>游离符文</span><span>解锁 · 271 XP</span></div>
+                      <div class="skill-node-desc">未归档能量</div>
+                    </div>
+                  </li>
                 </ul>
               </li>
             </ul>
@@ -412,6 +418,9 @@
         <section class="progress-panel">
           <h2>已完成任务收获</h2>
           <ul class="gain-list">
+          <li class="gain-item"><div class="gain-head"><span>T-0051 · 长期</span><span>+167 XP</span></div><p class="gain-body">我完成了一个长期节点，推进任务图闭环</p><div class="gain-meta">学习模型训练动力学-SMD；证据：系统理解 SMD 与模型训练动力学的关系，梳理核心假设、优化视角、收敛直觉和可迁移到深度学习训练分析的结论。；产出：-；标签：#theory #training-dynamics #smd</div></li>
+          <li class="gain-item"><div class="gain-head"><span>T-0037 · LLM 推理系统</span><span>+78 XP</span></div><p class="gain-body">我推进了对 LLM 推理、KVCache、通信和调度链路的理解</p><div class="gain-meta">学习 PagedAttention；证据：理解 PagedAttention 的 block/page 抽象、物理块分配、逻辑到物理映射、连续/非连续 KVCache 管理和对吞吐/显存碎片的影响。；产出：-；标签：#kvcache #pagedattention #attention</div></li>
+          <li class="gain-item"><div class="gain-head"><span>T-0044 · LLM 推理系统</span><span>+78 XP</span></div><p class="gain-body">我推进了对 LLM 推理、KVCache、通信和调度链路的理解</p><div class="gain-meta">Pico-vLLM CPU 推理支持；证据：为 Pico-vLLM 增加 CPU 推理支持，明确 CPU backend、算子路径、调度兼容和基础正确性验证。；产出：-；标签：#pico-vllm #cpu #inference</div></li>
           <li class="gain-item"><div class="gain-head"><span>T-0034 · 源码阅读 / 个人工具演进</span><span>+344 XP</span></div><p class="gain-body">我形成了从入口到关键模块的数据路径和源码地图；我把个人任务管理流程固化到本地优先的工具能力里</p><div class="gain-meta">发布 task_appender v0.1.0rc1；证据：技能树、段位字符标志、等级谱注脚、导出和测试验证通过后打 v0.1.0rc1 标签并推送主线。；产出：源码地图，工具/版本发布；标签：#task-appender #release</div></li>
           <li class="gain-item"><div class="gain-head"><span>T-0033 · 个人工具演进</span><span>+155 XP</span></div><p class="gain-body">我把个人任务管理流程固化到本地优先的工具能力里</p><div class="gain-meta">实现 v0.1.0rc1 技能树和段位标志补丁；证据：成长计分板技能树改为单根树状结构，技能描述更简洁并带科技/魔幻风格，等级增加字符段位标志和等级谱注脚。；产出：工具/版本发布；标签：#task-appender #feature #scoreboard #release</div></li>
           <li class="gain-item"><div class="gain-head"><span>T-0032 · 个人工具演进</span><span>+292 XP</span></div><p class="gain-body">我把个人任务管理流程固化到本地优先的工具能力里</p><div class="gain-meta">发布 task_appender v0.1；证据：收获提取、成长计分板、HTML 导出和默认任务库写入后的自动同步全部验证通过后打 tag。；产出：工具/版本发布；标签：#task-appender #release</div></li>

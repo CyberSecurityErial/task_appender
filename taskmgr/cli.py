@@ -109,6 +109,11 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--output-dir", help="directory for all rendered export files")
     p.set_defaults(func=cmd_sync)
 
+    p = sub.add_parser("serve", help="serve local task graph UI with write APIs")
+    p.add_argument("--host", default="127.0.0.1")
+    p.add_argument("--port", type=int, default=8765)
+    p.set_defaults(func=cmd_serve)
+
     p = sub.add_parser("apply-inbox", help="parse markdown inbox bullets into tasks")
     p.add_argument("path", nargs="?", default=str(APP_ROOT / "TASK_INBOX.md"))
     p.set_defaults(func=cmd_apply_inbox)
@@ -277,6 +282,13 @@ def cmd_sync(args: argparse.Namespace, db_path: Path) -> int:
         output = output_dir / default_output.name if output_dir else default_output
         write_rendered(data, format_name, output)
         print(f"wrote {output}")
+    return 0
+
+
+def cmd_serve(args: argparse.Namespace, db_path: Path) -> int:
+    from .server import serve
+
+    serve(db_path, host=args.host, port=args.port)
     return 0
 
 

@@ -1,6 +1,6 @@
 # 个人任务图管理器
 
-这是一个本地优先的个人任务图管理器，适合配合 Codex 做长期维护。它不是 GUI 应用，而是一个可验证、可测试、可持续扩展的 CLI 工具。
+这是一个本地优先的个人任务图管理器，适合配合 Codex 做长期维护。CLI 仍是稳定入口，同时提供一个可选的本地 Web UI，用于拖拽任务图、右键改状态和新建任务。
 
 ## 核心概念
 
@@ -44,6 +44,12 @@ exports/graph.html
 exports/scoreboard.html
 ```
 
+发布说明存放在：
+
+```text
+RELEASE_NOTES.md
+```
+
 主要源码：
 
 ```text
@@ -57,6 +63,14 @@ taskmgr/cli.py         # CLI 入口
 ```
 
 ## 常用命令
+
+平时启动任务图 UI：
+
+```bash
+./start_ui.sh
+```
+
+然后打开 `http://127.0.0.1:8765/`。这个入口是默认推荐方式；在浏览器里可以拖动任务块、右键任务块修改状态或编辑任务信息、在图上新建任务。服务运行时不要关闭启动它的终端；停止服务就按 `Ctrl-C`。
 
 新增长期目标：
 
@@ -98,6 +112,14 @@ python -m taskmgr.cli today
 python -m taskmgr.cli scoreboard
 ```
 
+启动可写入任务库的本地 UI：
+
+```bash
+./start_ui.sh
+```
+
+默认地址是 `http://127.0.0.1:8765/`。在这个页面里可以拖动任务块、右键任务块修改状态或编辑标题、类型、状态、截止、优先级、父任务、子任务、依赖、标签和备注，也可以在图上新建任务。写入后会复用任务库校验并自动重建全部导出文件；误操作后可按 `Ctrl-Z` 撤销最近一次 UI 写入。CLI 的 `add`、`link`、`done`、`move` 等命令仍然保留。
+
 校验和导出：
 
 ```bash
@@ -122,7 +144,7 @@ exports/graph.html
 exports/scoreboard.html
 ```
 
-它们内嵌 SVG/HTML/CSS，不需要浏览器插件。`graph.html` 侧重任务图，`scoreboard.html` 侧重成长计分板、等级、经验、产出和已完成任务收获。
+它们内嵌 SVG/HTML/CSS/JS，不需要浏览器插件。`graph.html` 现在是可交互任务图 UI：任务块可以手动拖动，连线会跟随重绘，支持搜索、类型/状态筛选、缩放、右侧任务详情和浏览器本地布局保存。静态打开 `exports/graph.html` 时只能查看和调整本地布局；要右键改状态或新建任务，需要使用 `python -m taskmgr.cli serve` 启动本地服务。`scoreboard.html` 侧重成长计分板、等级、经验、产出和已完成任务收获。
 
 ## v0.1 成长系统
 
@@ -165,3 +187,7 @@ python task_appender.py validate
 ```
 
 Codex 应该优先通过 CLI 修改任务图。只有当 CLI 缺少必要能力时，才允许补充最小功能或直接编辑数据文件。
+
+## 发布规则
+
+每次发布新版本都必须更新 `RELEASE_NOTES.md`，写清楚该版本的 release note。

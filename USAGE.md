@@ -14,6 +14,15 @@ python task_appender.py <命令>
 
 ## 每天常用命令
 
+最常用的启动方式：
+
+```bash
+cd /home/echo/vibe_tools/task_appender
+./start_ui.sh
+```
+
+看到 `Open: http://127.0.0.1:8765/` 后，用浏览器打开这个地址。服务会占用当前终端；不用时按 `Ctrl-C` 停止。
+
 查看所有任务：
 
 ```bash
@@ -31,6 +40,14 @@ python -m taskmgr.cli today
 ```bash
 python -m taskmgr.cli scoreboard
 ```
+
+启动本地 UI：
+
+```bash
+./start_ui.sh
+```
+
+默认打开 `http://127.0.0.1:8765/`。服务模式可以写回 `data/tasks.yaml`：右键任务块修改状态或打开编辑表单，点击“新增任务”或在图空白处右键新建任务。编辑表单支持标题、类型、状态、截止、优先级、父任务、子任务、依赖、标签和备注。写入后会自动校验并重新生成全部导出文件；按 `Ctrl-Z` 可以撤销最近一次 UI 写入。
 
 查看被前置任务阻塞的任务：
 
@@ -50,7 +67,7 @@ python -m taskmgr.cli validate
 python -m taskmgr.cli render --format mermaid
 ```
 
-生成可直接拖进浏览器查看的 HTML 图：
+生成可直接拖进浏览器查看的交互式 HTML 图：
 
 ```bash
 python -m taskmgr.cli render --format html
@@ -192,6 +209,20 @@ python -m taskmgr.cli render --format markdown
 python -m taskmgr.cli render --format html
 ```
 
+`exports/graph.html` 包含可拖拽任务块、自动重绘连线、搜索、类型/状态筛选、缩放和任务详情面板。手动调整后的布局会保存到浏览器 `localStorage`；重新生成 HTML 后，只要任务 ID 集合不变，同一浏览器会继续使用该布局。
+
+直接打开 `exports/graph.html` 是静态模式，不能写任务库。需要 UI 新建任务或改状态时，运行：
+
+```bash
+./start_ui.sh
+```
+
+临时换端口：
+
+```bash
+PORT=8788 ./start_ui.sh
+```
+
 生成成长计分板 HTML：
 
 ```bash
@@ -231,3 +262,7 @@ python harness/run_harness.py
 ```bash
 python -m pytest
 ```
+
+## 发布
+
+每次发版本前都要更新 `RELEASE_NOTES.md`。`v0.1.1` 的 release note 是：支持了本地任务图 UI，而不是以前只能查看静态 graph。

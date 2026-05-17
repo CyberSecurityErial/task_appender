@@ -171,7 +171,7 @@ def write_rendered(data: dict[str, Any], fmt: str, output: Path) -> str:
     return content
 
 
-def render_html(data: dict[str, Any]) -> str:
+def render_html(data: dict[str, Any], *, live_api: bool = False) -> str:
     tasks = sorted(data.get("tasks", []), key=lambda task: str(task.get("id", "")))
     progress = build_progress(data)
     svg = render_svg_graph(data)
@@ -181,6 +181,8 @@ def render_html(data: dict[str, Any]) -> str:
     today = date.today().isoformat()
     level = progress["level"]
     progress_sections = render_progress_sections(progress)
+    api_enabled = "1" if live_api else "0"
+    mode_label = "本地服务模式" if live_api else "静态导出模式"
     return f"""<!doctype html>
 <html lang="zh-CN">
 <head>
@@ -234,10 +236,248 @@ def render_html(data: dict[str, Any]) -> str:
       overflow: auto;
       background: var(--panel);
       border: 1px solid #e2e8f0;
-      border-radius: 12px;
+      border-radius: 8px;
       box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
     }}
-    .graph-shell svg {{ display: block; min-width: 100%; }}
+    .graph-shell svg {{ display: block; min-width: 100%; touch-action: none; }}
+    .graph-ui {{
+      display: grid;
+      gap: 12px;
+      margin-bottom: 24px;
+    }}
+    .graph-toolbar {{
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      padding: 10px;
+      background: var(--panel);
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+    }}
+    .graph-toolbar input,
+    .graph-toolbar select {{
+      min-height: 34px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      background: #fff;
+      color: #0f172a;
+      font: inherit;
+    }}
+    .graph-toolbar input {{
+      width: min(280px, 100%);
+      padding: 6px 9px;
+    }}
+    .graph-toolbar select {{
+      padding: 6px 28px 6px 9px;
+    }}
+    .graph-toolbar button {{
+      min-height: 34px;
+      padding: 6px 11px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      background: #f8fafc;
+      color: #0f172a;
+      font: inherit;
+      cursor: pointer;
+    }}
+    .graph-toolbar button:hover {{
+      border-color: #94a3b8;
+      background: #f1f5f9;
+    }}
+    .graph-toolbar button.primary {{
+      border-color: #2563eb;
+      background: #2563eb;
+      color: #fff;
+    }}
+    .graph-toolbar button.primary:hover {{
+      border-color: #1d4ed8;
+      background: #1d4ed8;
+    }}
+    .zoom-control {{
+      display: inline-flex;
+      gap: 7px;
+      align-items: center;
+      color: #334155;
+      white-space: nowrap;
+    }}
+    .zoom-control input {{
+      width: 120px;
+      min-height: auto;
+    }}
+    .layout-status {{
+      margin-left: auto;
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }}
+    .graph-stage {{
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 280px;
+      gap: 12px;
+      align-items: start;
+    }}
+    .task-inspector {{
+      position: sticky;
+      top: 12px;
+      background: var(--panel);
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 13px;
+    }}
+    .task-inspector h2 {{
+      margin: 0 0 4px;
+      font-size: 17px;
+    }}
+    .task-inspector .inspector-id {{
+      margin: 0 0 12px;
+      color: var(--muted);
+      font-size: 12px;
+    }}
+    .task-inspector dl {{
+      display: grid;
+      grid-template-columns: 64px minmax(0, 1fr);
+      gap: 7px 10px;
+      margin: 0;
+    }}
+    .task-inspector dt {{
+      color: var(--muted);
+      font-size: 12px;
+    }}
+    .task-inspector dd {{
+      margin: 0;
+      min-width: 0;
+      overflow-wrap: anywhere;
+      color: #1f2937;
+    }}
+    .task-node {{
+      cursor: grab;
+      outline: none;
+      transition: opacity 0.12s ease;
+    }}
+    .task-node.dragging {{
+      cursor: grabbing;
+    }}
+    .task-node:focus-visible .node-card,
+    .task-node.is-selected .node-card {{
+      stroke: #111827;
+      stroke-width: 3;
+    }}
+    .task-node.is-hidden {{
+      opacity: 0.13;
+      pointer-events: none;
+    }}
+    .graph-edge {{
+      transition: opacity 0.12s ease;
+    }}
+    .graph-edge.is-hidden {{
+      opacity: 0.06;
+    }}
+    .task-context-menu {{
+      position: fixed;
+      z-index: 50;
+      display: grid;
+      min-width: 150px;
+      overflow: hidden;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.18);
+    }}
+    .task-context-menu[hidden] {{
+      display: none;
+    }}
+    .task-context-menu button {{
+      padding: 8px 11px;
+      border: 0;
+      border-bottom: 1px solid #e2e8f0;
+      background: #fff;
+      color: #0f172a;
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+    }}
+    .task-context-menu button:last-child {{
+      border-bottom: 0;
+    }}
+    .task-context-menu button:hover {{
+      background: #f1f5f9;
+    }}
+    .task-dialog-backdrop {{
+      position: fixed;
+      inset: 0;
+      z-index: 60;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      background: rgba(15, 23, 42, 0.34);
+    }}
+    .task-dialog-backdrop[hidden] {{
+      display: none;
+    }}
+    .task-dialog {{
+      display: grid;
+      gap: 11px;
+      width: min(520px, 100%);
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      background: #fff;
+      padding: 16px;
+      box-shadow: 0 24px 60px rgba(15, 23, 42, 0.22);
+    }}
+    .task-dialog h2 {{
+      margin: 0;
+      font-size: 19px;
+    }}
+    .task-dialog label {{
+      display: grid;
+      gap: 5px;
+      color: #334155;
+      font-size: 12px;
+      font-weight: 650;
+    }}
+    .task-dialog input,
+    .task-dialog select,
+    .task-dialog textarea {{
+      width: 100%;
+      min-height: 34px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 7px 9px;
+      color: #0f172a;
+      font: inherit;
+      font-weight: 400;
+    }}
+    .task-dialog textarea {{
+      min-height: 74px;
+      resize: vertical;
+    }}
+    .dialog-grid {{
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }}
+    .dialog-actions {{
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 2px;
+    }}
+    .dialog-actions button {{
+      min-height: 34px;
+      padding: 6px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      background: #f8fafc;
+      color: #0f172a;
+      font: inherit;
+      cursor: pointer;
+    }}
+    .dialog-actions button.primary {{
+      border-color: #2563eb;
+      background: #2563eb;
+      color: #fff;
+    }}
     .legend {{
       display: flex;
       flex-wrap: wrap;
@@ -280,6 +520,18 @@ def render_html(data: dict[str, Any]) -> str:
       body {{ background: #fff; }}
       header, main {{ padding: 12px; }}
       .graph-shell {{ overflow: visible; box-shadow: none; }}
+      .graph-toolbar, .task-inspector, .task-context-menu, .task-dialog-backdrop {{ display: none; }}
+    }}
+    @media (max-width: 1040px) {{
+      .graph-stage {{
+        grid-template-columns: 1fr;
+      }}
+      .task-inspector {{
+        position: static;
+      }}
+      .dialog-grid {{
+        grid-template-columns: 1fr;
+      }}
     }}
 {progress_css()}
   </style>
@@ -287,7 +539,7 @@ def render_html(data: dict[str, Any]) -> str:
 <body>
   <header>
     <h1>任务关系图</h1>
-    <div class="meta">生成日期：{html.escape(today)}；数据源：<code>data/tasks.yaml</code>；文本图：<code>exports/graph.mmd</code> / <code>exports/graph.dot</code></div>
+    <div class="meta">生成日期：{html.escape(today)}；{html.escape(mode_label)}；数据源：<code>data/tasks.yaml</code>；文本图：<code>exports/graph.mmd</code> / <code>exports/graph.dot</code></div>
     <div class="summary">
       <span class="pill">总任务 {len(tasks)}</span>
       <span class="pill">短期 {counts.get("short", 0)}</span>
@@ -306,10 +558,95 @@ def render_html(data: dict[str, Any]) -> str:
     <div class="legend">
       <span><i class="swatch child"></i>父子拆解</span>
       <span><i class="swatch dependency"></i>执行依赖</span>
-      <span>横向滚动可查看完整图；浏览器缩放可放大细节。</span>
     </div>
-    <section class="graph-shell">
+    <section class="graph-ui" data-task-graph-ui data-api-enabled="{api_enabled}">
+      <div class="graph-toolbar" aria-label="任务图工具栏">
+        <input id="graph-search" type="search" placeholder="搜索任务、标签、备注" autocomplete="off">
+        <select id="kind-filter" aria-label="任务类型筛选">
+          <option value="">全部类型</option>
+          <option value="short">短期</option>
+          <option value="long">长期</option>
+          <option value="daily">每日</option>
+          <option value="milestone">里程碑</option>
+        </select>
+        <select id="status-filter" aria-label="任务状态筛选">
+          <option value="">全部状态</option>
+          <option value="todo">待办</option>
+          <option value="doing">进行中</option>
+          <option value="blocked">被阻塞</option>
+          <option value="done">已完成</option>
+          <option value="archived">已归档</option>
+        </select>
+        <button type="button" id="new-task" class="primary">新增任务</button>
+        <button type="button" id="undo-change">撤销</button>
+        <button type="button" id="save-layout">保存布局</button>
+        <button type="button" id="reset-layout">重置布局</button>
+        <label class="zoom-control">缩放 <input id="graph-zoom" type="range" min="70" max="150" value="100" step="5"><span id="zoom-value">100%</span></label>
+        <span class="layout-status" id="layout-status">布局已就绪</span>
+      </div>
+      <div class="graph-stage">
+        <section class="graph-shell">
 {svg}
+        </section>
+        <aside class="task-inspector" id="task-inspector" aria-live="polite">
+          <h2 id="inspector-title">任务详情</h2>
+          <p class="inspector-id" id="inspector-id">未选择</p>
+          <dl>
+            <dt>状态</dt><dd id="inspector-status">-</dd>
+            <dt>类型</dt><dd id="inspector-kind">-</dd>
+            <dt>截止</dt><dd id="inspector-due">-</dd>
+            <dt>标签</dt><dd id="inspector-tags">-</dd>
+            <dt>父任务</dt><dd id="inspector-parent">-</dd>
+            <dt>依赖</dt><dd id="inspector-deps">-</dd>
+            <dt>子任务</dt><dd id="inspector-children">-</dd>
+          </dl>
+        </aside>
+      </div>
+      <div class="task-context-menu" id="task-context-menu" hidden>
+        <button type="button" data-action="edit">编辑任务</button>
+        <button type="button" data-status="todo">标为待办</button>
+        <button type="button" data-status="doing">标为进行中</button>
+        <button type="button" data-status="blocked">标为阻塞</button>
+        <button type="button" data-status="done">标为完成</button>
+        <button type="button" data-status="archived">标为归档</button>
+      </div>
+      <div class="task-dialog-backdrop" id="task-dialog-backdrop" hidden>
+        <form class="task-dialog" id="new-task-form">
+          <h2 id="task-dialog-title">新建任务</h2>
+          <label>标题 <input name="title" id="new-task-title" required maxlength="160"></label>
+          <div class="dialog-grid">
+            <label>类型
+              <select name="kind">
+                <option value="short">短期</option>
+                <option value="long">长期</option>
+                <option value="daily">每日</option>
+                <option value="milestone">里程碑</option>
+              </select>
+            </label>
+            <label>状态
+              <select name="status">
+                <option value="todo">待办</option>
+                <option value="doing">进行中</option>
+                <option value="blocked">被阻塞</option>
+                <option value="done">已完成</option>
+                <option value="archived">已归档</option>
+              </select>
+            </label>
+            <label>截止 <input name="due_at" type="date"></label>
+            <label>优先级 <input name="priority" type="number" min="1" max="5" step="1" value="3"></label>
+            <label>父任务 <input name="parent" placeholder="T-0001"></label>
+            <label>子任务 <input name="children" placeholder="T-0002, T-0003"></label>
+            <label>标签 <input name="tags" placeholder="tag1, tag2"></label>
+            <label>依赖 <input name="depends_on" placeholder="T-0002, T-0003"></label>
+            <label>每日时间 <input name="time" placeholder="21:00"></label>
+          </div>
+          <label>备注 <textarea name="notes"></textarea></label>
+          <div class="dialog-actions">
+            <button type="button" id="cancel-new-task">取消</button>
+            <button type="submit" class="primary" id="task-dialog-submit">创建</button>
+          </div>
+        </form>
+      </div>
     </section>
     <h2>任务明细</h2>
     <table>
@@ -321,9 +658,523 @@ def render_html(data: dict[str, Any]) -> str:
       </tbody>
     </table>
   </main>
+  <script>
+{graph_ui_script()}
+  </script>
 </body>
 </html>
 """
+
+
+def graph_ui_script() -> str:
+    return r"""(function () {
+    const root = document.querySelector("[data-task-graph-ui]");
+    if (!root) return;
+
+    const svg = root.querySelector("svg.task-graph");
+    if (!svg) return;
+
+    const apiEnabled = root.dataset.apiEnabled === "1";
+    const nodeWidth = Number(svg.dataset.nodeWidth || 230);
+    const nodeHeight = Number(svg.dataset.nodeHeight || 86);
+    const nodes = Array.from(svg.querySelectorAll(".task-node"));
+    const edges = Array.from(svg.querySelectorAll(".graph-edge"));
+    const nodeMap = new Map(nodes.map((node) => [node.dataset.taskId, node]));
+    const layoutKey = svg.dataset.layoutKey || "taskmgr:graph-layout";
+    const searchInput = root.querySelector("#graph-search");
+    const kindFilter = root.querySelector("#kind-filter");
+    const statusFilter = root.querySelector("#status-filter");
+    const newTaskButton = root.querySelector("#new-task");
+    const undoButton = root.querySelector("#undo-change");
+    const saveButton = root.querySelector("#save-layout");
+    const resetButton = root.querySelector("#reset-layout");
+    const zoomInput = root.querySelector("#graph-zoom");
+    const zoomValue = root.querySelector("#zoom-value");
+    const layoutStatus = root.querySelector("#layout-status");
+    const contextMenu = root.querySelector("#task-context-menu");
+    const taskDialog = root.querySelector("#task-dialog-backdrop");
+    const taskForm = root.querySelector("#new-task-form");
+    const taskDialogTitle = root.querySelector("#task-dialog-title");
+    const taskDialogSubmit = root.querySelector("#task-dialog-submit");
+    const cancelNewTask = root.querySelector("#cancel-new-task");
+    const newTaskTitle = root.querySelector("#new-task-title");
+    const inspector = {
+      title: root.querySelector("#inspector-title"),
+      id: root.querySelector("#inspector-id"),
+      status: root.querySelector("#inspector-status"),
+      kind: root.querySelector("#inspector-kind"),
+      due: root.querySelector("#inspector-due"),
+      tags: root.querySelector("#inspector-tags"),
+      parent: root.querySelector("#inspector-parent"),
+      deps: root.querySelector("#inspector-deps"),
+      children: root.querySelector("#inspector-children"),
+    };
+    const baseWidth = Number(svg.getAttribute("width") || 1120);
+    const baseHeight = Number(svg.getAttribute("height") || 720);
+    let zoom = 1;
+    let drag = null;
+    let selected = null;
+    let statusTimer = null;
+    let contextNode = null;
+    let dialogMode = "create";
+    let editingTaskId = null;
+
+    function asNumber(value, fallback) {
+      const number = Number(value);
+      return Number.isFinite(number) ? number : fallback;
+    }
+
+    function readPosition(node) {
+      return {
+        x: asNumber(node.dataset.x, asNumber(node.dataset.defaultX, 0)),
+        y: asNumber(node.dataset.y, asNumber(node.dataset.defaultY, 0)),
+      };
+    }
+
+    function setPosition(node, x, y) {
+      const nextX = Math.max(0, Math.round(x));
+      const nextY = Math.max(0, Math.round(y));
+      node.dataset.x = String(nextX);
+      node.dataset.y = String(nextY);
+      node.setAttribute("transform", "translate(" + nextX + " " + nextY + ")");
+    }
+
+    function edgePath(start, end) {
+      let x1 = start.x + nodeWidth;
+      let y1 = start.y + nodeHeight / 2;
+      let x2 = end.x;
+      let y2 = end.y + nodeHeight / 2;
+      if (x2 <= x1) {
+        x1 = start.x + nodeWidth / 2;
+        y1 = start.y + nodeHeight;
+        x2 = end.x + nodeWidth / 2;
+        y2 = end.y;
+      }
+      const mid = Math.max(x1 + 42, (x1 + x2) / 2);
+      return "M " + x1 + " " + y1 + " C " + mid + " " + y1 + ", " + mid + " " + y2 + ", " + x2 + " " + y2;
+    }
+
+    function updateEdges() {
+      for (const edge of edges) {
+        const from = nodeMap.get(edge.dataset.from);
+        const to = nodeMap.get(edge.dataset.to);
+        if (!from || !to) continue;
+        edge.setAttribute("d", edgePath(readPosition(from), readPosition(to)));
+      }
+    }
+
+    function collectLayout() {
+      const layout = {};
+      for (const node of nodes) {
+        layout[node.dataset.taskId] = readPosition(node);
+      }
+      return layout;
+    }
+
+    function showStatus(message) {
+      if (!layoutStatus) return;
+      layoutStatus.textContent = message;
+      window.clearTimeout(statusTimer);
+      statusTimer = window.setTimeout(() => {
+        layoutStatus.textContent = "布局已就绪";
+      }, 1800);
+    }
+
+    function requireApi() {
+      if (apiEnabled) return true;
+      showStatus("请用 serve 启动后写入任务库");
+      return false;
+    }
+
+    async function apiRequest(path, options) {
+      if (!requireApi()) return null;
+      const response = await window.fetch(path, {
+        ...options,
+        headers: {
+          "Content-Type": "application/json",
+          ...(options && options.headers ? options.headers : {}),
+        },
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(payload.error || "请求失败");
+      }
+      return payload;
+    }
+
+    function saveLayout(message) {
+      try {
+        window.localStorage.setItem(layoutKey, JSON.stringify(collectLayout()));
+        showStatus(message || "布局已保存");
+      } catch (error) {
+        showStatus("本地存储不可用");
+      }
+    }
+
+    function loadLayout() {
+      try {
+        const raw = window.localStorage.getItem(layoutKey);
+        if (!raw) return;
+        const layout = JSON.parse(raw);
+        for (const [taskId, position] of Object.entries(layout)) {
+          const node = nodeMap.get(taskId);
+          if (!node || !position) continue;
+          setPosition(node, asNumber(position.x, asNumber(node.dataset.defaultX, 0)), asNumber(position.y, asNumber(node.dataset.defaultY, 0)));
+        }
+        showStatus("已载入布局");
+      } catch (error) {
+        showStatus("布局载入失败");
+      }
+    }
+
+    function resetLayout() {
+      for (const node of nodes) {
+        setPosition(node, asNumber(node.dataset.defaultX, 0), asNumber(node.dataset.defaultY, 0));
+      }
+      try {
+        window.localStorage.removeItem(layoutKey);
+      } catch (error) {
+        // Ignore storage failures; the visible layout is already reset.
+      }
+      updateEdges();
+      showStatus("布局已重置");
+    }
+
+    function selectNode(node) {
+      if (!node) return;
+      if (selected) selected.classList.remove("is-selected");
+      selected = node;
+      node.classList.add("is-selected");
+      inspector.title.textContent = node.dataset.title || "任务详情";
+      inspector.id.textContent = node.dataset.taskId || "-";
+      inspector.status.textContent = node.dataset.statusLabel || "-";
+      inspector.kind.textContent = node.dataset.kindLabel || "-";
+      inspector.due.textContent = node.dataset.due || "-";
+      inspector.tags.textContent = node.dataset.tags || "-";
+      inspector.parent.textContent = node.dataset.parent || "-";
+      inspector.deps.textContent = node.dataset.deps || "-";
+      inspector.children.textContent = node.dataset.children || "-";
+    }
+
+    function closestTaskNode(target) {
+      if (!target || !target.closest) return null;
+      return target.closest(".task-node");
+    }
+
+    function hideContextMenu() {
+      if (!contextMenu) return;
+      contextMenu.hidden = true;
+      contextNode = null;
+    }
+
+    function openContextMenu(node, event) {
+      if (!contextMenu) return;
+      event.preventDefault();
+      contextNode = node;
+      selectNode(node);
+      contextMenu.hidden = false;
+      const width = contextMenu.offsetWidth || 150;
+      const height = contextMenu.offsetHeight || 180;
+      const x = Math.min(event.clientX, window.innerWidth - width - 8);
+      const y = Math.min(event.clientY, window.innerHeight - height - 8);
+      contextMenu.style.left = Math.max(8, x) + "px";
+      contextMenu.style.top = Math.max(8, y) + "px";
+    }
+
+    function cleanDash(value) {
+      const text = String(value || "").trim();
+      return text === "-" ? "" : text;
+    }
+
+    function setFormValue(name, value) {
+      if (!taskForm || !taskForm.elements[name]) return;
+      taskForm.elements[name].value = cleanDash(value);
+    }
+
+    function openTaskDialog(node) {
+      if (!requireApi() || !taskDialog || !taskForm) return;
+      hideContextMenu();
+      taskForm.reset();
+      if (node) {
+        dialogMode = "edit";
+        editingTaskId = node.dataset.taskId;
+        if (taskDialogTitle) taskDialogTitle.textContent = "编辑任务";
+        if (taskDialogSubmit) taskDialogSubmit.textContent = "保存";
+        setFormValue("title", node.dataset.title);
+        setFormValue("kind", node.dataset.kind);
+        setFormValue("status", node.dataset.status);
+        setFormValue("due_at", node.dataset.due);
+        setFormValue("priority", node.dataset.priority || "3");
+        setFormValue("parent", node.dataset.parent);
+        setFormValue("children", node.dataset.children);
+        setFormValue("tags", node.dataset.tags);
+        setFormValue("depends_on", node.dataset.deps);
+        setFormValue("time", node.dataset.time);
+        setFormValue("notes", node.dataset.notes);
+      } else {
+        dialogMode = "create";
+        editingTaskId = null;
+        if (taskDialogTitle) taskDialogTitle.textContent = "新建任务";
+        if (taskDialogSubmit) taskDialogSubmit.textContent = "创建";
+        setFormValue("kind", "short");
+        setFormValue("status", "todo");
+        setFormValue("priority", "3");
+      }
+      taskDialog.hidden = false;
+      window.setTimeout(() => {
+        if (newTaskTitle) newTaskTitle.focus();
+      }, 0);
+    }
+
+    function closeTaskDialog() {
+      if (taskDialog) taskDialog.hidden = true;
+      dialogMode = "create";
+      editingTaskId = null;
+    }
+
+    function splitRefs(value) {
+      return String(value || "")
+        .split(/[,\s，、]+/)
+        .map((item) => item.trim())
+        .filter(Boolean);
+    }
+
+    async function changeTaskStatus(taskId, status) {
+      try {
+        showStatus("正在写入状态");
+        await apiRequest("/api/tasks/" + encodeURIComponent(taskId), {
+          method: "PATCH",
+          body: JSON.stringify({ status }),
+        });
+        showStatus("状态已写入");
+        window.location.reload();
+      } catch (error) {
+        showStatus(error.message || "状态写入失败");
+      }
+    }
+
+    async function undoLastChange() {
+      try {
+        showStatus("正在撤销");
+        await apiRequest("/api/undo", {
+          method: "POST",
+          body: JSON.stringify({}),
+        });
+        showStatus("已撤销");
+        window.location.reload();
+      } catch (error) {
+        showStatus(error.message || "无法撤销");
+      }
+    }
+
+    function payloadFromForm() {
+      const form = new FormData(taskForm);
+      return {
+        title: String(form.get("title") || "").trim(),
+        kind: String(form.get("kind") || "short"),
+        status: String(form.get("status") || "todo"),
+        due_at: String(form.get("due_at") || "").trim() || null,
+        priority: Number(form.get("priority") || 3),
+        parent: String(form.get("parent") || "").trim() || null,
+        children: splitRefs(form.get("children")),
+        tags: splitRefs(form.get("tags")),
+        depends_on: splitRefs(form.get("depends_on")),
+        time: String(form.get("time") || "").trim() || null,
+        notes: String(form.get("notes") || "").trim(),
+      };
+    }
+
+    async function saveTaskFromForm(event) {
+      event.preventDefault();
+      if (!taskForm) return;
+      const payload = payloadFromForm();
+      if (!payload.title) {
+        showStatus("标题不能为空");
+        return;
+      }
+      try {
+        const isEdit = dialogMode === "edit" && editingTaskId;
+        showStatus(isEdit ? "正在保存任务" : "正在创建任务");
+        if (isEdit) {
+          await apiRequest("/api/tasks/" + encodeURIComponent(editingTaskId), {
+            method: "PATCH",
+            body: JSON.stringify(payload),
+          });
+        } else {
+          await apiRequest("/api/tasks", {
+            method: "POST",
+            body: JSON.stringify(payload),
+          });
+        }
+        closeTaskDialog();
+        showStatus(isEdit ? "任务已保存" : "任务已创建");
+        window.location.reload();
+      } catch (error) {
+        showStatus(error.message || "任务保存失败");
+      }
+    }
+
+    function textForSearch(node) {
+      return [
+        node.dataset.taskId,
+        node.dataset.title,
+        node.dataset.tags,
+        node.dataset.notes,
+        node.dataset.parent,
+        node.dataset.deps,
+        node.dataset.children,
+      ].join(" ").toLowerCase();
+    }
+
+    function nodeMatches(node) {
+      const query = (searchInput && searchInput.value ? searchInput.value : "").trim().toLowerCase();
+      const kind = kindFilter && kindFilter.value;
+      const status = statusFilter && statusFilter.value;
+      if (kind && node.dataset.kind !== kind) return false;
+      if (status && node.dataset.status !== status) return false;
+      if (query && !textForSearch(node).includes(query)) return false;
+      return true;
+    }
+
+    function applyFilters() {
+      const visible = new Set();
+      for (const node of nodes) {
+        const matched = nodeMatches(node);
+        node.classList.toggle("is-hidden", !matched);
+        if (matched) visible.add(node.dataset.taskId);
+      }
+      for (const edge of edges) {
+        edge.classList.toggle("is-hidden", !(visible.has(edge.dataset.from) && visible.has(edge.dataset.to)));
+      }
+      if (selected && selected.classList.contains("is-hidden")) {
+        selectNode(nodes.find((node) => !node.classList.contains("is-hidden")));
+      }
+    }
+
+    function applyZoom() {
+      zoom = Math.max(0.7, Math.min(1.5, Number(zoomInput && zoomInput.value ? zoomInput.value : 100) / 100));
+      svg.style.width = Math.round(baseWidth * zoom) + "px";
+      svg.style.height = Math.round(baseHeight * zoom) + "px";
+      if (zoomValue) zoomValue.textContent = Math.round(zoom * 100) + "%";
+    }
+
+    function moveNodeByKeyboard(node, event) {
+      const keySteps = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
+      const direction = keySteps[event.key];
+      if (!direction) return;
+      event.preventDefault();
+      const current = readPosition(node);
+      const step = event.shiftKey ? 40 : 16;
+      setPosition(node, current.x + direction[0] * step, current.y + direction[1] * step);
+      updateEdges();
+      saveLayout("布局已保存");
+    }
+
+    function isEditableTarget(target) {
+      if (!target || !target.closest) return false;
+      return Boolean(target.closest("input, textarea, select, [contenteditable='true']"));
+    }
+
+    function endDrag() {
+      if (!drag) return;
+      drag.node.classList.remove("dragging");
+      if (drag.moved) saveLayout("布局已保存");
+      drag = null;
+    }
+
+    for (const node of nodes) {
+      node.addEventListener("pointerdown", (event) => {
+        if (event.button !== 0) return;
+        const current = readPosition(node);
+        drag = {
+          node,
+          startX: event.clientX,
+          startY: event.clientY,
+          originX: current.x,
+          originY: current.y,
+          moved: false,
+        };
+        node.setPointerCapture(event.pointerId);
+        node.classList.add("dragging");
+        selectNode(node);
+      });
+      node.addEventListener("pointermove", (event) => {
+        if (!drag || drag.node !== node) return;
+        const dx = (event.clientX - drag.startX) / zoom;
+        const dy = (event.clientY - drag.startY) / zoom;
+        if (Math.abs(dx) > 1 || Math.abs(dy) > 1) drag.moved = true;
+        setPosition(node, drag.originX + dx, drag.originY + dy);
+        updateEdges();
+      });
+      node.addEventListener("pointerup", endDrag);
+      node.addEventListener("pointercancel", endDrag);
+      node.addEventListener("click", () => selectNode(node));
+      node.addEventListener("contextmenu", (event) => openContextMenu(node, event));
+      node.addEventListener("keydown", (event) => moveNodeByKeyboard(node, event));
+    }
+
+    svg.addEventListener("contextmenu", (event) => {
+      if (closestTaskNode(event.target)) return;
+      event.preventDefault();
+      openTaskDialog(null);
+    });
+    document.addEventListener("click", (event) => {
+      if (contextMenu && !contextMenu.hidden && !contextMenu.contains(event.target)) {
+        hideContextMenu();
+      }
+    });
+    document.addEventListener("keydown", (event) => {
+      if ((event.ctrlKey || event.metaKey) && !event.shiftKey && event.key.toLowerCase() === "z" && !isEditableTarget(event.target)) {
+        event.preventDefault();
+        undoLastChange();
+        return;
+      }
+      if (event.key === "Escape") {
+        hideContextMenu();
+        closeTaskDialog();
+      }
+    });
+    if (contextMenu) {
+      const editButton = contextMenu.querySelector("button[data-action='edit']");
+      if (editButton) {
+        editButton.addEventListener("click", () => {
+          const node = contextNode || selected;
+          hideContextMenu();
+          if (!node) return;
+          openTaskDialog(node);
+        });
+      }
+      for (const button of contextMenu.querySelectorAll("button[data-status]")) {
+        button.addEventListener("click", () => {
+          const node = contextNode || selected;
+          hideContextMenu();
+          if (!node) return;
+          changeTaskStatus(node.dataset.taskId, button.dataset.status);
+        });
+      }
+    }
+    if (newTaskButton) newTaskButton.addEventListener("click", () => openTaskDialog(null));
+    if (undoButton) undoButton.addEventListener("click", undoLastChange);
+    if (cancelNewTask) cancelNewTask.addEventListener("click", closeTaskDialog);
+    if (taskDialog) {
+      taskDialog.addEventListener("click", (event) => {
+        if (event.target === taskDialog) closeTaskDialog();
+      });
+    }
+    if (taskForm) taskForm.addEventListener("submit", saveTaskFromForm);
+    if (searchInput) searchInput.addEventListener("input", applyFilters);
+    if (kindFilter) kindFilter.addEventListener("change", applyFilters);
+    if (statusFilter) statusFilter.addEventListener("change", applyFilters);
+    if (saveButton) saveButton.addEventListener("click", () => saveLayout("布局已保存"));
+    if (resetButton) resetButton.addEventListener("click", resetLayout);
+    if (zoomInput) zoomInput.addEventListener("input", applyZoom);
+
+    applyZoom();
+    loadLayout();
+    updateEdges();
+    applyFilters();
+    selectNode(nodes[0]);
+  })();"""
 
 
 def render_scoreboard_html(data: dict[str, Any]) -> str:
@@ -736,7 +1587,7 @@ def render_gain_list(progress: dict[str, Any]) -> str:
 def render_svg_graph(data: dict[str, Any]) -> str:
     tasks = sorted(data.get("tasks", []), key=lambda task: str(task.get("id", "")))
     if not tasks:
-        return '      <svg viewBox="0 0 760 220" width="760" height="220" role="img" aria-label="空任务图"><text x="40" y="90" fill="#64748b">暂无任务</text></svg>'
+        return '          <svg class="task-graph" viewBox="0 0 760 220" width="760" height="220" role="img" aria-label="空任务图"><text x="40" y="90" fill="#64748b">暂无任务</text></svg>'
 
     by_id = {task["id"]: task for task in tasks}
     grouped_ids: set[str] = set()
@@ -782,8 +1633,9 @@ def render_svg_graph(data: dict[str, Any]) -> str:
         y_cursor += section_h + 36
 
     height = max(260, y_cursor + 20)
+    layout_key = "taskmgr:graph-layout:" + "-".join(str(task.get("id", "")) for task in tasks)
     parts = [
-        f'      <svg viewBox="0 0 {width} {height}" width="{width}" height="{height}" role="img" aria-label="任务关系图">',
+        f'          <svg class="task-graph" viewBox="0 0 {width} {height}" width="{width}" height="{height}" role="img" aria-label="任务关系图" data-node-width="{node_w}" data-node-height="{node_h}" data-layout-key="{svg_escape(layout_key)}">',
         "        <defs>",
         '          <marker id="arrow-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#2563eb"/></marker>',
         '          <marker id="arrow-orange" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#d97706"/></marker>',
@@ -793,11 +1645,15 @@ def render_svg_graph(data: dict[str, Any]) -> str:
         parts.append(f'        <rect x="{x}" y="{y}" width="{w}" height="{h}" rx="18" fill="#f8fafc" stroke="#dbe3ef"/>')
         parts.append(f'        <text x="{x + 18}" y="{y + 31}" fill="#334155" font-size="17" font-weight="700">{svg_escape(title)}</text>')
 
+    parts.append('        <g class="graph-edges">')
     parts.extend(render_svg_edges(tasks, by_id, positions, node_w, node_h))
+    parts.append("        </g>")
+    parts.append('        <g class="graph-nodes">')
     for task in tasks:
         if task["id"] in positions:
             parts.append(render_svg_node(task, *positions[task["id"]], node_w, node_h))
-    parts.append("      </svg>")
+    parts.append("        </g>")
+    parts.append("          </svg>")
     return "\n".join(parts)
 
 
@@ -843,10 +1699,36 @@ def render_svg_edges(
             continue
         for child_id in task.get("children", []):
             if child_id in by_id and child_id in positions:
-                parts.append(svg_edge(start, positions[child_id], node_w, node_h, "#2563eb", "arrow-blue", dashed=False))
+                parts.append(
+                    svg_edge(
+                        start,
+                        positions[child_id],
+                        node_w,
+                        node_h,
+                        "#2563eb",
+                        "arrow-blue",
+                        dashed=False,
+                        from_id=task["id"],
+                        to_id=child_id,
+                        edge_type="child",
+                    )
+                )
         for dependency in task.get("depends_on", []):
             if dependency in by_id and dependency in positions:
-                parts.append(svg_edge(positions[dependency], start, node_w, node_h, "#d97706", "arrow-orange", dashed=True))
+                parts.append(
+                    svg_edge(
+                        positions[dependency],
+                        start,
+                        node_w,
+                        node_h,
+                        "#d97706",
+                        "arrow-orange",
+                        dashed=True,
+                        from_id=dependency,
+                        to_id=task["id"],
+                        edge_type="dependency",
+                    )
+                )
     return parts
 
 
@@ -859,6 +1741,9 @@ def svg_edge(
     marker: str,
     *,
     dashed: bool,
+    from_id: str,
+    to_id: str,
+    edge_type: str,
 ) -> str:
     x1 = start[0] + node_w
     y1 = start[1] + node_h // 2
@@ -872,7 +1757,8 @@ def svg_edge(
     mid = max(x1 + 42, (x1 + x2) // 2)
     dash = ' stroke-dasharray="7 6"' if dashed else ""
     return (
-        f'        <path d="M {x1} {y1} C {mid} {y1}, {mid} {y2}, {x2} {y2}" '
+        f'          <path class="graph-edge {svg_escape(edge_type)}" data-from="{svg_escape(from_id)}" data-to="{svg_escape(to_id)}" '
+        f'data-edge-type="{svg_escape(edge_type)}" d="M {x1} {y1} C {mid} {y1}, {mid} {y2}, {x2} {y2}" '
         f'fill="none" stroke="{color}" stroke-width="2.2"{dash} marker-end="url(#{marker})" opacity="0.9"/>'
     )
 
@@ -884,18 +1770,32 @@ def render_svg_node(task: dict[str, Any], x: int, y: int, width: int, height: in
     kind = KIND_LABELS.get(task.get("kind"), task.get("kind"))
     due = short_due(task.get("due_at"))
     tags = " ".join(f"#{tag}" for tag in task.get("tags", [])[:2])
+    all_tags = ", ".join(str(tag) for tag in task.get("tags", []))
+    dependencies = ", ".join(str(ref) for ref in task.get("depends_on", []))
+    children = ", ".join(str(ref) for ref in task.get("children", []))
+    notes = str(task.get("notes", ""))
+    title = str(task.get("title", ""))
+    recurrence_time = ""
+    if isinstance(task.get("recurrence"), dict):
+        recurrence_time = str(task["recurrence"].get("time") or "")
     text_parts = [
-        f'        <g id="{svg_escape(safe_node(task["id"]))}">',
-        f'          <rect x="{x}" y="{y}" width="{width}" height="{height}" rx="12" fill="{fill}" stroke="{stroke}" stroke-width="2"/>',
-        f'          <text x="{x + 14}" y="{y + 21}" fill="#0f172a" font-size="14" font-weight="700">{svg_escape(task["id"])}</text>',
-        f'          <text x="{x + width - 14}" y="{y + 21}" text-anchor="end" fill="#475569" font-size="12">{svg_escape(str(status))}/{svg_escape(str(kind))}</text>',
+        f'          <g id="{svg_escape(safe_node(task["id"]))}" class="task-node" tabindex="0" role="button" aria-label="{svg_escape(task["id"] + " " + title)}" '
+        f'data-task-id="{svg_escape(task["id"])}" data-title="{svg_escape(title)}" data-kind="{svg_escape(str(task.get("kind", "")))}" '
+        f'data-kind-label="{svg_escape(str(kind))}" data-status="{svg_escape(str(task.get("status", "")))}" data-status-label="{svg_escape(str(status))}" '
+        f'data-due="{svg_escape(str(task.get("due_at") or "-"))}" data-priority="{svg_escape(str(task.get("priority", 3)))}" '
+        f'data-time="{svg_escape(recurrence_time)}" data-tags="{svg_escape(all_tags)}" data-notes="{svg_escape(notes)}" '
+        f'data-parent="{svg_escape(str(task.get("parent") or "-"))}" data-deps="{svg_escape(dependencies or "-")}" data-children="{svg_escape(children or "-")}" '
+        f'data-default-x="{x}" data-default-y="{y}" data-x="{x}" data-y="{y}" transform="translate({x} {y})">',
+        f'            <rect class="node-card" x="0" y="0" width="{width}" height="{height}" rx="8" fill="{fill}" stroke="{stroke}" stroke-width="2"/>',
+        f'            <text x="14" y="21" fill="#0f172a" font-size="14" font-weight="700">{svg_escape(task["id"])}</text>',
+        f'            <text x="{width - 14}" y="21" text-anchor="end" fill="#475569" font-size="12">{svg_escape(str(status))}/{svg_escape(str(kind))}</text>',
     ]
-    title_y = y + 43
+    title_y = 43
     for index, line in enumerate(title_lines):
-        text_parts.append(f'          <text x="{x + 14}" y="{title_y + index * 17}" fill="#111827" font-size="14">{svg_escape(line)}</text>')
+        text_parts.append(f'            <text x="14" y="{title_y + index * 17}" fill="#111827" font-size="14">{svg_escape(line)}</text>')
     meta = f"{due}" + (f" · {tags}" if tags else "")
-    text_parts.append(f'          <text x="{x + 14}" y="{y + height - 13}" fill="#64748b" font-size="12">{svg_escape(meta)}</text>')
-    text_parts.append("        </g>")
+    text_parts.append(f'            <text x="14" y="{height - 13}" fill="#64748b" font-size="12">{svg_escape(meta)}</text>')
+    text_parts.append("          </g>")
     return "\n".join(text_parts)
 
 

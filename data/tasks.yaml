@@ -1,5 +1,5 @@
 version: 1
-next_id: 35
+next_id: 52
 tasks:
 - id: T-0001
   title: 学习 KVCache 分布式推理调度
@@ -41,7 +41,7 @@ tasks:
 - id: T-0003
   title: 学习 UCX
   kind: short
-  status: todo
+  status: blocked
   created_at: '2026-04-29'
   due_at: '2026-05-12'
   priority: 2
@@ -316,28 +316,9 @@ tasks:
   depends_on: []
   children:
   - T-0001
-  - T-0019
   recurrence: null
   completed_at: null
   notes: 总目标：系统理解 KVCache 调度问题，包括单机 KV 管理、缓存复用、调度策略，以及分布式推理中的 KVCache 分配、迁移和传输。
-- id: T-0019
-  title: 学习 PagedAttention(vLLM) 和 Radix Tree(SGLang) 对 KV 的管理
-  kind: short
-  status: todo
-  created_at: '2026-04-29'
-  due_at: null
-  priority: 1
-  tags:
-  - kvcache
-  - vllm
-  - sglang
-  - paged-attention
-  parent: T-0018
-  depends_on: []
-  children: []
-  recurrence: null
-  completed_at: null
-  notes: 对比 vLLM 的 PagedAttention 和 SGLang 的 Radix Tree/KV cache 管理方式，重点理解 KV block/page 的组织、复用、回收和命中路径。
 - id: T-0020
   title: llm推理
   kind: long
@@ -602,3 +583,321 @@ tasks:
   recurrence: null
   completed_at: '2026-05-05'
   notes: 发布候选版本：技能树、段位字符标志、等级谱注脚、导出和测试验证通过后打 v0.1.0rc1 标签并推送主线。
+- id: T-0035
+  title: 支持个人博客中英文双语
+  kind: short
+  status: todo
+  created_at: '2026-05-06'
+  due_at: null
+  priority: 2
+  tags:
+  - blog
+  - i18n
+  - bilingual
+  parent: null
+  depends_on: []
+  children: []
+  recurrence: null
+  completed_at: null
+  notes: 为个人博客增加中文/英文双语支持，包括语言切换入口、文章语言版本组织和基础导航文案适配。
+- id: T-0036
+  title: 学习推理框架里面 KVCache 的寻址
+  kind: long
+  status: todo
+  created_at: '2026-05-10'
+  due_at: null
+  priority: 1
+  tags:
+  - kvcache
+  - inference
+  - attention
+  - serving
+  parent: null
+  depends_on: []
+  children:
+  - T-0037
+  - T-0038
+  - T-0039
+  - T-0040
+  - T-0041
+  - T-0042
+  recurrence: null
+  completed_at: null
+  notes: 系统理解推理框架中 KVCache 寻址与管理方式，重点覆盖 PagedAttention、RadixAttention、pico-vLLM、vLLM、SGLang 以及其他开放实现。
+- id: T-0037
+  title: 学习 PagedAttention
+  kind: short
+  status: done
+  created_at: '2026-05-10'
+  due_at: null
+  priority: 1
+  tags:
+  - kvcache
+  - pagedattention
+  - attention
+  parent: T-0036
+  depends_on: []
+  children: []
+  recurrence: null
+  completed_at: '2026-05-14'
+  notes: 理解 PagedAttention 的 block/page 抽象、物理块分配、逻辑到物理映射、连续/非连续 KVCache 管理和对吞吐/显存碎片的影响。
+- id: T-0038
+  title: 学习 RadixAttention
+  kind: short
+  status: todo
+  created_at: '2026-05-10'
+  due_at: null
+  priority: 1
+  tags:
+  - kvcache
+  - radixattention
+  - attention
+  parent: T-0036
+  depends_on: []
+  children: []
+  recurrence: null
+  completed_at: null
+  notes: 理解 RadixAttention/Radix Tree 的前缀复用、KVCache 索引、插入/匹配/淘汰路径，以及它和请求调度的关系。
+- id: T-0039
+  title: 学习 pico-vLLM 的 PA+RA
+  kind: short
+  status: todo
+  created_at: '2026-05-10'
+  due_at: null
+  priority: 1
+  tags:
+  - kvcache
+  - pico-vllm
+  - pagedattention
+  - radixattention
+  parent: T-0036
+  depends_on:
+  - T-0037
+  - T-0038
+  children: []
+  recurrence: null
+  completed_at: null
+  notes: 阅读 pico-vLLM 中 PagedAttention 与 RadixAttention 组合实现，关注块表、前缀树、调度入口和 KVCache 命中路径。
+- id: T-0040
+  title: 学习正统 vLLM 的 PagedAttention
+  kind: short
+  status: todo
+  created_at: '2026-05-10'
+  due_at: null
+  priority: 1
+  tags:
+  - kvcache
+  - vllm
+  - pagedattention
+  parent: T-0036
+  depends_on:
+  - T-0037
+  children: []
+  recurrence: null
+  completed_at: null
+  notes: 阅读 vLLM 正统实现中的 PagedAttention、block manager、scheduler、KVCache block table 和 CUDA kernel 调用链。
+- id: T-0041
+  title: 学习正统 SGLang 的 RadixAttention
+  kind: short
+  status: todo
+  created_at: '2026-05-10'
+  due_at: null
+  priority: 1
+  tags:
+  - kvcache
+  - sglang
+  - radixattention
+  parent: T-0036
+  depends_on:
+  - T-0038
+  children: []
+  recurrence: null
+  completed_at: null
+  notes: 阅读 SGLang 正统实现中的 RadixAttention、prefix cache、radix tree 节点管理、请求匹配和缓存淘汰策略。
+- id: T-0042
+  title: 学习其他不成熟但开放的 KVCache 管理方案
+  kind: short
+  status: todo
+  created_at: '2026-05-10'
+  due_at: null
+  priority: 2
+  tags:
+  - kvcache
+  - serving
+  - research
+  - open-source
+  parent: T-0036
+  depends_on:
+  - T-0039
+  - T-0040
+  - T-0041
+  children: []
+  recurrence: null
+  completed_at: null
+  notes: 调研其他开源但尚不成熟的 KVCache 管理方案，比较寻址结构、分配策略、复用机制、淘汰策略和工程复杂度。
+- id: T-0043
+  title: Pico-vLLM开发
+  kind: long
+  status: todo
+  created_at: '2026-05-13'
+  due_at: null
+  priority: 1
+  tags:
+  - pico-vllm
+  - inference
+  - development
+  parent: null
+  depends_on: []
+  children:
+  - T-0044
+  - T-0045
+  - T-0046
+  recurrence: null
+  completed_at: null
+  notes: Pico-vLLM 开发总任务：围绕 CPU 推理、profiling/memtrack 插件、blockManager 重构等方向推进推理框架能力。
+- id: T-0044
+  title: Pico-vLLM CPU 推理支持
+  kind: short
+  status: done
+  created_at: '2026-05-13'
+  due_at: null
+  priority: 1
+  tags:
+  - pico-vllm
+  - cpu
+  - inference
+  parent: T-0043
+  depends_on: []
+  children: []
+  recurrence: null
+  completed_at: '2026-05-13'
+  notes: 为 Pico-vLLM 增加 CPU 推理支持，明确 CPU backend、算子路径、调度兼容和基础正确性验证。
+- id: T-0045
+  title: Pico-vLLM profiling 和 memtrack 插件支持
+  kind: short
+  status: todo
+  created_at: '2026-05-13'
+  due_at: null
+  priority: 1
+  tags:
+  - pico-vllm
+  - profiling
+  - memtrack
+  - plugin
+  parent: T-0043
+  depends_on: []
+  children: []
+  recurrence: null
+  completed_at: null
+  notes: 为 Pico-vLLM 增加 profiling 与 memtrack 插件能力，支持性能采样、显存/内存跟踪、指标导出和插件化接入。
+- id: T-0046
+  title: Pico-vLLM blockManager 重构
+  kind: short
+  status: todo
+  created_at: '2026-05-13'
+  due_at: null
+  priority: 1
+  tags:
+  - pico-vllm
+  - block-manager
+  - storage
+  - mla
+  - attention
+  parent: T-0043
+  depends_on: []
+  children: []
+  recurrence: null
+  completed_at: null
+  notes: 重构 Pico-vLLM blockManager，使其适配更多存储后端，并支持更多类型的类 MLA 注意力结构与 KVCache 管理需求。
+- id: T-0047
+  title: 强化学习框架攻关
+  kind: long
+  status: todo
+  created_at: '2026-05-14'
+  due_at: null
+  priority: 1
+  tags:
+  - reinforcement-learning
+  - rl-framework
+  - post-training
+  parent: null
+  depends_on: []
+  children:
+  - T-0048
+  - T-0049
+  - T-0050
+  recurrence: null
+  completed_at: null
+  notes: 围绕 LLM 后训练强化学习流程、verl 框架骨架、自研训推组件集成等方向推进强化学习框架攻关。
+- id: T-0048
+  title: 学习 LLM 后训练强化学习流程
+  kind: short
+  status: todo
+  created_at: '2026-05-14'
+  due_at: null
+  priority: 1
+  tags:
+  - reinforcement-learning
+  - llm
+  - post-training
+  parent: T-0047
+  depends_on: []
+  children: []
+  recurrence: null
+  completed_at: null
+  notes: 系统学习 LLM 后训练中的强化学习流程，覆盖数据/奖励建模、rollout、优势估计、策略更新、评估与工程闭环。
+- id: T-0049
+  title: 学习 verl 框架大致骨架
+  kind: short
+  status: todo
+  created_at: '2026-05-14'
+  due_at: null
+  priority: 1
+  tags:
+  - reinforcement-learning
+  - verl
+  - framework
+  parent: T-0047
+  depends_on:
+  - T-0048
+  children: []
+  recurrence: null
+  completed_at: null
+  notes: 阅读 verl 框架整体骨架，梳理训练入口、worker/engine 分层、rollout、reward、PPO/GRPO 等算法路径和配置组织。
+- id: T-0050
+  title: 实现自研 RL 框架原型
+  kind: short
+  status: todo
+  created_at: '2026-05-14'
+  due_at: null
+  priority: 1
+  tags:
+  - reinforcement-learning
+  - femotron
+  - pico-vllm
+  - training
+  - inference
+  parent: T-0047
+  depends_on:
+  - T-0049
+  children: []
+  recurrence: null
+  completed_at: null
+  notes: 设计并实现自研 RL 框架原型，以 femotron 作为训练组件、pico-vLLM 作为推理/rollout 组件，打通训推交互、样本生成、奖励计算和策略更新闭环。
+- id: T-0051
+  title: 学习模型训练动力学-SMD
+  kind: long
+  status: done
+  created_at: '2026-05-15'
+  due_at: null
+  priority: 2
+  tags:
+  - theory
+  - training-dynamics
+  - smd
+  parent: null
+  depends_on: []
+  children: []
+  recurrence: null
+  completed_at: '2026-05-17'
+  notes: 理论学习任务：系统理解 SMD 与模型训练动力学的关系，梳理核心假设、优化视角、收敛直觉和可迁移到深度学习训练分析的结论。

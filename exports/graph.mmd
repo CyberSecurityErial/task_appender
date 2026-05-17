@@ -46,13 +46,38 @@ flowchart LR
     T_0027["MuP 之上 3\nT-0027 · 短期 · 截止 -"]
     T_0028["MuP 之上 4\nT-0028 · 短期 · 截止 -"]
   end
+  subgraph SG_T_0036["T-0036 学习推理框架里面 KVCache 的寻址"]
+    direction TB
+    T_0036["学习推理框架里面 KVCache 的寻址\nT-0036 · 长期 · 截止 -"]
+    T_0037["学习 PagedAttention\nT-0037 · 短期 · 截止 -"]
+    T_0038["学习 RadixAttention\nT-0038 · 短期 · 截止 -"]
+    T_0039["学习 pico-vLLM 的 PA+RA\nT-0039 · 短期 · 截止 -"]
+    T_0040["学习正统 vLLM 的 PagedAttention\nT-0040 · 短期 · 截止 -"]
+    T_0041["学习正统 SGLang 的 RadixAttention\nT-0041 · 短期 · 截止 -"]
+    T_0042["学习其他不成熟但开放的 KVCache 管理方案\nT-0042 · 短期 · 截止 -"]
+  end
+  subgraph SG_T_0043["T-0043 Pico-vLLM开发"]
+    direction TB
+    T_0043["Pico-vLLM开发\nT-0043 · 长期 · 截止 -"]
+    T_0044["Pico-vLLM CPU 推理支持\nT-0044 · 短期 · 截止 -"]
+    T_0045["Pico-vLLM profiling 和 memtrack 插件支持\nT-0045 · 短期 · 截止 -"]
+    T_0046["Pico-vLLM blockManager 重构\nT-0046 · 短期 · 截止 -"]
+  end
+  subgraph SG_T_0047["T-0047 强化学习框架攻关"]
+    direction TB
+    T_0047["强化学习框架攻关\nT-0047 · 长期 · 截止 -"]
+    T_0048["学习 LLM 后训练强化学习流程\nT-0048 · 短期 · 截止 -"]
+    T_0049["学习 verl 框架大致骨架\nT-0049 · 短期 · 截止 -"]
+    T_0050["实现自研 RL 框架原型\nT-0050 · 短期 · 截止 -"]
+  end
   T_0001["学习 KVCache 分布式推理调度\nT-0001 · 长期 · 截止 05-19"]
   T_0002["学习 Mooncake\nT-0002 · 短期 · 截止 05-10"]
   T_0003["学习 UCX\nT-0003 · 短期 · 截止 05-12"]
   T_0004["学习 P/D 分离的基础\nT-0004 · 短期 · 截止 05-03"]
-  T_0019["学习 PagedAttention(vLLM) 和 Radix Tree(SGLang) 对 KV 的管理\nT-0019 · 短期 · 截止 -"]
   T_0021["搭建个人博客\nT-0021 · 长期 · 截止 -"]
   T_0029["编写 UCX 源码解读博客\nT-0029 · 短期 · 截止 -"]
+  T_0035["支持个人博客中英文双语\nT-0035 · 短期 · 截止 -"]
+  T_0051["学习模型训练动力学-SMD\nT-0051 · 长期 · 截止 -"]
   class T_0001 long;
   class T_0002 short;
   class T_0003 short;
@@ -71,7 +96,6 @@ flowchart LR
   class T_0016 short;
   class T_0017 short;
   class T_0018 long;
-  class T_0019 short;
   class T_0020 long;
   class T_0021 done;
   class T_0022 long;
@@ -87,6 +111,23 @@ flowchart LR
   class T_0032 done;
   class T_0033 done;
   class T_0034 done;
+  class T_0035 short;
+  class T_0036 long;
+  class T_0037 done;
+  class T_0038 short;
+  class T_0039 short;
+  class T_0040 short;
+  class T_0041 short;
+  class T_0042 short;
+  class T_0043 long;
+  class T_0044 done;
+  class T_0045 short;
+  class T_0046 short;
+  class T_0047 long;
+  class T_0048 short;
+  class T_0049 short;
+  class T_0050 short;
+  class T_0051 done;
   T_0001 --> T_0002
   T_0001 --> T_0003
   T_0004 -.-> T_0002
@@ -111,7 +152,6 @@ flowchart LR
   T_0014 -.-> T_0015
   T_0016 -.-> T_0017
   T_0018 --> T_0001
-  T_0018 --> T_0019
   T_0020 --> T_0018
   T_0022 --> T_0023
   T_0022 --> T_0024
@@ -130,6 +170,27 @@ flowchart LR
   T_0031 -.-> T_0032
   T_0032 -.-> T_0033
   T_0033 -.-> T_0034
+  T_0036 --> T_0037
+  T_0036 --> T_0038
+  T_0036 --> T_0039
+  T_0036 --> T_0040
+  T_0036 --> T_0041
+  T_0036 --> T_0042
+  T_0037 -.-> T_0039
+  T_0038 -.-> T_0039
+  T_0037 -.-> T_0040
+  T_0038 -.-> T_0041
+  T_0039 -.-> T_0042
+  T_0040 -.-> T_0042
+  T_0041 -.-> T_0042
+  T_0043 --> T_0044
+  T_0043 --> T_0045
+  T_0043 --> T_0046
+  T_0047 --> T_0048
+  T_0047 --> T_0049
+  T_0047 --> T_0050
+  T_0048 -.-> T_0049
+  T_0049 -.-> T_0050
   linkStyle 0 stroke:#2563eb,stroke-width:1.6px;
   linkStyle 1 stroke:#2563eb,stroke-width:1.6px;
   linkStyle 2 stroke:#d97706,stroke-width:1.8px,stroke-dasharray:6 4;
@@ -161,7 +222,7 @@ flowchart LR
   linkStyle 28 stroke:#2563eb,stroke-width:1.6px;
   linkStyle 29 stroke:#2563eb,stroke-width:1.6px;
   linkStyle 30 stroke:#2563eb,stroke-width:1.6px;
-  linkStyle 31 stroke:#2563eb,stroke-width:1.6px;
+  linkStyle 31 stroke:#d97706,stroke-width:1.8px,stroke-dasharray:6 4;
   linkStyle 32 stroke:#d97706,stroke-width:1.8px,stroke-dasharray:6 4;
   linkStyle 33 stroke:#d97706,stroke-width:1.8px,stroke-dasharray:6 4;
   linkStyle 34 stroke:#d97706,stroke-width:1.8px,stroke-dasharray:6 4;
@@ -172,4 +233,24 @@ flowchart LR
   linkStyle 39 stroke:#d97706,stroke-width:1.8px,stroke-dasharray:6 4;
   linkStyle 40 stroke:#d97706,stroke-width:1.8px,stroke-dasharray:6 4;
   linkStyle 41 stroke:#d97706,stroke-width:1.8px,stroke-dasharray:6 4;
-  linkStyle 42 stroke:#d97706,stroke-width:1.8px,stroke-dasharray:6 4;
+  linkStyle 42 stroke:#2563eb,stroke-width:1.6px;
+  linkStyle 43 stroke:#2563eb,stroke-width:1.6px;
+  linkStyle 44 stroke:#2563eb,stroke-width:1.6px;
+  linkStyle 45 stroke:#2563eb,stroke-width:1.6px;
+  linkStyle 46 stroke:#2563eb,stroke-width:1.6px;
+  linkStyle 47 stroke:#2563eb,stroke-width:1.6px;
+  linkStyle 48 stroke:#d97706,stroke-width:1.8px,stroke-dasharray:6 4;
+  linkStyle 49 stroke:#d97706,stroke-width:1.8px,stroke-dasharray:6 4;
+  linkStyle 50 stroke:#d97706,stroke-width:1.8px,stroke-dasharray:6 4;
+  linkStyle 51 stroke:#d97706,stroke-width:1.8px,stroke-dasharray:6 4;
+  linkStyle 52 stroke:#d97706,stroke-width:1.8px,stroke-dasharray:6 4;
+  linkStyle 53 stroke:#d97706,stroke-width:1.8px,stroke-dasharray:6 4;
+  linkStyle 54 stroke:#d97706,stroke-width:1.8px,stroke-dasharray:6 4;
+  linkStyle 55 stroke:#2563eb,stroke-width:1.6px;
+  linkStyle 56 stroke:#2563eb,stroke-width:1.6px;
+  linkStyle 57 stroke:#2563eb,stroke-width:1.6px;
+  linkStyle 58 stroke:#2563eb,stroke-width:1.6px;
+  linkStyle 59 stroke:#2563eb,stroke-width:1.6px;
+  linkStyle 60 stroke:#2563eb,stroke-width:1.6px;
+  linkStyle 61 stroke:#d97706,stroke-width:1.8px,stroke-dasharray:6 4;
+  linkStyle 62 stroke:#d97706,stroke-width:1.8px,stroke-dasharray:6 4;

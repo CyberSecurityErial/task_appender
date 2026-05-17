@@ -5,7 +5,8 @@ import unittest
 from pathlib import Path
 
 from taskmgr.cli import main
-from taskmgr.store import load_data, tasks_by_id
+from taskmgr.server import create_task, mutate_data, undo_last_change, update_task
+from taskmgr.store import empty_data, load_data, normalize_for_save, tasks_by_id
 
 
 class CliTests(unittest.TestCase):
@@ -55,6 +56,11 @@ class CliTests(unittest.TestCase):
             html = html_out.read_text(encoding="utf-8")
             self.assertIn("<!doctype html>", html)
             self.assertIn("<svg", html)
+            self.assertIn("data-task-graph-ui", html)
+            self.assertIn('class="task-node"', html)
+            self.assertIn("save-layout", html)
+            self.assertIn("new-task", html)
+            self.assertIn("task-context-menu", html)
             self.assertIn("学习 Triton", html)
 
             scoreboard_out = Path(tmpdir) / "scoreboard.html"
@@ -201,6 +207,60 @@ class CliTests(unittest.TestCase):
             self.assertEqual(code, 0, err)
             self.assertIn("created 3", stdout)
             self.assertEqual(self.run_cli("--db", str(db), "validate")[0], 0)
+
+    def test_server_create_and_update_task_helpers(self):
+        data = empty_data()
+
+        parent = create_task(data, {"title": "父任务", "kind": "long", "status": "todo"})
+        child = create_task(data, {"title": "从 UI 新建任务", "kind": "short", "status": "todo", "tags": ["ui"]})
+        dependency = create_task(data, {"title": "依赖任务", "kind": "short", "status": "todo"})
+        normalize_for_save(data)
+        updated = update_task(
+            data,
+            child["id"],
+            {
+                "title": "从 UI 编辑任务",
+                "status": "done",
+                "due_at": "2026-06-01",
+                "priority": 1,
+                "tags": ["ui", "edit"],
+                "parent": parent["id"],
+                "depends_on": [dependency["id"]],
+                "notes": "edited in map",
+            },
+        )
+        normalize_for_save(data)
+        index = tasks_by_id(data)
+        update_task(data, parent["id"], {"children": [dependency["id"]]})
+        normalize_for_save(data)
+        index = tasks_by_id(data)
+
+        self.assertEqual(parent["id"], "T-0001")
+        self.assertEqual(child["id"], "T-0002")
+        self.assertEqual(index["T-0002"]["title"], "从 UI 编辑任务")
+        self.assertEqual(updated["status"], "done")
+        self.assertRegex(updated["completed_at"], r"^\d{4}-\d{2}-\d{2}$")
+        self.assertEqual(index["T-0002"]["due_at"], "2026-06-01")
+        self.assertEqual(index["T-0002"]["priority"], 1)
+        self.assertEqual(index["T-0002"]["tags"], ["ui", "edit"])
+        self.assertEqual(index["T-0002"]["depends_on"], ["T-0003"])
+        self.assertEqual(index["T-0002"]["notes"], "edited in map")
+        self.assertIsNone(index["T-0002"]["parent"])
+        self.assertEqual(index["T-0001"]["children"], ["T-0003"])
+        self.assertEqual(index["T-0003"]["parent"], "T-0001")
+
+    def test_server_undo_restores_previous_store(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            db = Path(tmpdir) / "tasks.yaml"
+            undo_stack: list[str] = []
+
+            mutate_data(db, lambda data: create_task(data, {"title": "UI task", "kind": "short"}), undo_stack)
+            self.assertIn("UI task", db.read_text(encoding="utf-8"))
+
+            data = undo_last_change(db, undo_stack)
+
+            self.assertEqual(data["tasks"], [])
+            self.assertEqual(load_data(db)["tasks"], [])
 
 
 if __name__ == "__main__":

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "personal-task-graph-manager"
-version = "0.1.0rc1"
+version = "0.1.1"
 description = "Local-first personal task graph manager"
 requires-python = ">=3.10"
 dependencies = ["PyYAML>=5.4"]

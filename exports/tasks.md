@@ -4,35 +4,42 @@
 
 - 等级：{== VI ==} Lv.6 长期工程师
 - 段位铭文：锻造长期工程核心
-- 已获得经验：1591 XP
-- 下一级进度：191/520 XP，还差 329 XP
-- 任务完成：8/34（23.5%）
-- 任务池待领取：4296 XP
+- 已获得经验：1914 XP
+- 下一级进度：514/520 XP，还差 6 XP
+- 任务完成：11/50（22.0%）
+- 任务池待领取：6281 XP
 - 产出：工具/版本发布 x5（+450 XP）；博客/文章 x3（+210 XP）；源码地图 x1（+60 XP）；复盘/总结 x1（+45 XP）
 
 ## 技能树
 
 ```text
-星核主干 [解锁] 1591 XP - XP 汇流核心
+星核主干 [解锁] 1914 XP - XP 汇流核心
 ├─ 星文输出 [解锁] 498 XP - 知识铸成卷轴
 │  ├─ 卷轴写作 [解锁] 351 XP - 博客即法术书
 │  └─ MuP 秘典 [解锁] 147 XP - 尺度法则觉醒
-├─ 推理秘术 [封印] 0 XP - 驱动 KV 星流
-│  ├─ 缓存咒术 [封印] 0 XP - 驯服 KV 星河
-│  ├─ 模型星门 [封印] 0 XP - 推理链路展开
+├─ 推理秘术 [解锁] 52 XP - 驱动 KV 星流
+│  ├─ 缓存咒术 [解锁] 26 XP - 驯服 KV 星河
+│  ├─ 模型星门 [解锁] 26 XP - 推理链路展开
 │  └─ 传输法阵 [封印] 0 XP - RDMA 开门
 ├─ 工程炼成 [封印] 0 XP - 实验点火成真
 │  ├─ 实验炉心 [封印] 0 XP - Demo 点燃现实
 │  ├─ 训练矩阵 [封印] 0 XP - 并行阵列启动
 │  └─ 通信锻炉 [封印] 0 XP - 拓扑化作武器
-└─ 工具圣殿 [解锁] 1093 XP - 自动化结界
-   ├─ 任务图引擎 [解锁] 1093 XP - 本地星图自转
-   ├─ 日课仪式 [封印] 0 XP - 复盘回路充能
-   └─ 时钟塔 [封印] 0 XP - DDL 齿轮校准
+├─ 工具圣殿 [解锁] 1093 XP - 自动化结界
+│  ├─ 任务图引擎 [解锁] 1093 XP - 本地星图自转
+│  ├─ 日课仪式 [封印] 0 XP - 复盘回路充能
+│  └─ 时钟塔 [封印] 0 XP - DDL 齿轮校准
+└─ 游离符文 [解锁] 271 XP - 未归档能量
 ```
 
 ## 已完成任务收获
 
+- **T-0051** 长期：我完成了一个长期节点，推进任务图闭环（+167 XP）
+  证据：系统理解 SMD 与模型训练动力学的关系，梳理核心假设、优化视角、收敛直觉和可迁移到深度学习训练分析的结论。；产出：-；标签：`theory` `training-dynamics` `smd`
+- **T-0037** LLM 推理系统：我推进了对 LLM 推理、KVCache、通信和调度链路的理解（+78 XP）
+  证据：理解 PagedAttention 的 block/page 抽象、物理块分配、逻辑到物理映射、连续/非连续 KVCache 管理和对吞吐/显存碎片的影响。；产出：-；标签：`kvcache` `pagedattention` `attention`
+- **T-0044** LLM 推理系统：我推进了对 LLM 推理、KVCache、通信和调度链路的理解（+78 XP）
+  证据：为 Pico-vLLM 增加 CPU 推理支持，明确 CPU backend、算子路径、调度兼容和基础正确性验证。；产出：-；标签：`pico-vllm` `cpu` `inference`
 - **T-0034** 源码阅读 / 个人工具演进：我形成了从入口到关键模块的数据路径和源码地图；我把个人任务管理流程固化到本地优先的工具能力里（+344 XP）
   证据：技能树、段位字符标志、等级谱注脚、导出和测试验证通过后打 v0.1.0rc1 标签并推送主线。；产出：源码地图，工具/版本发布；标签：`task-appender` `release`
 - **T-0033** 个人工具演进：我把个人任务管理流程固化到本地优先的工具能力里（+155 XP）
@@ -57,20 +64,20 @@
   子任务：T-0002, T-0003
 - **T-0018** [进行中/长期] 学习 KVCache 调度
   截止：-；完成：-；优先级：1；标签：`kvcache` `scheduling` `inference`
-  子任务：T-0001, T-0019
+  子任务：T-0001
 - **T-0020** [进行中/长期] llm推理
   截止：-；完成：-；优先级：1；标签：`llm` `inference`
   子任务：T-0018
 - **T-0022** [进行中/长期] 写 MuP 博客
   截止：-；完成：-；优先级：3；标签：`blog` `mup`
   子任务：T-0023, T-0024, T-0025, T-0026, T-0027, T-0028
+- **T-0003** [被阻塞/短期] 学习 UCX
+  截止：2026-05-12；完成：-；优先级：2；标签：`ucx` `rdma` `transport`
 - **T-0004** [待办/短期] 学习 P/D 分离的基础
   截止：2026-05-03；完成：-；优先级：1；标签：`pd-disaggregation` `inference` `foundation`
 - **T-0002** [待办/短期] 学习 Mooncake
   截止：2026-05-10；完成：-；优先级：1；标签：`mooncake` `kvcache` `pd-disaggregation`
   前置依赖：T-0004
-- **T-0003** [待办/短期] 学习 UCX
-  截止：2026-05-12；完成：-；优先级：2；标签：`ucx` `rdma` `transport`
 - **T-0005** [待办/长期] 学习 nccl-gin
   截止：-；完成：-；优先级：3；标签：`nccl-gin`
   子任务：T-0006, T-0007
@@ -105,8 +112,6 @@
 - **T-0017** [待办/短期] 支持 DDL 日期自动修改策略
   截止：-；完成：-；优先级：1；标签：`task-appender` `ddl` `automation`
   前置依赖：T-0016
-- **T-0019** [待办/短期] 学习 PagedAttention(vLLM) 和 Radix Tree(SGLang) 对 KV 的管理
-  截止：-；完成：-；优先级：1；标签：`kvcache` `vllm` `sglang` `paged-attention`
 - **T-0025** [待办/短期] MuP 之上 1
   截止：-；完成：-；优先级：3；标签：`blog` `mup`
   前置依赖：T-0024
@@ -122,6 +127,43 @@
 - **T-0029** [待办/短期] 编写 UCX 源码解读博客
   截止：-；完成：-；优先级：2；标签：`blog` `ucx` `source-reading`
   前置依赖：T-0003
+- **T-0035** [待办/短期] 支持个人博客中英文双语
+  截止：-；完成：-；优先级：2；标签：`blog` `i18n` `bilingual`
+- **T-0036** [待办/长期] 学习推理框架里面 KVCache 的寻址
+  截止：-；完成：-；优先级：1；标签：`kvcache` `inference` `attention` `serving`
+  子任务：T-0037, T-0038, T-0039, T-0040, T-0041, T-0042
+- **T-0038** [待办/短期] 学习 RadixAttention
+  截止：-；完成：-；优先级：1；标签：`kvcache` `radixattention` `attention`
+- **T-0039** [待办/短期] 学习 pico-vLLM 的 PA+RA
+  截止：-；完成：-；优先级：1；标签：`kvcache` `pico-vllm` `pagedattention` `radixattention`
+  前置依赖：T-0037, T-0038
+- **T-0040** [待办/短期] 学习正统 vLLM 的 PagedAttention
+  截止：-；完成：-；优先级：1；标签：`kvcache` `vllm` `pagedattention`
+  前置依赖：T-0037
+- **T-0041** [待办/短期] 学习正统 SGLang 的 RadixAttention
+  截止：-；完成：-；优先级：1；标签：`kvcache` `sglang` `radixattention`
+  前置依赖：T-0038
+- **T-0042** [待办/短期] 学习其他不成熟但开放的 KVCache 管理方案
+  截止：-；完成：-；优先级：2；标签：`kvcache` `serving` `research` `open-source`
+  前置依赖：T-0039, T-0040, T-0041
+- **T-0043** [待办/长期] Pico-vLLM开发
+  截止：-；完成：-；优先级：1；标签：`pico-vllm` `inference` `development`
+  子任务：T-0044, T-0045, T-0046
+- **T-0045** [待办/短期] Pico-vLLM profiling 和 memtrack 插件支持
+  截止：-；完成：-；优先级：1；标签：`pico-vllm` `profiling` `memtrack` `plugin`
+- **T-0046** [待办/短期] Pico-vLLM blockManager 重构
+  截止：-；完成：-；优先级：1；标签：`pico-vllm` `block-manager` `storage` `mla` `attention`
+- **T-0047** [待办/长期] 强化学习框架攻关
+  截止：-；完成：-；优先级：1；标签：`reinforcement-learning` `rl-framework` `post-training`
+  子任务：T-0048, T-0049, T-0050
+- **T-0048** [待办/短期] 学习 LLM 后训练强化学习流程
+  截止：-；完成：-；优先级：1；标签：`reinforcement-learning` `llm` `post-training`
+- **T-0049** [待办/短期] 学习 verl 框架大致骨架
+  截止：-；完成：-；优先级：1；标签：`reinforcement-learning` `verl` `framework`
+  前置依赖：T-0048
+- **T-0050** [待办/短期] 实现自研 RL 框架原型
+  截止：-；完成：-；优先级：1；标签：`reinforcement-learning` `femotron` `pico-vllm` `training` `inference`
+  前置依赖：T-0049
 - **T-0030** [已完成/短期] 实现 v0.1 已完成任务收获提取
   截止：2026-05-05；完成：2026-05-05；优先级：3；标签：`task-appender` `feature` `analytics` `release`
 - **T-0031** [已完成/短期] 实现 v0.1 成长计分板和经验等级导出
@@ -143,6 +185,12 @@
 - **T-0024** [已完成/短期] 高阶 MuP
   截止：-；完成：-；优先级：3；标签：`blog` `mup`
   前置依赖：T-0023
+- **T-0037** [已完成/短期] 学习 PagedAttention
+  截止：-；完成：2026-05-14；优先级：1；标签：`kvcache` `pagedattention` `attention`
+- **T-0044** [已完成/短期] Pico-vLLM CPU 推理支持
+  截止：-；完成：2026-05-13；优先级：1；标签：`pico-vllm` `cpu` `inference`
+- **T-0051** [已完成/长期] 学习模型训练动力学-SMD
+  截止：-；完成：2026-05-17；优先级：2；标签：`theory` `training-dynamics` `smd`
 
 ## 等级谱注脚
 

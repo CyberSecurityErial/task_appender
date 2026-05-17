@@ -51,10 +51,248 @@
       overflow: auto;
       background: var(--panel);
       border: 1px solid #e2e8f0;
-      border-radius: 12px;
+      border-radius: 8px;
       box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
     }
-    .graph-shell svg { display: block; min-width: 100%; }
+    .graph-shell svg { display: block; min-width: 100%; touch-action: none; }
+    .graph-ui {
+      display: grid;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .graph-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      padding: 10px;
+      background: var(--panel);
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+    }
+    .graph-toolbar input,
+    .graph-toolbar select {
+      min-height: 34px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      background: #fff;
+      color: #0f172a;
+      font: inherit;
+    }
+    .graph-toolbar input {
+      width: min(280px, 100%);
+      padding: 6px 9px;
+    }
+    .graph-toolbar select {
+      padding: 6px 28px 6px 9px;
+    }
+    .graph-toolbar button {
+      min-height: 34px;
+      padding: 6px 11px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      background: #f8fafc;
+      color: #0f172a;
+      font: inherit;
+      cursor: pointer;
+    }
+    .graph-toolbar button:hover {
+      border-color: #94a3b8;
+      background: #f1f5f9;
+    }
+    .graph-toolbar button.primary {
+      border-color: #2563eb;
+      background: #2563eb;
+      color: #fff;
+    }
+    .graph-toolbar button.primary:hover {
+      border-color: #1d4ed8;
+      background: #1d4ed8;
+    }
+    .zoom-control {
+      display: inline-flex;
+      gap: 7px;
+      align-items: center;
+      color: #334155;
+      white-space: nowrap;
+    }
+    .zoom-control input {
+      width: 120px;
+      min-height: auto;
+    }
+    .layout-status {
+      margin-left: auto;
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    .graph-stage {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 280px;
+      gap: 12px;
+      align-items: start;
+    }
+    .task-inspector {
+      position: sticky;
+      top: 12px;
+      background: var(--panel);
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 13px;
+    }
+    .task-inspector h2 {
+      margin: 0 0 4px;
+      font-size: 17px;
+    }
+    .task-inspector .inspector-id {
+      margin: 0 0 12px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .task-inspector dl {
+      display: grid;
+      grid-template-columns: 64px minmax(0, 1fr);
+      gap: 7px 10px;
+      margin: 0;
+    }
+    .task-inspector dt {
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .task-inspector dd {
+      margin: 0;
+      min-width: 0;
+      overflow-wrap: anywhere;
+      color: #1f2937;
+    }
+    .task-node {
+      cursor: grab;
+      outline: none;
+      transition: opacity 0.12s ease;
+    }
+    .task-node.dragging {
+      cursor: grabbing;
+    }
+    .task-node:focus-visible .node-card,
+    .task-node.is-selected .node-card {
+      stroke: #111827;
+      stroke-width: 3;
+    }
+    .task-node.is-hidden {
+      opacity: 0.13;
+      pointer-events: none;
+    }
+    .graph-edge {
+      transition: opacity 0.12s ease;
+    }
+    .graph-edge.is-hidden {
+      opacity: 0.06;
+    }
+    .task-context-menu {
+      position: fixed;
+      z-index: 50;
+      display: grid;
+      min-width: 150px;
+      overflow: hidden;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.18);
+    }
+    .task-context-menu[hidden] {
+      display: none;
+    }
+    .task-context-menu button {
+      padding: 8px 11px;
+      border: 0;
+      border-bottom: 1px solid #e2e8f0;
+      background: #fff;
+      color: #0f172a;
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+    }
+    .task-context-menu button:last-child {
+      border-bottom: 0;
+    }
+    .task-context-menu button:hover {
+      background: #f1f5f9;
+    }
+    .task-dialog-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 60;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      background: rgba(15, 23, 42, 0.34);
+    }
+    .task-dialog-backdrop[hidden] {
+      display: none;
+    }
+    .task-dialog {
+      display: grid;
+      gap: 11px;
+      width: min(520px, 100%);
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      background: #fff;
+      padding: 16px;
+      box-shadow: 0 24px 60px rgba(15, 23, 42, 0.22);
+    }
+    .task-dialog h2 {
+      margin: 0;
+      font-size: 19px;
+    }
+    .task-dialog label {
+      display: grid;
+      gap: 5px;
+      color: #334155;
+      font-size: 12px;
+      font-weight: 650;
+    }
+    .task-dialog input,
+    .task-dialog select,
+    .task-dialog textarea {
+      width: 100%;
+      min-height: 34px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 7px 9px;
+      color: #0f172a;
+      font: inherit;
+      font-weight: 400;
+    }
+    .task-dialog textarea {
+      min-height: 74px;
+      resize: vertical;
+    }
+    .dialog-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .dialog-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 2px;
+    }
+    .dialog-actions button {
+      min-height: 34px;
+      padding: 6px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      background: #f8fafc;
+      color: #0f172a;
+      font: inherit;
+      cursor: pointer;
+    }
+    .dialog-actions button.primary {
+      border-color: #2563eb;
+      background: #2563eb;
+      color: #fff;
+    }
     .legend {
       display: flex;
       flex-wrap: wrap;
@@ -97,6 +335,18 @@
       body { background: #fff; }
       header, main { padding: 12px; }
       .graph-shell { overflow: visible; box-shadow: none; }
+      .graph-toolbar, .task-inspector, .task-context-menu, .task-dialog-backdrop { display: none; }
+    }
+    @media (max-width: 1040px) {
+      .graph-stage {
+        grid-template-columns: 1fr;
+      }
+      .task-inspector {
+        position: static;
+      }
+      .dialog-grid {
+        grid-template-columns: 1fr;
+      }
     }
 
     .progress-shell {
@@ -317,18 +567,18 @@
 <body>
   <header>
     <h1>任务关系图</h1>
-    <div class="meta">生成日期：2026-05-05；数据源：<code>data/tasks.yaml</code>；文本图：<code>exports/graph.mmd</code> / <code>exports/graph.dot</code></div>
+    <div class="meta">生成日期：2026-05-17；静态导出模式；数据源：<code>data/tasks.yaml</code>；文本图：<code>exports/graph.mmd</code> / <code>exports/graph.dot</code></div>
     <div class="summary">
-      <span class="pill">总任务 34</span>
-      <span class="pill">短期 23</span>
-      <span class="pill">长期 8</span>
+      <span class="pill">总任务 50</span>
+      <span class="pill">短期 35</span>
+      <span class="pill">长期 12</span>
       <span class="pill">每日 0</span>
       <span class="pill">里程碑 3</span>
-      <span class="pill">待办 22</span>
+      <span class="pill">待办 34</span>
       <span class="pill">进行中 4</span>
-      <span class="pill">已完成 8</span>
+      <span class="pill">已完成 11</span>
       <span class="pill">{== VI ==} Lv.6 长期工程师</span>
-      <span class="pill">经验 1591 XP</span>
+      <span class="pill">经验 1914 XP</span>
     </div>
   </header>
   <main>
@@ -340,22 +590,22 @@
           <p class="score-value">Lv.6</p>
           <p class="score-note">长期工程师</p>
           <p class="score-note">锻造长期工程核心</p>
-          <div class="level-bar" aria-label="升级进度"><div class="level-fill" style="width: 36.7%"></div></div>
-          <p class="score-note">191/520 XP，还差 329</p>
+          <div class="level-bar" aria-label="升级进度"><div class="level-fill" style="width: 98.8%"></div></div>
+          <p class="score-note">514/520 XP，还差 6</p>
         </article>
         <article class="score-card">
           <p class="score-label">已获得经验</p>
-          <p class="score-value">1591</p>
+          <p class="score-value">1914</p>
           <p class="score-note">来自已完成和已归档任务</p>
         </article>
         <article class="score-card">
           <p class="score-label">任务完成</p>
-          <p class="score-value">8/34</p>
-          <p class="score-note">完成率 23.5%</p>
+          <p class="score-value">11/50</p>
+          <p class="score-note">完成率 22.0%</p>
         </article>
         <article class="score-card">
           <p class="score-label">任务池经验</p>
-          <p class="score-value">4296</p>
+          <p class="score-value">6281</p>
           <p class="score-note">待办、进行中和阻塞任务可领取</p>
         </article>
       </div>
@@ -376,7 +626,7 @@
             <ul>
               <li>
                 <div class="skill-node">
-                  <div class="skill-node-title"><span>星核主干</span><span>解锁 · 1591 XP</span></div>
+                  <div class="skill-node-title"><span>星核主干</span><span>解锁 · 1914 XP</span></div>
                   <div class="skill-node-desc">XP 汇流核心</div>
                 </div>
                 <ul>
@@ -401,20 +651,20 @@
                     </ul>
                   </li>
                   <li>
-                    <div class="skill-node locked">
-                      <div class="skill-node-title"><span>推理秘术</span><span>封印 · 0 XP</span></div>
+                    <div class="skill-node">
+                      <div class="skill-node-title"><span>推理秘术</span><span>解锁 · 52 XP</span></div>
                       <div class="skill-node-desc">驱动 KV 星流</div>
                     </div>
                     <ul>
                       <li>
-                        <div class="skill-node locked">
-                          <div class="skill-node-title"><span>缓存咒术</span><span>封印 · 0 XP</span></div>
+                        <div class="skill-node">
+                          <div class="skill-node-title"><span>缓存咒术</span><span>解锁 · 26 XP</span></div>
                           <div class="skill-node-desc">驯服 KV 星河</div>
                         </div>
                       </li>
                       <li>
-                        <div class="skill-node locked">
-                          <div class="skill-node-title"><span>模型星门</span><span>封印 · 0 XP</span></div>
+                        <div class="skill-node">
+                          <div class="skill-node-title"><span>模型星门</span><span>解锁 · 26 XP</span></div>
                           <div class="skill-node-desc">推理链路展开</div>
                         </div>
                       </li>
@@ -478,6 +728,12 @@
                       </li>
                     </ul>
                   </li>
+                  <li>
+                    <div class="skill-node">
+                      <div class="skill-node-title"><span>游离符文</span><span>解锁 · 271 XP</span></div>
+                      <div class="skill-node-desc">未归档能量</div>
+                    </div>
+                  </li>
                 </ul>
               </li>
             </ul>
@@ -486,6 +742,9 @@
         <section class="progress-panel">
           <h2>已完成任务收获</h2>
           <ul class="gain-list">
+          <li class="gain-item"><div class="gain-head"><span>T-0051 · 长期</span><span>+167 XP</span></div><p class="gain-body">我完成了一个长期节点，推进任务图闭环</p><div class="gain-meta">学习模型训练动力学-SMD；证据：系统理解 SMD 与模型训练动力学的关系，梳理核心假设、优化视角、收敛直觉和可迁移到深度学习训练分析的结论。；产出：-；标签：#theory #training-dynamics #smd</div></li>
+          <li class="gain-item"><div class="gain-head"><span>T-0037 · LLM 推理系统</span><span>+78 XP</span></div><p class="gain-body">我推进了对 LLM 推理、KVCache、通信和调度链路的理解</p><div class="gain-meta">学习 PagedAttention；证据：理解 PagedAttention 的 block/page 抽象、物理块分配、逻辑到物理映射、连续/非连续 KVCache 管理和对吞吐/显存碎片的影响。；产出：-；标签：#kvcache #pagedattention #attention</div></li>
+          <li class="gain-item"><div class="gain-head"><span>T-0044 · LLM 推理系统</span><span>+78 XP</span></div><p class="gain-body">我推进了对 LLM 推理、KVCache、通信和调度链路的理解</p><div class="gain-meta">Pico-vLLM CPU 推理支持；证据：为 Pico-vLLM 增加 CPU 推理支持，明确 CPU backend、算子路径、调度兼容和基础正确性验证。；产出：-；标签：#pico-vllm #cpu #inference</div></li>
           <li class="gain-item"><div class="gain-head"><span>T-0034 · 源码阅读 / 个人工具演进</span><span>+344 XP</span></div><p class="gain-body">我形成了从入口到关键模块的数据路径和源码地图；我把个人任务管理流程固化到本地优先的工具能力里</p><div class="gain-meta">发布 task_appender v0.1.0rc1；证据：技能树、段位字符标志、等级谱注脚、导出和测试验证通过后打 v0.1.0rc1 标签并推送主线。；产出：源码地图，工具/版本发布；标签：#task-appender #release</div></li>
           <li class="gain-item"><div class="gain-head"><span>T-0033 · 个人工具演进</span><span>+155 XP</span></div><p class="gain-body">我把个人任务管理流程固化到本地优先的工具能力里</p><div class="gain-meta">实现 v0.1.0rc1 技能树和段位标志补丁；证据：成长计分板技能树改为单根树状结构，技能描述更简洁并带科技/魔幻风格，等级增加字符段位标志和等级谱注脚。；产出：工具/版本发布；标签：#task-appender #feature #scoreboard #release</div></li>
           <li class="gain-item"><div class="gain-head"><span>T-0032 · 个人工具演进</span><span>+292 XP</span></div><p class="gain-body">我把个人任务管理流程固化到本地优先的工具能力里</p><div class="gain-meta">发布 task_appender v0.1；证据：收获提取、成长计分板、HTML 导出和默认任务库写入后的自动同步全部验证通过后打 tag。；产出：工具/版本发布；标签：#task-appender #release</div></li>
@@ -514,10 +773,35 @@
     <div class="legend">
       <span><i class="swatch child"></i>父子拆解</span>
       <span><i class="swatch dependency"></i>执行依赖</span>
-      <span>横向滚动可查看完整图；浏览器缩放可放大细节。</span>
     </div>
-    <section class="graph-shell">
-      <svg viewBox="0 0 2084 2402" width="2084" height="2402" role="img" aria-label="任务关系图">
+    <section class="graph-ui" data-task-graph-ui data-api-enabled="0">
+      <div class="graph-toolbar" aria-label="任务图工具栏">
+        <input id="graph-search" type="search" placeholder="搜索任务、标签、备注" autocomplete="off">
+        <select id="kind-filter" aria-label="任务类型筛选">
+          <option value="">全部类型</option>
+          <option value="short">短期</option>
+          <option value="long">长期</option>
+          <option value="daily">每日</option>
+          <option value="milestone">里程碑</option>
+        </select>
+        <select id="status-filter" aria-label="任务状态筛选">
+          <option value="">全部状态</option>
+          <option value="todo">待办</option>
+          <option value="doing">进行中</option>
+          <option value="blocked">被阻塞</option>
+          <option value="done">已完成</option>
+          <option value="archived">已归档</option>
+        </select>
+        <button type="button" id="new-task" class="primary">新增任务</button>
+        <button type="button" id="undo-change">撤销</button>
+        <button type="button" id="save-layout">保存布局</button>
+        <button type="button" id="reset-layout">重置布局</button>
+        <label class="zoom-control">缩放 <input id="graph-zoom" type="range" min="70" max="150" value="100" step="5"><span id="zoom-value">100%</span></label>
+        <span class="layout-status" id="layout-status">布局已就绪</span>
+      </div>
+      <div class="graph-stage">
+        <section class="graph-shell">
+          <svg class="task-graph" viewBox="0 0 2084 3822" width="2084" height="3822" role="img" aria-label="任务关系图" data-node-width="230" data-node-height="86" data-layout-key="taskmgr:graph-layout:T-0001-T-0002-T-0003-T-0004-T-0005-T-0006-T-0007-T-0008-T-0009-T-0010-T-0011-T-0012-T-0013-T-0014-T-0015-T-0016-T-0017-T-0018-T-0020-T-0021-T-0022-T-0023-T-0024-T-0025-T-0026-T-0027-T-0028-T-0029-T-0030-T-0031-T-0032-T-0033-T-0034-T-0035-T-0036-T-0037-T-0038-T-0039-T-0040-T-0041-T-0042-T-0043-T-0044-T-0045-T-0046-T-0047-T-0048-T-0049-T-0050-T-0051">
         <defs>
           <marker id="arrow-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#2563eb"/></marker>
           <marker id="arrow-orange" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#d97706"/></marker>
@@ -532,303 +816,512 @@
         <text x="42" y="1237" fill="#334155" font-size="17" font-weight="700">T-0020 llm推理</text>
         <rect x="24" y="1476" width="2036" height="234" rx="18" fill="#f8fafc" stroke="#dbe3ef"/>
         <text x="42" y="1507" fill="#334155" font-size="17" font-weight="700">T-0022 写 MuP 博客</text>
-        <rect x="24" y="1746" width="896" height="600" rx="18" fill="#f8fafc" stroke="#dbe3ef"/>
-        <text x="42" y="1777" fill="#334155" font-size="17" font-weight="700">独立任务和跨组依赖</text>
-        <path d="M 278 1861 C 320 1861, 320 1861, 333 1861" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
-        <path d="M 278 1861 C 320 1861, 320 1983, 333 1983" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
-        <path d="M 278 1983 C 320 1983, 320 1861, 333 1861" fill="none" stroke="#d97706" stroke-width="2.2" stroke-dasharray="7 6" marker-end="url(#arrow-orange)" opacity="0.9"/>
-        <path d="M 278 145 C 320 145, 320 145, 333 145" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
-        <path d="M 278 145 C 320 145, 320 267, 333 267" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
-        <path d="M 278 537 C 320 537, 320 537, 333 537" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
-        <path d="M 278 537 C 448 537, 448 537, 618 537" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
-        <path d="M 278 537 C 590 537, 590 537, 903 537" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
-        <path d="M 278 537 C 733 537, 733 537, 1188 537" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
-        <path d="M 563 537 C 605 537, 605 537, 618 537" fill="none" stroke="#d97706" stroke-width="2.2" stroke-dasharray="7 6" marker-end="url(#arrow-orange)" opacity="0.9"/>
-        <path d="M 848 537 C 890 537, 890 537, 903 537" fill="none" stroke="#d97706" stroke-width="2.2" stroke-dasharray="7 6" marker-end="url(#arrow-orange)" opacity="0.9"/>
-        <path d="M 1133 537 C 1175 537, 1175 537, 1188 537" fill="none" stroke="#d97706" stroke-width="2.2" stroke-dasharray="7 6" marker-end="url(#arrow-orange)" opacity="0.9"/>
-        <path d="M 278 807 C 320 807, 320 807, 333 807" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
-        <path d="M 278 807 C 448 807, 448 807, 618 807" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
-        <path d="M 278 807 C 320 807, 320 929, 333 929" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
-        <path d="M 278 807 C 448 807, 448 929, 618 929" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
-        <path d="M 278 807 C 320 807, 320 1051, 333 1051" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
-        <path d="M 278 807 C 448 807, 448 1051, 618 1051" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
-        <path d="M 278 807 C 590 807, 590 807, 903 807" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
-        <path d="M 278 807 C 733 807, 733 807, 1188 807" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
-        <path d="M 278 807 C 875 807, 875 807, 1473 807" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
-        <path d="M 563 807 C 605 807, 605 807, 618 807" fill="none" stroke="#d97706" stroke-width="2.2" stroke-dasharray="7 6" marker-end="url(#arrow-orange)" opacity="0.9"/>
-        <path d="M 563 929 C 605 929, 605 929, 618 929" fill="none" stroke="#d97706" stroke-width="2.2" stroke-dasharray="7 6" marker-end="url(#arrow-orange)" opacity="0.9"/>
-        <path d="M 448 1364 C 490 1364, 490 1818, 163 1818" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
-        <path d="M 448 1364 C 490 1364, 490 2062, 163 2062" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
-        <path d="M 278 1321 C 320 1321, 320 1321, 333 1321" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
-        <path d="M 278 1591 C 320 1591, 320 1591, 333 1591" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
-        <path d="M 278 1591 C 448 1591, 448 1591, 618 1591" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
-        <path d="M 278 1591 C 590 1591, 590 1591, 903 1591" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
-        <path d="M 278 1591 C 733 1591, 733 1591, 1188 1591" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
-        <path d="M 278 1591 C 875 1591, 875 1591, 1473 1591" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
-        <path d="M 278 1591 C 1018 1591, 1018 1591, 1758 1591" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
-        <path d="M 563 1591 C 605 1591, 605 1591, 618 1591" fill="none" stroke="#d97706" stroke-width="2.2" stroke-dasharray="7 6" marker-end="url(#arrow-orange)" opacity="0.9"/>
-        <path d="M 848 1591 C 890 1591, 890 1591, 903 1591" fill="none" stroke="#d97706" stroke-width="2.2" stroke-dasharray="7 6" marker-end="url(#arrow-orange)" opacity="0.9"/>
-        <path d="M 1133 1591 C 1175 1591, 1175 1591, 1188 1591" fill="none" stroke="#d97706" stroke-width="2.2" stroke-dasharray="7 6" marker-end="url(#arrow-orange)" opacity="0.9"/>
-        <path d="M 1418 1591 C 1460 1591, 1460 1591, 1473 1591" fill="none" stroke="#d97706" stroke-width="2.2" stroke-dasharray="7 6" marker-end="url(#arrow-orange)" opacity="0.9"/>
-        <path d="M 1703 1591 C 1745 1591, 1745 1591, 1758 1591" fill="none" stroke="#d97706" stroke-width="2.2" stroke-dasharray="7 6" marker-end="url(#arrow-orange)" opacity="0.9"/>
-        <path d="M 563 1983 C 605 1983, 605 1861, 618 1861" fill="none" stroke="#d97706" stroke-width="2.2" stroke-dasharray="7 6" marker-end="url(#arrow-orange)" opacity="0.9"/>
-        <path d="M 563 1051 C 605 1051, 605 1051, 618 1051" fill="none" stroke="#d97706" stroke-width="2.2" stroke-dasharray="7 6" marker-end="url(#arrow-orange)" opacity="0.9"/>
-        <path d="M 563 1051 C 733 1051, 733 807, 903 807" fill="none" stroke="#d97706" stroke-width="2.2" stroke-dasharray="7 6" marker-end="url(#arrow-orange)" opacity="0.9"/>
-        <path d="M 848 1051 C 890 1051, 890 807, 903 807" fill="none" stroke="#d97706" stroke-width="2.2" stroke-dasharray="7 6" marker-end="url(#arrow-orange)" opacity="0.9"/>
-        <path d="M 1133 807 C 1175 807, 1175 807, 1188 807" fill="none" stroke="#d97706" stroke-width="2.2" stroke-dasharray="7 6" marker-end="url(#arrow-orange)" opacity="0.9"/>
-        <path d="M 1418 807 C 1460 807, 1460 807, 1473 807" fill="none" stroke="#d97706" stroke-width="2.2" stroke-dasharray="7 6" marker-end="url(#arrow-orange)" opacity="0.9"/>
-        <g id="T_0001">
-          <rect x="48" y="1818" width="230" height="86" rx="12" fill="#e0f2fe" stroke="#0369a1" stroke-width="2"/>
-          <text x="62" y="1839" fill="#0f172a" font-size="14" font-weight="700">T-0001</text>
-          <text x="264" y="1839" text-anchor="end" fill="#475569" font-size="12">进行中/长期</text>
-          <text x="62" y="1861" fill="#111827" font-size="14">学习 KVCache 分布式推</text>
-          <text x="62" y="1878" fill="#111827" font-size="14">理调度</text>
-          <text x="62" y="1891" fill="#64748b" font-size="12">截止 05-19 · #kvcache #inference</text>
+        <rect x="24" y="1746" width="1181" height="478" rx="18" fill="#f8fafc" stroke="#dbe3ef"/>
+        <text x="42" y="1777" fill="#334155" font-size="17" font-weight="700">T-0036 学习推理框架里面 KVCache 的寻址</text>
+        <rect x="24" y="2260" width="760" height="478" rx="18" fill="#f8fafc" stroke="#dbe3ef"/>
+        <text x="42" y="2291" fill="#334155" font-size="17" font-weight="700">T-0043 Pico-vLLM开发</text>
+        <rect x="24" y="2774" width="1181" height="234" rx="18" fill="#f8fafc" stroke="#dbe3ef"/>
+        <text x="42" y="2805" fill="#334155" font-size="17" font-weight="700">T-0047 强化学习框架攻关</text>
+        <rect x="24" y="3044" width="896" height="722" rx="18" fill="#f8fafc" stroke="#dbe3ef"/>
+        <text x="42" y="3075" fill="#334155" font-size="17" font-weight="700">独立任务和跨组依赖</text>
+        <g class="graph-edges">
+          <path class="graph-edge child" data-from="T-0001" data-to="T-0002" data-edge-type="child" d="M 278 3159 C 320 3159, 320 3159, 333 3159" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
+          <path class="graph-edge child" data-from="T-0001" data-to="T-0003" data-edge-type="child" d="M 278 3159 C 320 3159, 320 3281, 333 3281" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
+          <path class="graph-edge dependency" data-from="T-0004" data-to="T-0002" data-edge-type="dependency" d="M 278 3281 C 320 3281, 320 3159, 333 3159" fill="none" stroke="#d97706" stroke-width="2.2" stroke-dasharray="7 6" marker-end="url(#arrow-orange)" opacity="0.9"/>
+          <path class="graph-edge child" data-from="T-0005" data-to="T-0006" data-edge-type="child" d="M 278 145 C 320 145, 320 145, 333 145" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
+          <path class="graph-edge child" data-from="T-0005" data-to="T-0007" data-edge-type="child" d="M 278 145 C 320 145, 320 267, 333 267" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
+          <path class="graph-edge child" data-from="T-0008" data-to="T-0009" data-edge-type="child" d="M 278 537 C 320 537, 320 537, 333 537" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
+          <path class="graph-edge child" data-from="T-0008" data-to="T-0010" data-edge-type="child" d="M 278 537 C 448 537, 448 537, 618 537" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
+          <path class="graph-edge child" data-from="T-0008" data-to="T-0011" data-edge-type="child" d="M 278 537 C 590 537, 590 537, 903 537" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
+          <path class="graph-edge child" data-from="T-0008" data-to="T-0012" data-edge-type="child" d="M 278 537 C 733 537, 733 537, 1188 537" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
+          <path class="graph-edge dependency" data-from="T-0009" data-to="T-0010" data-edge-type="dependency" d="M 563 537 C 605 537, 605 537, 618 537" fill="none" stroke="#d97706" stroke-width="2.2" stroke-dasharray="7 6" marker-end="url(#arrow-orange)" opacity="0.9"/>
+          <path class="graph-edge dependency" data-from="T-0010" data-to="T-0011" data-edge-type="dependency" d="M 848 537 C 890 537, 890 537, 903 537" fill="none" stroke="#d97706" stroke-width="2.2" stroke-dasharray="7 6" marker-end="url(#arrow-orange)" opacity="0.9"/>
+          <path class="graph-edge dependency" data-from="T-0011" data-to="T-0012" data-edge-type="dependency" d="M 1133 537 C 1175 537, 1175 537, 1188 537" fill="none" stroke="#d97706" stroke-width="2.2" stroke-dasharray="7 6" marker-end="url(#arrow-orange)" opacity="0.9"/>
+          <path class="graph-edge child" data-from="T-0013" data-to="T-0014" data-edge-type="child" d="M 278 807 C 320 807, 320 807, 333 807" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
+          <path class="graph-edge child" data-from="T-0013" data-to="T-0015" data-edge-type="child" d="M 278 807 C 448 807, 448 807, 618 807" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
+          <path class="graph-edge child" data-from="T-0013" data-to="T-0016" data-edge-type="child" d="M 278 807 C 320 807, 320 929, 333 929" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
+          <path class="graph-edge child" data-from="T-0013" data-to="T-0017" data-edge-type="child" d="M 278 807 C 448 807, 448 929, 618 929" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
+          <path class="graph-edge child" data-from="T-0013" data-to="T-0030" data-edge-type="child" d="M 278 807 C 320 807, 320 1051, 333 1051" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
+          <path class="graph-edge child" data-from="T-0013" data-to="T-0031" data-edge-type="child" d="M 278 807 C 448 807, 448 1051, 618 1051" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
+          <path class="graph-edge child" data-from="T-0013" data-to="T-0032" data-edge-type="child" d="M 278 807 C 590 807, 590 807, 903 807" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
+          <path class="graph-edge child" data-from="T-0013" data-to="T-0033" data-edge-type="child" d="M 278 807 C 733 807, 733 807, 1188 807" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
+          <path class="graph-edge child" data-from="T-0013" data-to="T-0034" data-edge-type="child" d="M 278 807 C 875 807, 875 807, 1473 807" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
+          <path class="graph-edge dependency" data-from="T-0014" data-to="T-0015" data-edge-type="dependency" d="M 563 807 C 605 807, 605 807, 618 807" fill="none" stroke="#d97706" stroke-width="2.2" stroke-dasharray="7 6" marker-end="url(#arrow-orange)" opacity="0.9"/>
+          <path class="graph-edge dependency" data-from="T-0016" data-to="T-0017" data-edge-type="dependency" d="M 563 929 C 605 929, 605 929, 618 929" fill="none" stroke="#d97706" stroke-width="2.2" stroke-dasharray="7 6" marker-end="url(#arrow-orange)" opacity="0.9"/>
+          <path class="graph-edge child" data-from="T-0018" data-to="T-0001" data-edge-type="child" d="M 448 1364 C 490 1364, 490 3116, 163 3116" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
+          <path class="graph-edge child" data-from="T-0020" data-to="T-0018" data-edge-type="child" d="M 278 1321 C 320 1321, 320 1321, 333 1321" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
+          <path class="graph-edge child" data-from="T-0022" data-to="T-0023" data-edge-type="child" d="M 278 1591 C 320 1591, 320 1591, 333 1591" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
+          <path class="graph-edge child" data-from="T-0022" data-to="T-0024" data-edge-type="child" d="M 278 1591 C 448 1591, 448 1591, 618 1591" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
+          <path class="graph-edge child" data-from="T-0022" data-to="T-0025" data-edge-type="child" d="M 278 1591 C 590 1591, 590 1591, 903 1591" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
+          <path class="graph-edge child" data-from="T-0022" data-to="T-0026" data-edge-type="child" d="M 278 1591 C 733 1591, 733 1591, 1188 1591" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
+          <path class="graph-edge child" data-from="T-0022" data-to="T-0027" data-edge-type="child" d="M 278 1591 C 875 1591, 875 1591, 1473 1591" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
+          <path class="graph-edge child" data-from="T-0022" data-to="T-0028" data-edge-type="child" d="M 278 1591 C 1018 1591, 1018 1591, 1758 1591" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
+          <path class="graph-edge dependency" data-from="T-0023" data-to="T-0024" data-edge-type="dependency" d="M 563 1591 C 605 1591, 605 1591, 618 1591" fill="none" stroke="#d97706" stroke-width="2.2" stroke-dasharray="7 6" marker-end="url(#arrow-orange)" opacity="0.9"/>
+          <path class="graph-edge dependency" data-from="T-0024" data-to="T-0025" data-edge-type="dependency" d="M 848 1591 C 890 1591, 890 1591, 903 1591" fill="none" stroke="#d97706" stroke-width="2.2" stroke-dasharray="7 6" marker-end="url(#arrow-orange)" opacity="0.9"/>
+          <path class="graph-edge dependency" data-from="T-0025" data-to="T-0026" data-edge-type="dependency" d="M 1133 1591 C 1175 1591, 1175 1591, 1188 1591" fill="none" stroke="#d97706" stroke-width="2.2" stroke-dasharray="7 6" marker-end="url(#arrow-orange)" opacity="0.9"/>
+          <path class="graph-edge dependency" data-from="T-0026" data-to="T-0027" data-edge-type="dependency" d="M 1418 1591 C 1460 1591, 1460 1591, 1473 1591" fill="none" stroke="#d97706" stroke-width="2.2" stroke-dasharray="7 6" marker-end="url(#arrow-orange)" opacity="0.9"/>
+          <path class="graph-edge dependency" data-from="T-0027" data-to="T-0028" data-edge-type="dependency" d="M 1703 1591 C 1745 1591, 1745 1591, 1758 1591" fill="none" stroke="#d97706" stroke-width="2.2" stroke-dasharray="7 6" marker-end="url(#arrow-orange)" opacity="0.9"/>
+          <path class="graph-edge dependency" data-from="T-0003" data-to="T-0029" data-edge-type="dependency" d="M 563 3281 C 605 3281, 605 3159, 618 3159" fill="none" stroke="#d97706" stroke-width="2.2" stroke-dasharray="7 6" marker-end="url(#arrow-orange)" opacity="0.9"/>
+          <path class="graph-edge dependency" data-from="T-0030" data-to="T-0031" data-edge-type="dependency" d="M 563 1051 C 605 1051, 605 1051, 618 1051" fill="none" stroke="#d97706" stroke-width="2.2" stroke-dasharray="7 6" marker-end="url(#arrow-orange)" opacity="0.9"/>
+          <path class="graph-edge dependency" data-from="T-0030" data-to="T-0032" data-edge-type="dependency" d="M 563 1051 C 733 1051, 733 807, 903 807" fill="none" stroke="#d97706" stroke-width="2.2" stroke-dasharray="7 6" marker-end="url(#arrow-orange)" opacity="0.9"/>
+          <path class="graph-edge dependency" data-from="T-0031" data-to="T-0032" data-edge-type="dependency" d="M 848 1051 C 890 1051, 890 807, 903 807" fill="none" stroke="#d97706" stroke-width="2.2" stroke-dasharray="7 6" marker-end="url(#arrow-orange)" opacity="0.9"/>
+          <path class="graph-edge dependency" data-from="T-0032" data-to="T-0033" data-edge-type="dependency" d="M 1133 807 C 1175 807, 1175 807, 1188 807" fill="none" stroke="#d97706" stroke-width="2.2" stroke-dasharray="7 6" marker-end="url(#arrow-orange)" opacity="0.9"/>
+          <path class="graph-edge dependency" data-from="T-0033" data-to="T-0034" data-edge-type="dependency" d="M 1418 807 C 1460 807, 1460 807, 1473 807" fill="none" stroke="#d97706" stroke-width="2.2" stroke-dasharray="7 6" marker-end="url(#arrow-orange)" opacity="0.9"/>
+          <path class="graph-edge child" data-from="T-0036" data-to="T-0037" data-edge-type="child" d="M 278 1861 C 320 1861, 320 1861, 333 1861" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
+          <path class="graph-edge child" data-from="T-0036" data-to="T-0038" data-edge-type="child" d="M 278 1861 C 320 1861, 320 1983, 333 1983" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
+          <path class="graph-edge child" data-from="T-0036" data-to="T-0039" data-edge-type="child" d="M 278 1861 C 448 1861, 448 1861, 618 1861" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
+          <path class="graph-edge child" data-from="T-0036" data-to="T-0040" data-edge-type="child" d="M 278 1861 C 448 1861, 448 1983, 618 1983" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
+          <path class="graph-edge child" data-from="T-0036" data-to="T-0041" data-edge-type="child" d="M 278 1861 C 448 1861, 448 2105, 618 2105" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
+          <path class="graph-edge child" data-from="T-0036" data-to="T-0042" data-edge-type="child" d="M 278 1861 C 590 1861, 590 1861, 903 1861" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
+          <path class="graph-edge dependency" data-from="T-0037" data-to="T-0039" data-edge-type="dependency" d="M 563 1861 C 605 1861, 605 1861, 618 1861" fill="none" stroke="#d97706" stroke-width="2.2" stroke-dasharray="7 6" marker-end="url(#arrow-orange)" opacity="0.9"/>
+          <path class="graph-edge dependency" data-from="T-0038" data-to="T-0039" data-edge-type="dependency" d="M 563 1983 C 605 1983, 605 1861, 618 1861" fill="none" stroke="#d97706" stroke-width="2.2" stroke-dasharray="7 6" marker-end="url(#arrow-orange)" opacity="0.9"/>
+          <path class="graph-edge dependency" data-from="T-0037" data-to="T-0040" data-edge-type="dependency" d="M 563 1861 C 605 1861, 605 1983, 618 1983" fill="none" stroke="#d97706" stroke-width="2.2" stroke-dasharray="7 6" marker-end="url(#arrow-orange)" opacity="0.9"/>
+          <path class="graph-edge dependency" data-from="T-0038" data-to="T-0041" data-edge-type="dependency" d="M 563 1983 C 605 1983, 605 2105, 618 2105" fill="none" stroke="#d97706" stroke-width="2.2" stroke-dasharray="7 6" marker-end="url(#arrow-orange)" opacity="0.9"/>
+          <path class="graph-edge dependency" data-from="T-0039" data-to="T-0042" data-edge-type="dependency" d="M 848 1861 C 890 1861, 890 1861, 903 1861" fill="none" stroke="#d97706" stroke-width="2.2" stroke-dasharray="7 6" marker-end="url(#arrow-orange)" opacity="0.9"/>
+          <path class="graph-edge dependency" data-from="T-0040" data-to="T-0042" data-edge-type="dependency" d="M 848 1983 C 890 1983, 890 1861, 903 1861" fill="none" stroke="#d97706" stroke-width="2.2" stroke-dasharray="7 6" marker-end="url(#arrow-orange)" opacity="0.9"/>
+          <path class="graph-edge dependency" data-from="T-0041" data-to="T-0042" data-edge-type="dependency" d="M 848 2105 C 890 2105, 890 1861, 903 1861" fill="none" stroke="#d97706" stroke-width="2.2" stroke-dasharray="7 6" marker-end="url(#arrow-orange)" opacity="0.9"/>
+          <path class="graph-edge child" data-from="T-0043" data-to="T-0044" data-edge-type="child" d="M 278 2375 C 320 2375, 320 2375, 333 2375" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
+          <path class="graph-edge child" data-from="T-0043" data-to="T-0045" data-edge-type="child" d="M 278 2375 C 320 2375, 320 2497, 333 2497" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
+          <path class="graph-edge child" data-from="T-0043" data-to="T-0046" data-edge-type="child" d="M 278 2375 C 320 2375, 320 2619, 333 2619" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
+          <path class="graph-edge child" data-from="T-0047" data-to="T-0048" data-edge-type="child" d="M 278 2889 C 320 2889, 320 2889, 333 2889" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
+          <path class="graph-edge child" data-from="T-0047" data-to="T-0049" data-edge-type="child" d="M 278 2889 C 448 2889, 448 2889, 618 2889" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
+          <path class="graph-edge child" data-from="T-0047" data-to="T-0050" data-edge-type="child" d="M 278 2889 C 590 2889, 590 2889, 903 2889" fill="none" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrow-blue)" opacity="0.9"/>
+          <path class="graph-edge dependency" data-from="T-0048" data-to="T-0049" data-edge-type="dependency" d="M 563 2889 C 605 2889, 605 2889, 618 2889" fill="none" stroke="#d97706" stroke-width="2.2" stroke-dasharray="7 6" marker-end="url(#arrow-orange)" opacity="0.9"/>
+          <path class="graph-edge dependency" data-from="T-0049" data-to="T-0050" data-edge-type="dependency" d="M 848 2889 C 890 2889, 890 2889, 903 2889" fill="none" stroke="#d97706" stroke-width="2.2" stroke-dasharray="7 6" marker-end="url(#arrow-orange)" opacity="0.9"/>
         </g>
-        <g id="T_0002">
-          <rect x="333" y="1818" width="230" height="86" rx="12" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
-          <text x="347" y="1839" fill="#0f172a" font-size="14" font-weight="700">T-0002</text>
-          <text x="549" y="1839" text-anchor="end" fill="#475569" font-size="12">待办/短期</text>
-          <text x="347" y="1861" fill="#111827" font-size="14">学习 Mooncake</text>
-          <text x="347" y="1891" fill="#64748b" font-size="12">截止 05-10 · #mooncake #kvcache</text>
+        <g class="graph-nodes">
+          <g id="T_0001" class="task-node" tabindex="0" role="button" aria-label="T-0001 学习 KVCache 分布式推理调度" data-task-id="T-0001" data-title="学习 KVCache 分布式推理调度" data-kind="long" data-kind-label="长期" data-status="doing" data-status-label="进行中" data-due="2026-05-19" data-priority="1" data-time="" data-tags="kvcache, inference, scheduling" data-notes="长期学习目标：理解分布式模型推理里的 KVCache 调度、P/D 分离、跨节点传输和缓存复用。" data-parent="T-0018" data-deps="-" data-children="T-0002, T-0003" data-default-x="48" data-default-y="3116" data-x="48" data-y="3116" transform="translate(48 3116)">
+            <rect class="node-card" x="0" y="0" width="230" height="86" rx="8" fill="#e0f2fe" stroke="#0369a1" stroke-width="2"/>
+            <text x="14" y="21" fill="#0f172a" font-size="14" font-weight="700">T-0001</text>
+            <text x="216" y="21" text-anchor="end" fill="#475569" font-size="12">进行中/长期</text>
+            <text x="14" y="43" fill="#111827" font-size="14">学习 KVCache 分布式推</text>
+            <text x="14" y="60" fill="#111827" font-size="14">理调度</text>
+            <text x="14" y="73" fill="#64748b" font-size="12">截止 05-19 · #kvcache #inference</text>
+          </g>
+          <g id="T_0002" class="task-node" tabindex="0" role="button" aria-label="T-0002 学习 Mooncake" data-task-id="T-0002" data-title="学习 Mooncake" data-kind="short" data-kind-label="短期" data-status="todo" data-status-label="待办" data-due="2026-05-10" data-priority="1" data-time="" data-tags="mooncake, kvcache, pd-disaggregation" data-notes="重点看 Mooncake 的 P/D 分离、KVCache-centric 调度、Transfer Engine、Mooncake Store 和 Conductor。" data-parent="T-0001" data-deps="T-0004" data-children="-" data-default-x="333" data-default-y="3116" data-x="333" data-y="3116" transform="translate(333 3116)">
+            <rect class="node-card" x="0" y="0" width="230" height="86" rx="8" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
+            <text x="14" y="21" fill="#0f172a" font-size="14" font-weight="700">T-0002</text>
+            <text x="216" y="21" text-anchor="end" fill="#475569" font-size="12">待办/短期</text>
+            <text x="14" y="43" fill="#111827" font-size="14">学习 Mooncake</text>
+            <text x="14" y="73" fill="#64748b" font-size="12">截止 05-10 · #mooncake #kvcache</text>
+          </g>
+          <g id="T_0003" class="task-node" tabindex="0" role="button" aria-label="T-0003 学习 UCX" data-task-id="T-0003" data-title="学习 UCX" data-kind="short" data-kind-label="短期" data-status="blocked" data-status-label="被阻塞" data-due="2026-05-12" data-priority="2" data-time="" data-tags="ucx, rdma, transport" data-notes="重点理解 UCX 的通信抽象、RDMA/InfiniBand 支持、内存注册、零拷贝和它在分布式推理 KVCache 传输里的作用。" data-parent="T-0001" data-deps="-" data-children="-" data-default-x="333" data-default-y="3238" data-x="333" data-y="3238" transform="translate(333 3238)">
+            <rect class="node-card" x="0" y="0" width="230" height="86" rx="8" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
+            <text x="14" y="21" fill="#0f172a" font-size="14" font-weight="700">T-0003</text>
+            <text x="216" y="21" text-anchor="end" fill="#475569" font-size="12">被阻塞/短期</text>
+            <text x="14" y="43" fill="#111827" font-size="14">学习 UCX</text>
+            <text x="14" y="73" fill="#64748b" font-size="12">截止 05-12 · #ucx #rdma</text>
+          </g>
+          <g id="T_0004" class="task-node" tabindex="0" role="button" aria-label="T-0004 学习 P/D 分离的基础" data-task-id="T-0004" data-title="学习 P/D 分离的基础" data-kind="short" data-kind-label="短期" data-status="todo" data-status-label="待办" data-due="2026-05-03" data-priority="1" data-time="" data-tags="pd-disaggregation, inference, foundation" data-notes="Mooncake 的前置基础任务：先理解 prefill/decode 分离、TTFT/TBT、KVCache 生成与传输、prefill pool 和 decode pool 的职责。" data-parent="-" data-deps="-" data-children="-" data-default-x="48" data-default-y="3238" data-x="48" data-y="3238" transform="translate(48 3238)">
+            <rect class="node-card" x="0" y="0" width="230" height="86" rx="8" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
+            <text x="14" y="21" fill="#0f172a" font-size="14" font-weight="700">T-0004</text>
+            <text x="216" y="21" text-anchor="end" fill="#475569" font-size="12">待办/短期</text>
+            <text x="14" y="43" fill="#111827" font-size="14">学习 P/D 分离的基础</text>
+            <text x="14" y="73" fill="#64748b" font-size="12">截止 05-03 · #pd-disaggregation #inference</text>
+          </g>
+          <g id="T_0005" class="task-node" tabindex="0" role="button" aria-label="T-0005 学习 nccl-gin" data-task-id="T-0005" data-title="学习 nccl-gin" data-kind="long" data-kind-label="长期" data-status="todo" data-status-label="待办" data-due="-" data-priority="3" data-time="" data-tags="nccl-gin" data-notes="" data-parent="-" data-deps="-" data-children="T-0006, T-0007" data-default-x="48" data-default-y="102" data-x="48" data-y="102" transform="translate(48 102)">
+            <rect class="node-card" x="0" y="0" width="230" height="86" rx="8" fill="#e0f2fe" stroke="#0369a1" stroke-width="2"/>
+            <text x="14" y="21" fill="#0f172a" font-size="14" font-weight="700">T-0005</text>
+            <text x="216" y="21" text-anchor="end" fill="#475569" font-size="12">待办/长期</text>
+            <text x="14" y="43" fill="#111827" font-size="14">学习 nccl-gin</text>
+            <text x="14" y="73" fill="#64748b" font-size="12">截止 - · #nccl-gin</text>
+          </g>
+          <g id="T_0006" class="task-node" tabindex="0" role="button" aria-label="T-0006 学习 nccl-gin 具体源码" data-task-id="T-0006" data-title="学习 nccl-gin 具体源码" data-kind="short" data-kind-label="短期" data-status="todo" data-status-label="待办" data-due="-" data-priority="3" data-time="" data-tags="nccl-gin" data-notes="" data-parent="T-0005" data-deps="-" data-children="-" data-default-x="333" data-default-y="102" data-x="333" data-y="102" transform="translate(333 102)">
+            <rect class="node-card" x="0" y="0" width="230" height="86" rx="8" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
+            <text x="14" y="21" fill="#0f172a" font-size="14" font-weight="700">T-0006</text>
+            <text x="216" y="21" text-anchor="end" fill="#475569" font-size="12">待办/短期</text>
+            <text x="14" y="43" fill="#111827" font-size="14">学习 nccl-gin 具体源码</text>
+            <text x="14" y="73" fill="#64748b" font-size="12">截止 - · #nccl-gin</text>
+          </g>
+          <g id="T_0007" class="task-node" tabindex="0" role="button" aria-label="T-0007 学习 nccl-gin 原理" data-task-id="T-0007" data-title="学习 nccl-gin 原理" data-kind="short" data-kind-label="短期" data-status="todo" data-status-label="待办" data-due="-" data-priority="3" data-time="" data-tags="nccl-gin" data-notes="" data-parent="T-0005" data-deps="-" data-children="-" data-default-x="333" data-default-y="224" data-x="333" data-y="224" transform="translate(333 224)">
+            <rect class="node-card" x="0" y="0" width="230" height="86" rx="8" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
+            <text x="14" y="21" fill="#0f172a" font-size="14" font-weight="700">T-0007</text>
+            <text x="216" y="21" text-anchor="end" fill="#475569" font-size="12">待办/短期</text>
+            <text x="14" y="43" fill="#111827" font-size="14">学习 nccl-gin 原理</text>
+            <text x="14" y="73" fill="#64748b" font-size="12">截止 - · #nccl-gin</text>
+          </g>
+          <g id="T_0008" class="task-node" tabindex="0" role="button" aria-label="T-0008 学习 Megatron 训练框架" data-task-id="T-0008" data-title="学习 Megatron 训练框架" data-kind="long" data-kind-label="长期" data-status="todo" data-status-label="待办" data-due="-" data-priority="2" data-time="" data-tags="megatron, distributed-training" data-notes="系统学习 Megatron Core / Megatron-LM 的训练架构、并行策略、配置运行、源码路径和性能调优。" data-parent="-" data-deps="-" data-children="T-0009, T-0010, T-0011, T-0012" data-default-x="48" data-default-y="494" data-x="48" data-y="494" transform="translate(48 494)">
+            <rect class="node-card" x="0" y="0" width="230" height="86" rx="8" fill="#e0f2fe" stroke="#0369a1" stroke-width="2"/>
+            <text x="14" y="21" fill="#0f172a" font-size="14" font-weight="700">T-0008</text>
+            <text x="216" y="21" text-anchor="end" fill="#475569" font-size="12">待办/长期</text>
+            <text x="14" y="43" fill="#111827" font-size="14">学习 Megatron 训练框架</text>
+            <text x="14" y="73" fill="#64748b" font-size="12">截止 - · #megatron #distributed-training</text>
+          </g>
+          <g id="T_0009" class="task-node" tabindex="0" role="button" aria-label="T-0009 梳理 Megatron 训练架构与并行基础" data-task-id="T-0009" data-title="梳理 Megatron 训练架构与并行基础" data-kind="short" data-kind-label="短期" data-status="todo" data-status-label="待办" data-due="-" data-priority="2" data-time="" data-tags="megatron, distributed-training" data-notes="明确 Megatron Core / Megatron-LM 关系，理解张量并行、流水线并行、数据并行、序列并行、分布式优化器和训练配置入口。" data-parent="T-0008" data-deps="-" data-children="-" data-default-x="333" data-default-y="494" data-x="333" data-y="494" transform="translate(333 494)">
+            <rect class="node-card" x="0" y="0" width="230" height="86" rx="8" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
+            <text x="14" y="21" fill="#0f172a" font-size="14" font-weight="700">T-0009</text>
+            <text x="216" y="21" text-anchor="end" fill="#475569" font-size="12">待办/短期</text>
+            <text x="14" y="43" fill="#111827" font-size="14">梳理 Megatron 训练架构</text>
+            <text x="14" y="60" fill="#111827" font-size="14">与并行基础</text>
+            <text x="14" y="73" fill="#64748b" font-size="12">截止 - · #megatron #distributed-training</text>
+          </g>
+          <g id="T_0010" class="task-node" tabindex="0" role="button" aria-label="T-0010 跑通 Megatron 小规模训练样例" data-task-id="T-0010" data-title="跑通 Megatron 小规模训练样例" data-kind="short" data-kind-label="短期" data-status="todo" data-status-label="待办" data-due="-" data-priority="2" data-time="" data-tags="megatron, experiment" data-notes="用最小可控配置跑通一次训练，记录数据入口、模型配置、并行参数、启动脚本、checkpoint 和日志位置。" data-parent="T-0008" data-deps="T-0009" data-children="-" data-default-x="618" data-default-y="494" data-x="618" data-y="494" transform="translate(618 494)">
+            <rect class="node-card" x="0" y="0" width="230" height="86" rx="8" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
+            <text x="14" y="21" fill="#0f172a" font-size="14" font-weight="700">T-0010</text>
+            <text x="216" y="21" text-anchor="end" fill="#475569" font-size="12">待办/短期</text>
+            <text x="14" y="43" fill="#111827" font-size="14">跑通 Megatron 小规模训</text>
+            <text x="14" y="60" fill="#111827" font-size="14">练样例</text>
+            <text x="14" y="73" fill="#64748b" font-size="12">截止 - · #megatron #experiment</text>
+          </g>
+          <g id="T_0011" class="task-node" tabindex="0" role="button" aria-label="T-0011 阅读 Megatron 模型、并行与优化器源码主线" data-task-id="T-0011" data-title="阅读 Megatron 模型、并行与优化器源码主线" data-kind="short" data-kind-label="短期" data-status="todo" data-status-label="待办" data-due="-" data-priority="2" data-time="" data-tags="megatron, source-reading" data-notes="沿训练入口追踪模型构建、forward/backward 调度、并行通信、分布式优化器和 checkpoint 读写，形成源码地图。" data-parent="T-0008" data-deps="T-0010" data-children="-" data-default-x="903" data-default-y="494" data-x="903" data-y="494" transform="translate(903 494)">
+            <rect class="node-card" x="0" y="0" width="230" height="86" rx="8" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
+            <text x="14" y="21" fill="#0f172a" font-size="14" font-weight="700">T-0011</text>
+            <text x="216" y="21" text-anchor="end" fill="#475569" font-size="12">待办/短期</text>
+            <text x="14" y="43" fill="#111827" font-size="14">阅读 Megatron 模型、并</text>
+            <text x="14" y="60" fill="#111827" font-size="14">行与优化器源码主线</text>
+            <text x="14" y="73" fill="#64748b" font-size="12">截止 - · #megatron #source-reading</text>
+          </g>
+          <g id="T_0012" class="task-node" tabindex="0" role="button" aria-label="T-0012 完成一次 Megatron 训练调优复盘" data-task-id="T-0012" data-title="完成一次 Megatron 训练调优复盘" data-kind="milestone" data-kind-label="里程碑" data-status="todo" data-status-label="待办" data-due="-" data-priority="2" data-time="" data-tags="megatron, performance" data-notes="基于一次训练实验复盘吞吐、显存、并行组合、通信瓶颈、checkpoint 成本和后续改进问题，沉淀阶段总结。" data-parent="T-0008" data-deps="T-0011" data-children="-" data-default-x="1188" data-default-y="494" data-x="1188" data-y="494" transform="translate(1188 494)">
+            <rect class="node-card" x="0" y="0" width="230" height="86" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+            <text x="14" y="21" fill="#0f172a" font-size="14" font-weight="700">T-0012</text>
+            <text x="216" y="21" text-anchor="end" fill="#475569" font-size="12">待办/里程碑</text>
+            <text x="14" y="43" fill="#111827" font-size="14">完成一次 Megatron 训练</text>
+            <text x="14" y="60" fill="#111827" font-size="14">调优复盘</text>
+            <text x="14" y="73" fill="#64748b" font-size="12">截止 - · #megatron #performance</text>
+          </g>
+          <g id="T_0013" class="task-node" tabindex="0" role="button" aria-label="T-0013 维护 task_appender 功能 TODO List" data-task-id="T-0013" data-title="维护 task_appender 功能 TODO List" data-kind="long" data-kind-label="长期" data-status="todo" data-status-label="待办" data-due="-" data-priority="1" data-time="" data-tags="task-appender, feature" data-notes="后续要加入的 task_appender 功能集合：每日任务、分时提醒，以及 DDL 日期手动和自动修改能力。" data-parent="-" data-deps="-" data-children="T-0014, T-0015, T-0016, T-0017, T-0030, T-0031, T-0032, T-0033, T-0034" data-default-x="48" data-default-y="764" data-x="48" data-y="764" transform="translate(48 764)">
+            <rect class="node-card" x="0" y="0" width="230" height="86" rx="8" fill="#e0f2fe" stroke="#0369a1" stroke-width="2"/>
+            <text x="14" y="21" fill="#0f172a" font-size="14" font-weight="700">T-0013</text>
+            <text x="216" y="21" text-anchor="end" fill="#475569" font-size="12">待办/长期</text>
+            <text x="14" y="43" fill="#111827" font-size="14">维护 task_appender 功</text>
+            <text x="14" y="60" fill="#111827" font-size="14">能 TODO List</text>
+            <text x="14" y="73" fill="#64748b" font-size="12">截止 - · #task-appender #feature</text>
+          </g>
+          <g id="T_0014" class="task-node" tabindex="0" role="button" aria-label="T-0014 实现每日任务创建与展示" data-task-id="T-0014" data-title="实现每日任务创建与展示" data-kind="short" data-kind-label="短期" data-status="todo" data-status-label="待办" data-due="-" data-priority="1" data-time="" data-tags="task-appender, daily, feature" data-notes="完善 daily 任务的创建、校验、列表展示和 today 视图，保证 recurrence 元数据稳定可用。" data-parent="T-0013" data-deps="-" data-children="-" data-default-x="333" data-default-y="764" data-x="333" data-y="764" transform="translate(333 764)">
+            <rect class="node-card" x="0" y="0" width="230" height="86" rx="8" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
+            <text x="14" y="21" fill="#0f172a" font-size="14" font-weight="700">T-0014</text>
+            <text x="216" y="21" text-anchor="end" fill="#475569" font-size="12">待办/短期</text>
+            <text x="14" y="43" fill="#111827" font-size="14">实现每日任务创建与展示</text>
+            <text x="14" y="73" fill="#64748b" font-size="12">截止 - · #task-appender #daily</text>
+          </g>
+          <g id="T_0015" class="task-node" tabindex="0" role="button" aria-label="T-0015 支持每日任务分时提醒" data-task-id="T-0015" data-title="支持每日任务分时提醒" data-kind="short" data-kind-label="短期" data-status="todo" data-status-label="待办" data-due="-" data-priority="1" data-time="" data-tags="task-appender, daily, reminder" data-notes="为每日任务支持多个提醒时间或时间段配置，并在 today/提醒输出中按时间排序呈现。" data-parent="T-0013" data-deps="T-0014" data-children="-" data-default-x="618" data-default-y="764" data-x="618" data-y="764" transform="translate(618 764)">
+            <rect class="node-card" x="0" y="0" width="230" height="86" rx="8" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
+            <text x="14" y="21" fill="#0f172a" font-size="14" font-weight="700">T-0015</text>
+            <text x="216" y="21" text-anchor="end" fill="#475569" font-size="12">待办/短期</text>
+            <text x="14" y="43" fill="#111827" font-size="14">支持每日任务分时提醒</text>
+            <text x="14" y="73" fill="#64748b" font-size="12">截止 - · #task-appender #daily</text>
+          </g>
+          <g id="T_0016" class="task-node" tabindex="0" role="button" aria-label="T-0016 支持 DDL 日期手动修改" data-task-id="T-0016" data-title="支持 DDL 日期手动修改" data-kind="short" data-kind-label="短期" data-status="todo" data-status-label="待办" data-due="-" data-priority="1" data-time="" data-tags="task-appender, ddl, feature" data-notes="提供 CLI 能力手动修改任务 due_at，覆盖新增、更新、清空截止日期，并保持校验和导出一致。" data-parent="T-0013" data-deps="-" data-children="-" data-default-x="333" data-default-y="886" data-x="333" data-y="886" transform="translate(333 886)">
+            <rect class="node-card" x="0" y="0" width="230" height="86" rx="8" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
+            <text x="14" y="21" fill="#0f172a" font-size="14" font-weight="700">T-0016</text>
+            <text x="216" y="21" text-anchor="end" fill="#475569" font-size="12">待办/短期</text>
+            <text x="14" y="43" fill="#111827" font-size="14">支持 DDL 日期手动修改</text>
+            <text x="14" y="73" fill="#64748b" font-size="12">截止 - · #task-appender #ddl</text>
+          </g>
+          <g id="T_0017" class="task-node" tabindex="0" role="button" aria-label="T-0017 支持 DDL 日期自动修改策略" data-task-id="T-0017" data-title="支持 DDL 日期自动修改策略" data-kind="short" data-kind-label="短期" data-status="todo" data-status-label="待办" data-due="-" data-priority="1" data-time="" data-tags="task-appender, ddl, automation" data-notes="设计自动调整 due_at 的规则，例如基于依赖完成状态、延期策略或周期任务滚动生成，并提供可解释的预览/确认流程。" data-parent="T-0013" data-deps="T-0016" data-children="-" data-default-x="618" data-default-y="886" data-x="618" data-y="886" transform="translate(618 886)">
+            <rect class="node-card" x="0" y="0" width="230" height="86" rx="8" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
+            <text x="14" y="21" fill="#0f172a" font-size="14" font-weight="700">T-0017</text>
+            <text x="216" y="21" text-anchor="end" fill="#475569" font-size="12">待办/短期</text>
+            <text x="14" y="43" fill="#111827" font-size="14">支持 DDL 日期自动修改</text>
+            <text x="14" y="60" fill="#111827" font-size="14">策略</text>
+            <text x="14" y="73" fill="#64748b" font-size="12">截止 - · #task-appender #ddl</text>
+          </g>
+          <g id="T_0018" class="task-node" tabindex="0" role="button" aria-label="T-0018 学习 KVCache 调度" data-task-id="T-0018" data-title="学习 KVCache 调度" data-kind="long" data-kind-label="长期" data-status="doing" data-status-label="进行中" data-due="-" data-priority="1" data-time="" data-tags="kvcache, scheduling, inference" data-notes="总目标：系统理解 KVCache 调度问题，包括单机 KV 管理、缓存复用、调度策略，以及分布式推理中的 KVCache 分配、迁移和传输。" data-parent="T-0020" data-deps="-" data-children="T-0001" data-default-x="333" data-default-y="1278" data-x="333" data-y="1278" transform="translate(333 1278)">
+            <rect class="node-card" x="0" y="0" width="230" height="86" rx="8" fill="#e0f2fe" stroke="#0369a1" stroke-width="2"/>
+            <text x="14" y="21" fill="#0f172a" font-size="14" font-weight="700">T-0018</text>
+            <text x="216" y="21" text-anchor="end" fill="#475569" font-size="12">进行中/长期</text>
+            <text x="14" y="43" fill="#111827" font-size="14">学习 KVCache 调度</text>
+            <text x="14" y="73" fill="#64748b" font-size="12">截止 - · #kvcache #scheduling</text>
+          </g>
+          <g id="T_0020" class="task-node" tabindex="0" role="button" aria-label="T-0020 llm推理" data-task-id="T-0020" data-title="llm推理" data-kind="long" data-kind-label="长期" data-status="doing" data-status-label="进行中" data-due="-" data-priority="1" data-time="" data-tags="llm, inference" data-notes="总目标：系统理解 LLM 推理链路，包括模型推理、KVCache、调度、吞吐和延迟优化。" data-parent="-" data-deps="-" data-children="T-0018" data-default-x="48" data-default-y="1278" data-x="48" data-y="1278" transform="translate(48 1278)">
+            <rect class="node-card" x="0" y="0" width="230" height="86" rx="8" fill="#e0f2fe" stroke="#0369a1" stroke-width="2"/>
+            <text x="14" y="21" fill="#0f172a" font-size="14" font-weight="700">T-0020</text>
+            <text x="216" y="21" text-anchor="end" fill="#475569" font-size="12">进行中/长期</text>
+            <text x="14" y="43" fill="#111827" font-size="14">llm推理</text>
+            <text x="14" y="73" fill="#64748b" font-size="12">截止 - · #llm #inference</text>
+          </g>
+          <g id="T_0021" class="task-node" tabindex="0" role="button" aria-label="T-0021 搭建个人博客" data-task-id="T-0021" data-title="搭建个人博客" data-kind="long" data-kind-label="长期" data-status="done" data-status-label="已完成" data-due="-" data-priority="3" data-time="" data-tags="blog" data-notes="" data-parent="-" data-deps="-" data-children="-" data-default-x="48" data-default-y="3360" data-x="48" data-y="3360" transform="translate(48 3360)">
+            <rect class="node-card" x="0" y="0" width="230" height="86" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="2"/>
+            <text x="14" y="21" fill="#0f172a" font-size="14" font-weight="700">T-0021</text>
+            <text x="216" y="21" text-anchor="end" fill="#475569" font-size="12">已完成/长期</text>
+            <text x="14" y="43" fill="#111827" font-size="14">搭建个人博客</text>
+            <text x="14" y="73" fill="#64748b" font-size="12">截止 - · #blog</text>
+          </g>
+          <g id="T_0022" class="task-node" tabindex="0" role="button" aria-label="T-0022 写 MuP 博客" data-task-id="T-0022" data-title="写 MuP 博客" data-kind="long" data-kind-label="长期" data-status="doing" data-status-label="进行中" data-due="-" data-priority="3" data-time="" data-tags="blog, mup" data-notes="MuP 博客系列总任务：覆盖初探 MuP、高阶 MuP，以及 MuP 之上四部曲。" data-parent="-" data-deps="-" data-children="T-0023, T-0024, T-0025, T-0026, T-0027, T-0028" data-default-x="48" data-default-y="1548" data-x="48" data-y="1548" transform="translate(48 1548)">
+            <rect class="node-card" x="0" y="0" width="230" height="86" rx="8" fill="#e0f2fe" stroke="#0369a1" stroke-width="2"/>
+            <text x="14" y="21" fill="#0f172a" font-size="14" font-weight="700">T-0022</text>
+            <text x="216" y="21" text-anchor="end" fill="#475569" font-size="12">进行中/长期</text>
+            <text x="14" y="43" fill="#111827" font-size="14">写 MuP 博客</text>
+            <text x="14" y="73" fill="#64748b" font-size="12">截止 - · #blog #mup</text>
+          </g>
+          <g id="T_0023" class="task-node" tabindex="0" role="button" aria-label="T-0023 初探 MuP" data-task-id="T-0023" data-title="初探 MuP" data-kind="short" data-kind-label="短期" data-status="done" data-status-label="已完成" data-due="-" data-priority="3" data-time="" data-tags="blog, mup" data-notes="MuP 博客系列第 1 篇：整理 MuP 的核心问题、直觉、基本概念和入门示例。" data-parent="T-0022" data-deps="-" data-children="-" data-default-x="333" data-default-y="1548" data-x="333" data-y="1548" transform="translate(333 1548)">
+            <rect class="node-card" x="0" y="0" width="230" height="86" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="2"/>
+            <text x="14" y="21" fill="#0f172a" font-size="14" font-weight="700">T-0023</text>
+            <text x="216" y="21" text-anchor="end" fill="#475569" font-size="12">已完成/短期</text>
+            <text x="14" y="43" fill="#111827" font-size="14">初探 MuP</text>
+            <text x="14" y="73" fill="#64748b" font-size="12">截止 - · #blog #mup</text>
+          </g>
+          <g id="T_0024" class="task-node" tabindex="0" role="button" aria-label="T-0024 高阶 MuP" data-task-id="T-0024" data-title="高阶 MuP" data-kind="short" data-kind-label="短期" data-status="done" data-status-label="已完成" data-due="-" data-priority="3" data-time="" data-tags="blog, mup" data-notes="MuP 博客系列第 2 篇：深入讨论更高阶的 MuP 机制、实践细节和常见坑点。" data-parent="T-0022" data-deps="T-0023" data-children="-" data-default-x="618" data-default-y="1548" data-x="618" data-y="1548" transform="translate(618 1548)">
+            <rect class="node-card" x="0" y="0" width="230" height="86" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="2"/>
+            <text x="14" y="21" fill="#0f172a" font-size="14" font-weight="700">T-0024</text>
+            <text x="216" y="21" text-anchor="end" fill="#475569" font-size="12">已完成/短期</text>
+            <text x="14" y="43" fill="#111827" font-size="14">高阶 MuP</text>
+            <text x="14" y="73" fill="#64748b" font-size="12">截止 - · #blog #mup</text>
+          </g>
+          <g id="T_0025" class="task-node" tabindex="0" role="button" aria-label="T-0025 MuP 之上 1" data-task-id="T-0025" data-title="MuP 之上 1" data-kind="short" data-kind-label="短期" data-status="todo" data-status-label="待办" data-due="-" data-priority="3" data-time="" data-tags="blog, mup" data-notes="MuP 博客系列第 3 篇：在 MuP 基础上展开第一篇延展主题。" data-parent="T-0022" data-deps="T-0024" data-children="-" data-default-x="903" data-default-y="1548" data-x="903" data-y="1548" transform="translate(903 1548)">
+            <rect class="node-card" x="0" y="0" width="230" height="86" rx="8" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
+            <text x="14" y="21" fill="#0f172a" font-size="14" font-weight="700">T-0025</text>
+            <text x="216" y="21" text-anchor="end" fill="#475569" font-size="12">待办/短期</text>
+            <text x="14" y="43" fill="#111827" font-size="14">MuP 之上 1</text>
+            <text x="14" y="73" fill="#64748b" font-size="12">截止 - · #blog #mup</text>
+          </g>
+          <g id="T_0026" class="task-node" tabindex="0" role="button" aria-label="T-0026 MuP 之上 2" data-task-id="T-0026" data-title="MuP 之上 2" data-kind="short" data-kind-label="短期" data-status="todo" data-status-label="待办" data-due="-" data-priority="3" data-time="" data-tags="blog, mup" data-notes="MuP 博客系列第 4 篇：在 MuP 基础上展开第二篇延展主题。" data-parent="T-0022" data-deps="T-0025" data-children="-" data-default-x="1188" data-default-y="1548" data-x="1188" data-y="1548" transform="translate(1188 1548)">
+            <rect class="node-card" x="0" y="0" width="230" height="86" rx="8" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
+            <text x="14" y="21" fill="#0f172a" font-size="14" font-weight="700">T-0026</text>
+            <text x="216" y="21" text-anchor="end" fill="#475569" font-size="12">待办/短期</text>
+            <text x="14" y="43" fill="#111827" font-size="14">MuP 之上 2</text>
+            <text x="14" y="73" fill="#64748b" font-size="12">截止 - · #blog #mup</text>
+          </g>
+          <g id="T_0027" class="task-node" tabindex="0" role="button" aria-label="T-0027 MuP 之上 3" data-task-id="T-0027" data-title="MuP 之上 3" data-kind="short" data-kind-label="短期" data-status="todo" data-status-label="待办" data-due="-" data-priority="3" data-time="" data-tags="blog, mup" data-notes="MuP 博客系列第 5 篇：在 MuP 基础上展开第三篇延展主题，并收束系列总结。" data-parent="T-0022" data-deps="T-0026" data-children="-" data-default-x="1473" data-default-y="1548" data-x="1473" data-y="1548" transform="translate(1473 1548)">
+            <rect class="node-card" x="0" y="0" width="230" height="86" rx="8" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
+            <text x="14" y="21" fill="#0f172a" font-size="14" font-weight="700">T-0027</text>
+            <text x="216" y="21" text-anchor="end" fill="#475569" font-size="12">待办/短期</text>
+            <text x="14" y="43" fill="#111827" font-size="14">MuP 之上 3</text>
+            <text x="14" y="73" fill="#64748b" font-size="12">截止 - · #blog #mup</text>
+          </g>
+          <g id="T_0028" class="task-node" tabindex="0" role="button" aria-label="T-0028 MuP 之上 4" data-task-id="T-0028" data-title="MuP 之上 4" data-kind="short" data-kind-label="短期" data-status="todo" data-status-label="待办" data-due="-" data-priority="3" data-time="" data-tags="blog, mup" data-notes="MuP 之上四部曲第 4 篇：完成最后一篇延展主题，并收束 MuP 之上系列。" data-parent="T-0022" data-deps="T-0027" data-children="-" data-default-x="1758" data-default-y="1548" data-x="1758" data-y="1548" transform="translate(1758 1548)">
+            <rect class="node-card" x="0" y="0" width="230" height="86" rx="8" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
+            <text x="14" y="21" fill="#0f172a" font-size="14" font-weight="700">T-0028</text>
+            <text x="216" y="21" text-anchor="end" fill="#475569" font-size="12">待办/短期</text>
+            <text x="14" y="43" fill="#111827" font-size="14">MuP 之上 4</text>
+            <text x="14" y="73" fill="#64748b" font-size="12">截止 - · #blog #mup</text>
+          </g>
+          <g id="T_0029" class="task-node" tabindex="0" role="button" aria-label="T-0029 编写 UCX 源码解读博客" data-task-id="T-0029" data-title="编写 UCX 源码解读博客" data-kind="short" data-kind-label="短期" data-status="todo" data-status-label="待办" data-due="-" data-priority="2" data-time="" data-tags="blog, ucx, source-reading" data-notes="围绕 UCX 源码主线写一篇解读博客，梳理通信抽象、关键模块、数据路径和与 RDMA/KVCache 传输相关的实现细节。" data-parent="-" data-deps="T-0003" data-children="-" data-default-x="618" data-default-y="3116" data-x="618" data-y="3116" transform="translate(618 3116)">
+            <rect class="node-card" x="0" y="0" width="230" height="86" rx="8" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
+            <text x="14" y="21" fill="#0f172a" font-size="14" font-weight="700">T-0029</text>
+            <text x="216" y="21" text-anchor="end" fill="#475569" font-size="12">待办/短期</text>
+            <text x="14" y="43" fill="#111827" font-size="14">编写 UCX 源码解读博客</text>
+            <text x="14" y="73" fill="#64748b" font-size="12">截止 - · #blog #ucx</text>
+          </g>
+          <g id="T_0030" class="task-node" tabindex="0" role="button" aria-label="T-0030 实现 v0.1 已完成任务收获提取" data-task-id="T-0030" data-title="实现 v0.1 已完成任务收获提取" data-kind="short" data-kind-label="短期" data-status="done" data-status-label="已完成" data-due="2026-05-05" data-priority="3" data-time="" data-tags="task-appender, feature, analytics, release" data-notes="v0.1 功能：从已完成任务的标题、备注和标签中提取用户收获，并导出到 Markdown、图谱 HTML 和成长计分板 HTML。" data-parent="T-0013" data-deps="-" data-children="-" data-default-x="333" data-default-y="1008" data-x="333" data-y="1008" transform="translate(333 1008)">
+            <rect class="node-card" x="0" y="0" width="230" height="86" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="2"/>
+            <text x="14" y="21" fill="#0f172a" font-size="14" font-weight="700">T-0030</text>
+            <text x="216" y="21" text-anchor="end" fill="#475569" font-size="12">已完成/短期</text>
+            <text x="14" y="43" fill="#111827" font-size="14">实现 v0.1 已完成任务收</text>
+            <text x="14" y="60" fill="#111827" font-size="14">获提取</text>
+            <text x="14" y="73" fill="#64748b" font-size="12">截止 05-05 · #task-appender #feature</text>
+          </g>
+          <g id="T_0031" class="task-node" tabindex="0" role="button" aria-label="T-0031 实现 v0.1 成长计分板和经验等级导出" data-task-id="T-0031" data-title="实现 v0.1 成长计分板和经验等级导出" data-kind="short" data-kind-label="短期" data-status="done" data-status-label="已完成" data-due="2026-05-05" data-priority="3" data-time="" data-tags="task-appender, feature, scoreboard, release" data-notes="v0.1 功能：把任务和产出量化为 XP、等级、任务池经验、技能标签和产出统计，并提供 exports/scoreboard.html。" data-parent="T-0013" data-deps="T-0030" data-children="-" data-default-x="618" data-default-y="1008" data-x="618" data-y="1008" transform="translate(618 1008)">
+            <rect class="node-card" x="0" y="0" width="230" height="86" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="2"/>
+            <text x="14" y="21" fill="#0f172a" font-size="14" font-weight="700">T-0031</text>
+            <text x="216" y="21" text-anchor="end" fill="#475569" font-size="12">已完成/短期</text>
+            <text x="14" y="43" fill="#111827" font-size="14">实现 v0.1 成长计分板和</text>
+            <text x="14" y="60" fill="#111827" font-size="14">经验等级导出</text>
+            <text x="14" y="73" fill="#64748b" font-size="12">截止 05-05 · #task-appender #feature</text>
+          </g>
+          <g id="T_0032" class="task-node" tabindex="0" role="button" aria-label="T-0032 发布 task_appender v0.1" data-task-id="T-0032" data-title="发布 task_appender v0.1" data-kind="milestone" data-kind-label="里程碑" data-status="done" data-status-label="已完成" data-due="2026-05-05" data-priority="3" data-time="" data-tags="task-appender, release" data-notes="发布里程碑：收获提取、成长计分板、HTML 导出和默认任务库写入后的自动同步全部验证通过后打 tag。" data-parent="T-0013" data-deps="T-0030, T-0031" data-children="-" data-default-x="903" data-default-y="764" data-x="903" data-y="764" transform="translate(903 764)">
+            <rect class="node-card" x="0" y="0" width="230" height="86" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="2"/>
+            <text x="14" y="21" fill="#0f172a" font-size="14" font-weight="700">T-0032</text>
+            <text x="216" y="21" text-anchor="end" fill="#475569" font-size="12">已完成/里程碑</text>
+            <text x="14" y="43" fill="#111827" font-size="14">发布 task_appender v0.</text>
+            <text x="14" y="60" fill="#111827" font-size="14">1</text>
+            <text x="14" y="73" fill="#64748b" font-size="12">截止 05-05 · #task-appender #release</text>
+          </g>
+          <g id="T_0033" class="task-node" tabindex="0" role="button" aria-label="T-0033 实现 v0.1.0rc1 技能树和段位标志补丁" data-task-id="T-0033" data-title="实现 v0.1.0rc1 技能树和段位标志补丁" data-kind="short" data-kind-label="短期" data-status="done" data-status-label="已完成" data-due="2026-05-05" data-priority="3" data-time="" data-tags="task-appender, feature, scoreboard, release" data-notes="v0.1.0rc1 补丁：成长计分板技能树改为单根树状结构，技能描述更简洁并带科技/魔幻风格，等级增加字符段位标志和等级谱注脚。" data-parent="T-0013" data-deps="T-0032" data-children="-" data-default-x="1188" data-default-y="764" data-x="1188" data-y="764" transform="translate(1188 764)">
+            <rect class="node-card" x="0" y="0" width="230" height="86" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="2"/>
+            <text x="14" y="21" fill="#0f172a" font-size="14" font-weight="700">T-0033</text>
+            <text x="216" y="21" text-anchor="end" fill="#475569" font-size="12">已完成/短期</text>
+            <text x="14" y="43" fill="#111827" font-size="14">实现 v0.1.0rc1 技能树</text>
+            <text x="14" y="60" fill="#111827" font-size="14">和段位标志补丁</text>
+            <text x="14" y="73" fill="#64748b" font-size="12">截止 05-05 · #task-appender #feature</text>
+          </g>
+          <g id="T_0034" class="task-node" tabindex="0" role="button" aria-label="T-0034 发布 task_appender v0.1.0rc1" data-task-id="T-0034" data-title="发布 task_appender v0.1.0rc1" data-kind="milestone" data-kind-label="里程碑" data-status="done" data-status-label="已完成" data-due="2026-05-05" data-priority="3" data-time="" data-tags="task-appender, release" data-notes="发布候选版本：技能树、段位字符标志、等级谱注脚、导出和测试验证通过后打 v0.1.0rc1 标签并推送主线。" data-parent="T-0013" data-deps="T-0033" data-children="-" data-default-x="1473" data-default-y="764" data-x="1473" data-y="764" transform="translate(1473 764)">
+            <rect class="node-card" x="0" y="0" width="230" height="86" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="2"/>
+            <text x="14" y="21" fill="#0f172a" font-size="14" font-weight="700">T-0034</text>
+            <text x="216" y="21" text-anchor="end" fill="#475569" font-size="12">已完成/里程碑</text>
+            <text x="14" y="43" fill="#111827" font-size="14">发布 task_appender v0.</text>
+            <text x="14" y="60" fill="#111827" font-size="14">1.0rc1</text>
+            <text x="14" y="73" fill="#64748b" font-size="12">截止 05-05 · #task-appender #release</text>
+          </g>
+          <g id="T_0035" class="task-node" tabindex="0" role="button" aria-label="T-0035 支持个人博客中英文双语" data-task-id="T-0035" data-title="支持个人博客中英文双语" data-kind="short" data-kind-label="短期" data-status="todo" data-status-label="待办" data-due="-" data-priority="2" data-time="" data-tags="blog, i18n, bilingual" data-notes="为个人博客增加中文/英文双语支持，包括语言切换入口、文章语言版本组织和基础导航文案适配。" data-parent="-" data-deps="-" data-children="-" data-default-x="48" data-default-y="3482" data-x="48" data-y="3482" transform="translate(48 3482)">
+            <rect class="node-card" x="0" y="0" width="230" height="86" rx="8" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
+            <text x="14" y="21" fill="#0f172a" font-size="14" font-weight="700">T-0035</text>
+            <text x="216" y="21" text-anchor="end" fill="#475569" font-size="12">待办/短期</text>
+            <text x="14" y="43" fill="#111827" font-size="14">支持个人博客中英文双语</text>
+            <text x="14" y="73" fill="#64748b" font-size="12">截止 - · #blog #i18n</text>
+          </g>
+          <g id="T_0036" class="task-node" tabindex="0" role="button" aria-label="T-0036 学习推理框架里面 KVCache 的寻址" data-task-id="T-0036" data-title="学习推理框架里面 KVCache 的寻址" data-kind="long" data-kind-label="长期" data-status="todo" data-status-label="待办" data-due="-" data-priority="1" data-time="" data-tags="kvcache, inference, attention, serving" data-notes="系统理解推理框架中 KVCache 寻址与管理方式，重点覆盖 PagedAttention、RadixAttention、pico-vLLM、vLLM、SGLang 以及其他开放实现。" data-parent="-" data-deps="-" data-children="T-0037, T-0038, T-0039, T-0040, T-0041, T-0042" data-default-x="48" data-default-y="1818" data-x="48" data-y="1818" transform="translate(48 1818)">
+            <rect class="node-card" x="0" y="0" width="230" height="86" rx="8" fill="#e0f2fe" stroke="#0369a1" stroke-width="2"/>
+            <text x="14" y="21" fill="#0f172a" font-size="14" font-weight="700">T-0036</text>
+            <text x="216" y="21" text-anchor="end" fill="#475569" font-size="12">待办/长期</text>
+            <text x="14" y="43" fill="#111827" font-size="14">学习推理框架里面 KVCac</text>
+            <text x="14" y="60" fill="#111827" font-size="14">he 的寻址</text>
+            <text x="14" y="73" fill="#64748b" font-size="12">截止 - · #kvcache #inference</text>
+          </g>
+          <g id="T_0037" class="task-node" tabindex="0" role="button" aria-label="T-0037 学习 PagedAttention" data-task-id="T-0037" data-title="学习 PagedAttention" data-kind="short" data-kind-label="短期" data-status="done" data-status-label="已完成" data-due="-" data-priority="1" data-time="" data-tags="kvcache, pagedattention, attention" data-notes="理解 PagedAttention 的 block/page 抽象、物理块分配、逻辑到物理映射、连续/非连续 KVCache 管理和对吞吐/显存碎片的影响。" data-parent="T-0036" data-deps="-" data-children="-" data-default-x="333" data-default-y="1818" data-x="333" data-y="1818" transform="translate(333 1818)">
+            <rect class="node-card" x="0" y="0" width="230" height="86" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="2"/>
+            <text x="14" y="21" fill="#0f172a" font-size="14" font-weight="700">T-0037</text>
+            <text x="216" y="21" text-anchor="end" fill="#475569" font-size="12">已完成/短期</text>
+            <text x="14" y="43" fill="#111827" font-size="14">学习 PagedAttention</text>
+            <text x="14" y="73" fill="#64748b" font-size="12">截止 - · #kvcache #pagedattention</text>
+          </g>
+          <g id="T_0038" class="task-node" tabindex="0" role="button" aria-label="T-0038 学习 RadixAttention" data-task-id="T-0038" data-title="学习 RadixAttention" data-kind="short" data-kind-label="短期" data-status="todo" data-status-label="待办" data-due="-" data-priority="1" data-time="" data-tags="kvcache, radixattention, attention" data-notes="理解 RadixAttention/Radix Tree 的前缀复用、KVCache 索引、插入/匹配/淘汰路径，以及它和请求调度的关系。" data-parent="T-0036" data-deps="-" data-children="-" data-default-x="333" data-default-y="1940" data-x="333" data-y="1940" transform="translate(333 1940)">
+            <rect class="node-card" x="0" y="0" width="230" height="86" rx="8" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
+            <text x="14" y="21" fill="#0f172a" font-size="14" font-weight="700">T-0038</text>
+            <text x="216" y="21" text-anchor="end" fill="#475569" font-size="12">待办/短期</text>
+            <text x="14" y="43" fill="#111827" font-size="14">学习 RadixAttention</text>
+            <text x="14" y="73" fill="#64748b" font-size="12">截止 - · #kvcache #radixattention</text>
+          </g>
+          <g id="T_0039" class="task-node" tabindex="0" role="button" aria-label="T-0039 学习 pico-vLLM 的 PA+RA" data-task-id="T-0039" data-title="学习 pico-vLLM 的 PA+RA" data-kind="short" data-kind-label="短期" data-status="todo" data-status-label="待办" data-due="-" data-priority="1" data-time="" data-tags="kvcache, pico-vllm, pagedattention, radixattention" data-notes="阅读 pico-vLLM 中 PagedAttention 与 RadixAttention 组合实现，关注块表、前缀树、调度入口和 KVCache 命中路径。" data-parent="T-0036" data-deps="T-0037, T-0038" data-children="-" data-default-x="618" data-default-y="1818" data-x="618" data-y="1818" transform="translate(618 1818)">
+            <rect class="node-card" x="0" y="0" width="230" height="86" rx="8" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
+            <text x="14" y="21" fill="#0f172a" font-size="14" font-weight="700">T-0039</text>
+            <text x="216" y="21" text-anchor="end" fill="#475569" font-size="12">待办/短期</text>
+            <text x="14" y="43" fill="#111827" font-size="14">学习 pico-vLLM 的 PA+R</text>
+            <text x="14" y="60" fill="#111827" font-size="14">A</text>
+            <text x="14" y="73" fill="#64748b" font-size="12">截止 - · #kvcache #pico-vllm</text>
+          </g>
+          <g id="T_0040" class="task-node" tabindex="0" role="button" aria-label="T-0040 学习正统 vLLM 的 PagedAttention" data-task-id="T-0040" data-title="学习正统 vLLM 的 PagedAttention" data-kind="short" data-kind-label="短期" data-status="todo" data-status-label="待办" data-due="-" data-priority="1" data-time="" data-tags="kvcache, vllm, pagedattention" data-notes="阅读 vLLM 正统实现中的 PagedAttention、block manager、scheduler、KVCache block table 和 CUDA kernel 调用链。" data-parent="T-0036" data-deps="T-0037" data-children="-" data-default-x="618" data-default-y="1940" data-x="618" data-y="1940" transform="translate(618 1940)">
+            <rect class="node-card" x="0" y="0" width="230" height="86" rx="8" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
+            <text x="14" y="21" fill="#0f172a" font-size="14" font-weight="700">T-0040</text>
+            <text x="216" y="21" text-anchor="end" fill="#475569" font-size="12">待办/短期</text>
+            <text x="14" y="43" fill="#111827" font-size="14">学习正统 vLLM 的 Paged</text>
+            <text x="14" y="60" fill="#111827" font-size="14">Attention</text>
+            <text x="14" y="73" fill="#64748b" font-size="12">截止 - · #kvcache #vllm</text>
+          </g>
+          <g id="T_0041" class="task-node" tabindex="0" role="button" aria-label="T-0041 学习正统 SGLang 的 RadixAttention" data-task-id="T-0041" data-title="学习正统 SGLang 的 RadixAttention" data-kind="short" data-kind-label="短期" data-status="todo" data-status-label="待办" data-due="-" data-priority="1" data-time="" data-tags="kvcache, sglang, radixattention" data-notes="阅读 SGLang 正统实现中的 RadixAttention、prefix cache、radix tree 节点管理、请求匹配和缓存淘汰策略。" data-parent="T-0036" data-deps="T-0038" data-children="-" data-default-x="618" data-default-y="2062" data-x="618" data-y="2062" transform="translate(618 2062)">
+            <rect class="node-card" x="0" y="0" width="230" height="86" rx="8" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
+            <text x="14" y="21" fill="#0f172a" font-size="14" font-weight="700">T-0041</text>
+            <text x="216" y="21" text-anchor="end" fill="#475569" font-size="12">待办/短期</text>
+            <text x="14" y="43" fill="#111827" font-size="14">学习正统 SGLang 的 Rad</text>
+            <text x="14" y="60" fill="#111827" font-size="14">ixAttention</text>
+            <text x="14" y="73" fill="#64748b" font-size="12">截止 - · #kvcache #sglang</text>
+          </g>
+          <g id="T_0042" class="task-node" tabindex="0" role="button" aria-label="T-0042 学习其他不成熟但开放的 KVCache 管理方案" data-task-id="T-0042" data-title="学习其他不成熟但开放的 KVCache 管理方案" data-kind="short" data-kind-label="短期" data-status="todo" data-status-label="待办" data-due="-" data-priority="2" data-time="" data-tags="kvcache, serving, research, open-source" data-notes="调研其他开源但尚不成熟的 KVCache 管理方案，比较寻址结构、分配策略、复用机制、淘汰策略和工程复杂度。" data-parent="T-0036" data-deps="T-0039, T-0040, T-0041" data-children="-" data-default-x="903" data-default-y="1818" data-x="903" data-y="1818" transform="translate(903 1818)">
+            <rect class="node-card" x="0" y="0" width="230" height="86" rx="8" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
+            <text x="14" y="21" fill="#0f172a" font-size="14" font-weight="700">T-0042</text>
+            <text x="216" y="21" text-anchor="end" fill="#475569" font-size="12">待办/短期</text>
+            <text x="14" y="43" fill="#111827" font-size="14">学习其他不成熟但开放的</text>
+            <text x="14" y="60" fill="#111827" font-size="14"> KVCache 管理方案</text>
+            <text x="14" y="73" fill="#64748b" font-size="12">截止 - · #kvcache #serving</text>
+          </g>
+          <g id="T_0043" class="task-node" tabindex="0" role="button" aria-label="T-0043 Pico-vLLM开发" data-task-id="T-0043" data-title="Pico-vLLM开发" data-kind="long" data-kind-label="长期" data-status="todo" data-status-label="待办" data-due="-" data-priority="1" data-time="" data-tags="pico-vllm, inference, development" data-notes="Pico-vLLM 开发总任务：围绕 CPU 推理、profiling/memtrack 插件、blockManager 重构等方向推进推理框架能力。" data-parent="-" data-deps="-" data-children="T-0044, T-0045, T-0046" data-default-x="48" data-default-y="2332" data-x="48" data-y="2332" transform="translate(48 2332)">
+            <rect class="node-card" x="0" y="0" width="230" height="86" rx="8" fill="#e0f2fe" stroke="#0369a1" stroke-width="2"/>
+            <text x="14" y="21" fill="#0f172a" font-size="14" font-weight="700">T-0043</text>
+            <text x="216" y="21" text-anchor="end" fill="#475569" font-size="12">待办/长期</text>
+            <text x="14" y="43" fill="#111827" font-size="14">Pico-vLLM开发</text>
+            <text x="14" y="73" fill="#64748b" font-size="12">截止 - · #pico-vllm #inference</text>
+          </g>
+          <g id="T_0044" class="task-node" tabindex="0" role="button" aria-label="T-0044 Pico-vLLM CPU 推理支持" data-task-id="T-0044" data-title="Pico-vLLM CPU 推理支持" data-kind="short" data-kind-label="短期" data-status="done" data-status-label="已完成" data-due="-" data-priority="1" data-time="" data-tags="pico-vllm, cpu, inference" data-notes="为 Pico-vLLM 增加 CPU 推理支持，明确 CPU backend、算子路径、调度兼容和基础正确性验证。" data-parent="T-0043" data-deps="-" data-children="-" data-default-x="333" data-default-y="2332" data-x="333" data-y="2332" transform="translate(333 2332)">
+            <rect class="node-card" x="0" y="0" width="230" height="86" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="2"/>
+            <text x="14" y="21" fill="#0f172a" font-size="14" font-weight="700">T-0044</text>
+            <text x="216" y="21" text-anchor="end" fill="#475569" font-size="12">已完成/短期</text>
+            <text x="14" y="43" fill="#111827" font-size="14">Pico-vLLM CPU 推理支持</text>
+            <text x="14" y="73" fill="#64748b" font-size="12">截止 - · #pico-vllm #cpu</text>
+          </g>
+          <g id="T_0045" class="task-node" tabindex="0" role="button" aria-label="T-0045 Pico-vLLM profiling 和 memtrack 插件支持" data-task-id="T-0045" data-title="Pico-vLLM profiling 和 memtrack 插件支持" data-kind="short" data-kind-label="短期" data-status="todo" data-status-label="待办" data-due="-" data-priority="1" data-time="" data-tags="pico-vllm, profiling, memtrack, plugin" data-notes="为 Pico-vLLM 增加 profiling 与 memtrack 插件能力，支持性能采样、显存/内存跟踪、指标导出和插件化接入。" data-parent="T-0043" data-deps="-" data-children="-" data-default-x="333" data-default-y="2454" data-x="333" data-y="2454" transform="translate(333 2454)">
+            <rect class="node-card" x="0" y="0" width="230" height="86" rx="8" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
+            <text x="14" y="21" fill="#0f172a" font-size="14" font-weight="700">T-0045</text>
+            <text x="216" y="21" text-anchor="end" fill="#475569" font-size="12">待办/短期</text>
+            <text x="14" y="43" fill="#111827" font-size="14">Pico-vLLM profiling 和</text>
+            <text x="14" y="60" fill="#111827" font-size="14"> memtrack 插件支持</text>
+            <text x="14" y="73" fill="#64748b" font-size="12">截止 - · #pico-vllm #profiling</text>
+          </g>
+          <g id="T_0046" class="task-node" tabindex="0" role="button" aria-label="T-0046 Pico-vLLM blockManager 重构" data-task-id="T-0046" data-title="Pico-vLLM blockManager 重构" data-kind="short" data-kind-label="短期" data-status="todo" data-status-label="待办" data-due="-" data-priority="1" data-time="" data-tags="pico-vllm, block-manager, storage, mla, attention" data-notes="重构 Pico-vLLM blockManager，使其适配更多存储后端，并支持更多类型的类 MLA 注意力结构与 KVCache 管理需求。" data-parent="T-0043" data-deps="-" data-children="-" data-default-x="333" data-default-y="2576" data-x="333" data-y="2576" transform="translate(333 2576)">
+            <rect class="node-card" x="0" y="0" width="230" height="86" rx="8" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
+            <text x="14" y="21" fill="#0f172a" font-size="14" font-weight="700">T-0046</text>
+            <text x="216" y="21" text-anchor="end" fill="#475569" font-size="12">待办/短期</text>
+            <text x="14" y="43" fill="#111827" font-size="14">Pico-vLLM blockManager</text>
+            <text x="14" y="60" fill="#111827" font-size="14"> 重构</text>
+            <text x="14" y="73" fill="#64748b" font-size="12">截止 - · #pico-vllm #block-manager</text>
+          </g>
+          <g id="T_0047" class="task-node" tabindex="0" role="button" aria-label="T-0047 强化学习框架攻关" data-task-id="T-0047" data-title="强化学习框架攻关" data-kind="long" data-kind-label="长期" data-status="todo" data-status-label="待办" data-due="-" data-priority="1" data-time="" data-tags="reinforcement-learning, rl-framework, post-training" data-notes="围绕 LLM 后训练强化学习流程、verl 框架骨架、自研训推组件集成等方向推进强化学习框架攻关。" data-parent="-" data-deps="-" data-children="T-0048, T-0049, T-0050" data-default-x="48" data-default-y="2846" data-x="48" data-y="2846" transform="translate(48 2846)">
+            <rect class="node-card" x="0" y="0" width="230" height="86" rx="8" fill="#e0f2fe" stroke="#0369a1" stroke-width="2"/>
+            <text x="14" y="21" fill="#0f172a" font-size="14" font-weight="700">T-0047</text>
+            <text x="216" y="21" text-anchor="end" fill="#475569" font-size="12">待办/长期</text>
+            <text x="14" y="43" fill="#111827" font-size="14">强化学习框架攻关</text>
+            <text x="14" y="73" fill="#64748b" font-size="12">截止 - · #reinforcement-learning #rl-framework</text>
+          </g>
+          <g id="T_0048" class="task-node" tabindex="0" role="button" aria-label="T-0048 学习 LLM 后训练强化学习流程" data-task-id="T-0048" data-title="学习 LLM 后训练强化学习流程" data-kind="short" data-kind-label="短期" data-status="todo" data-status-label="待办" data-due="-" data-priority="1" data-time="" data-tags="reinforcement-learning, llm, post-training" data-notes="系统学习 LLM 后训练中的强化学习流程，覆盖数据/奖励建模、rollout、优势估计、策略更新、评估与工程闭环。" data-parent="T-0047" data-deps="-" data-children="-" data-default-x="333" data-default-y="2846" data-x="333" data-y="2846" transform="translate(333 2846)">
+            <rect class="node-card" x="0" y="0" width="230" height="86" rx="8" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
+            <text x="14" y="21" fill="#0f172a" font-size="14" font-weight="700">T-0048</text>
+            <text x="216" y="21" text-anchor="end" fill="#475569" font-size="12">待办/短期</text>
+            <text x="14" y="43" fill="#111827" font-size="14">学习 LLM 后训练强化学</text>
+            <text x="14" y="60" fill="#111827" font-size="14">习流程</text>
+            <text x="14" y="73" fill="#64748b" font-size="12">截止 - · #reinforcement-learning #llm</text>
+          </g>
+          <g id="T_0049" class="task-node" tabindex="0" role="button" aria-label="T-0049 学习 verl 框架大致骨架" data-task-id="T-0049" data-title="学习 verl 框架大致骨架" data-kind="short" data-kind-label="短期" data-status="todo" data-status-label="待办" data-due="-" data-priority="1" data-time="" data-tags="reinforcement-learning, verl, framework" data-notes="阅读 verl 框架整体骨架，梳理训练入口、worker/engine 分层、rollout、reward、PPO/GRPO 等算法路径和配置组织。" data-parent="T-0047" data-deps="T-0048" data-children="-" data-default-x="618" data-default-y="2846" data-x="618" data-y="2846" transform="translate(618 2846)">
+            <rect class="node-card" x="0" y="0" width="230" height="86" rx="8" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
+            <text x="14" y="21" fill="#0f172a" font-size="14" font-weight="700">T-0049</text>
+            <text x="216" y="21" text-anchor="end" fill="#475569" font-size="12">待办/短期</text>
+            <text x="14" y="43" fill="#111827" font-size="14">学习 verl 框架大致骨架</text>
+            <text x="14" y="73" fill="#64748b" font-size="12">截止 - · #reinforcement-learning #verl</text>
+          </g>
+          <g id="T_0050" class="task-node" tabindex="0" role="button" aria-label="T-0050 实现自研 RL 框架原型" data-task-id="T-0050" data-title="实现自研 RL 框架原型" data-kind="short" data-kind-label="短期" data-status="todo" data-status-label="待办" data-due="-" data-priority="1" data-time="" data-tags="reinforcement-learning, femotron, pico-vllm, training, inference" data-notes="设计并实现自研 RL 框架原型，以 femotron 作为训练组件、pico-vLLM 作为推理/rollout 组件，打通训推交互、样本生成、奖励计算和策略更新闭环。" data-parent="T-0047" data-deps="T-0049" data-children="-" data-default-x="903" data-default-y="2846" data-x="903" data-y="2846" transform="translate(903 2846)">
+            <rect class="node-card" x="0" y="0" width="230" height="86" rx="8" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
+            <text x="14" y="21" fill="#0f172a" font-size="14" font-weight="700">T-0050</text>
+            <text x="216" y="21" text-anchor="end" fill="#475569" font-size="12">待办/短期</text>
+            <text x="14" y="43" fill="#111827" font-size="14">实现自研 RL 框架原型</text>
+            <text x="14" y="73" fill="#64748b" font-size="12">截止 - · #reinforcement-learning #femotron</text>
+          </g>
+          <g id="T_0051" class="task-node" tabindex="0" role="button" aria-label="T-0051 学习模型训练动力学-SMD" data-task-id="T-0051" data-title="学习模型训练动力学-SMD" data-kind="long" data-kind-label="长期" data-status="done" data-status-label="已完成" data-due="-" data-priority="2" data-time="" data-tags="theory, training-dynamics, smd" data-notes="理论学习任务：系统理解 SMD 与模型训练动力学的关系，梳理核心假设、优化视角、收敛直觉和可迁移到深度学习训练分析的结论。" data-parent="-" data-deps="-" data-children="-" data-default-x="48" data-default-y="3604" data-x="48" data-y="3604" transform="translate(48 3604)">
+            <rect class="node-card" x="0" y="0" width="230" height="86" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="2"/>
+            <text x="14" y="21" fill="#0f172a" font-size="14" font-weight="700">T-0051</text>
+            <text x="216" y="21" text-anchor="end" fill="#475569" font-size="12">已完成/长期</text>
+            <text x="14" y="43" fill="#111827" font-size="14">学习模型训练动力学-SMD</text>
+            <text x="14" y="73" fill="#64748b" font-size="12">截止 - · #theory #training-dynamics</text>
+          </g>
         </g>
-        <g id="T_0003">
-          <rect x="333" y="1940" width="230" height="86" rx="12" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
-          <text x="347" y="1961" fill="#0f172a" font-size="14" font-weight="700">T-0003</text>
-          <text x="549" y="1961" text-anchor="end" fill="#475569" font-size="12">待办/短期</text>
-          <text x="347" y="1983" fill="#111827" font-size="14">学习 UCX</text>
-          <text x="347" y="2013" fill="#64748b" font-size="12">截止 05-12 · #ucx #rdma</text>
-        </g>
-        <g id="T_0004">
-          <rect x="48" y="1940" width="230" height="86" rx="12" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
-          <text x="62" y="1961" fill="#0f172a" font-size="14" font-weight="700">T-0004</text>
-          <text x="264" y="1961" text-anchor="end" fill="#475569" font-size="12">待办/短期</text>
-          <text x="62" y="1983" fill="#111827" font-size="14">学习 P/D 分离的基础</text>
-          <text x="62" y="2013" fill="#64748b" font-size="12">截止 05-03 · #pd-disaggregation #inference</text>
-        </g>
-        <g id="T_0005">
-          <rect x="48" y="102" width="230" height="86" rx="12" fill="#e0f2fe" stroke="#0369a1" stroke-width="2"/>
-          <text x="62" y="123" fill="#0f172a" font-size="14" font-weight="700">T-0005</text>
-          <text x="264" y="123" text-anchor="end" fill="#475569" font-size="12">待办/长期</text>
-          <text x="62" y="145" fill="#111827" font-size="14">学习 nccl-gin</text>
-          <text x="62" y="175" fill="#64748b" font-size="12">截止 - · #nccl-gin</text>
-        </g>
-        <g id="T_0006">
-          <rect x="333" y="102" width="230" height="86" rx="12" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
-          <text x="347" y="123" fill="#0f172a" font-size="14" font-weight="700">T-0006</text>
-          <text x="549" y="123" text-anchor="end" fill="#475569" font-size="12">待办/短期</text>
-          <text x="347" y="145" fill="#111827" font-size="14">学习 nccl-gin 具体源码</text>
-          <text x="347" y="175" fill="#64748b" font-size="12">截止 - · #nccl-gin</text>
-        </g>
-        <g id="T_0007">
-          <rect x="333" y="224" width="230" height="86" rx="12" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
-          <text x="347" y="245" fill="#0f172a" font-size="14" font-weight="700">T-0007</text>
-          <text x="549" y="245" text-anchor="end" fill="#475569" font-size="12">待办/短期</text>
-          <text x="347" y="267" fill="#111827" font-size="14">学习 nccl-gin 原理</text>
-          <text x="347" y="297" fill="#64748b" font-size="12">截止 - · #nccl-gin</text>
-        </g>
-        <g id="T_0008">
-          <rect x="48" y="494" width="230" height="86" rx="12" fill="#e0f2fe" stroke="#0369a1" stroke-width="2"/>
-          <text x="62" y="515" fill="#0f172a" font-size="14" font-weight="700">T-0008</text>
-          <text x="264" y="515" text-anchor="end" fill="#475569" font-size="12">待办/长期</text>
-          <text x="62" y="537" fill="#111827" font-size="14">学习 Megatron 训练框架</text>
-          <text x="62" y="567" fill="#64748b" font-size="12">截止 - · #megatron #distributed-training</text>
-        </g>
-        <g id="T_0009">
-          <rect x="333" y="494" width="230" height="86" rx="12" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
-          <text x="347" y="515" fill="#0f172a" font-size="14" font-weight="700">T-0009</text>
-          <text x="549" y="515" text-anchor="end" fill="#475569" font-size="12">待办/短期</text>
-          <text x="347" y="537" fill="#111827" font-size="14">梳理 Megatron 训练架构</text>
-          <text x="347" y="554" fill="#111827" font-size="14">与并行基础</text>
-          <text x="347" y="567" fill="#64748b" font-size="12">截止 - · #megatron #distributed-training</text>
-        </g>
-        <g id="T_0010">
-          <rect x="618" y="494" width="230" height="86" rx="12" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
-          <text x="632" y="515" fill="#0f172a" font-size="14" font-weight="700">T-0010</text>
-          <text x="834" y="515" text-anchor="end" fill="#475569" font-size="12">待办/短期</text>
-          <text x="632" y="537" fill="#111827" font-size="14">跑通 Megatron 小规模训</text>
-          <text x="632" y="554" fill="#111827" font-size="14">练样例</text>
-          <text x="632" y="567" fill="#64748b" font-size="12">截止 - · #megatron #experiment</text>
-        </g>
-        <g id="T_0011">
-          <rect x="903" y="494" width="230" height="86" rx="12" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
-          <text x="917" y="515" fill="#0f172a" font-size="14" font-weight="700">T-0011</text>
-          <text x="1119" y="515" text-anchor="end" fill="#475569" font-size="12">待办/短期</text>
-          <text x="917" y="537" fill="#111827" font-size="14">阅读 Megatron 模型、并</text>
-          <text x="917" y="554" fill="#111827" font-size="14">行与优化器源码主线</text>
-          <text x="917" y="567" fill="#64748b" font-size="12">截止 - · #megatron #source-reading</text>
-        </g>
-        <g id="T_0012">
-          <rect x="1188" y="494" width="230" height="86" rx="12" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
-          <text x="1202" y="515" fill="#0f172a" font-size="14" font-weight="700">T-0012</text>
-          <text x="1404" y="515" text-anchor="end" fill="#475569" font-size="12">待办/里程碑</text>
-          <text x="1202" y="537" fill="#111827" font-size="14">完成一次 Megatron 训练</text>
-          <text x="1202" y="554" fill="#111827" font-size="14">调优复盘</text>
-          <text x="1202" y="567" fill="#64748b" font-size="12">截止 - · #megatron #performance</text>
-        </g>
-        <g id="T_0013">
-          <rect x="48" y="764" width="230" height="86" rx="12" fill="#e0f2fe" stroke="#0369a1" stroke-width="2"/>
-          <text x="62" y="785" fill="#0f172a" font-size="14" font-weight="700">T-0013</text>
-          <text x="264" y="785" text-anchor="end" fill="#475569" font-size="12">待办/长期</text>
-          <text x="62" y="807" fill="#111827" font-size="14">维护 task_appender 功</text>
-          <text x="62" y="824" fill="#111827" font-size="14">能 TODO List</text>
-          <text x="62" y="837" fill="#64748b" font-size="12">截止 - · #task-appender #feature</text>
-        </g>
-        <g id="T_0014">
-          <rect x="333" y="764" width="230" height="86" rx="12" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
-          <text x="347" y="785" fill="#0f172a" font-size="14" font-weight="700">T-0014</text>
-          <text x="549" y="785" text-anchor="end" fill="#475569" font-size="12">待办/短期</text>
-          <text x="347" y="807" fill="#111827" font-size="14">实现每日任务创建与展示</text>
-          <text x="347" y="837" fill="#64748b" font-size="12">截止 - · #task-appender #daily</text>
-        </g>
-        <g id="T_0015">
-          <rect x="618" y="764" width="230" height="86" rx="12" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
-          <text x="632" y="785" fill="#0f172a" font-size="14" font-weight="700">T-0015</text>
-          <text x="834" y="785" text-anchor="end" fill="#475569" font-size="12">待办/短期</text>
-          <text x="632" y="807" fill="#111827" font-size="14">支持每日任务分时提醒</text>
-          <text x="632" y="837" fill="#64748b" font-size="12">截止 - · #task-appender #daily</text>
-        </g>
-        <g id="T_0016">
-          <rect x="333" y="886" width="230" height="86" rx="12" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
-          <text x="347" y="907" fill="#0f172a" font-size="14" font-weight="700">T-0016</text>
-          <text x="549" y="907" text-anchor="end" fill="#475569" font-size="12">待办/短期</text>
-          <text x="347" y="929" fill="#111827" font-size="14">支持 DDL 日期手动修改</text>
-          <text x="347" y="959" fill="#64748b" font-size="12">截止 - · #task-appender #ddl</text>
-        </g>
-        <g id="T_0017">
-          <rect x="618" y="886" width="230" height="86" rx="12" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
-          <text x="632" y="907" fill="#0f172a" font-size="14" font-weight="700">T-0017</text>
-          <text x="834" y="907" text-anchor="end" fill="#475569" font-size="12">待办/短期</text>
-          <text x="632" y="929" fill="#111827" font-size="14">支持 DDL 日期自动修改</text>
-          <text x="632" y="946" fill="#111827" font-size="14">策略</text>
-          <text x="632" y="959" fill="#64748b" font-size="12">截止 - · #task-appender #ddl</text>
-        </g>
-        <g id="T_0018">
-          <rect x="333" y="1278" width="230" height="86" rx="12" fill="#e0f2fe" stroke="#0369a1" stroke-width="2"/>
-          <text x="347" y="1299" fill="#0f172a" font-size="14" font-weight="700">T-0018</text>
-          <text x="549" y="1299" text-anchor="end" fill="#475569" font-size="12">进行中/长期</text>
-          <text x="347" y="1321" fill="#111827" font-size="14">学习 KVCache 调度</text>
-          <text x="347" y="1351" fill="#64748b" font-size="12">截止 - · #kvcache #scheduling</text>
-        </g>
-        <g id="T_0019">
-          <rect x="48" y="2062" width="230" height="86" rx="12" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
-          <text x="62" y="2083" fill="#0f172a" font-size="14" font-weight="700">T-0019</text>
-          <text x="264" y="2083" text-anchor="end" fill="#475569" font-size="12">待办/短期</text>
-          <text x="62" y="2105" fill="#111827" font-size="14">学习 PagedAttention(vL</text>
-          <text x="62" y="2122" fill="#111827" font-size="14">LM) 和 Radix Tree(SG...</text>
-          <text x="62" y="2135" fill="#64748b" font-size="12">截止 - · #kvcache #vllm</text>
-        </g>
-        <g id="T_0020">
-          <rect x="48" y="1278" width="230" height="86" rx="12" fill="#e0f2fe" stroke="#0369a1" stroke-width="2"/>
-          <text x="62" y="1299" fill="#0f172a" font-size="14" font-weight="700">T-0020</text>
-          <text x="264" y="1299" text-anchor="end" fill="#475569" font-size="12">进行中/长期</text>
-          <text x="62" y="1321" fill="#111827" font-size="14">llm推理</text>
-          <text x="62" y="1351" fill="#64748b" font-size="12">截止 - · #llm #inference</text>
-        </g>
-        <g id="T_0021">
-          <rect x="48" y="2184" width="230" height="86" rx="12" fill="#f1f5f9" stroke="#94a3b8" stroke-width="2"/>
-          <text x="62" y="2205" fill="#0f172a" font-size="14" font-weight="700">T-0021</text>
-          <text x="264" y="2205" text-anchor="end" fill="#475569" font-size="12">已完成/长期</text>
-          <text x="62" y="2227" fill="#111827" font-size="14">搭建个人博客</text>
-          <text x="62" y="2257" fill="#64748b" font-size="12">截止 - · #blog</text>
-        </g>
-        <g id="T_0022">
-          <rect x="48" y="1548" width="230" height="86" rx="12" fill="#e0f2fe" stroke="#0369a1" stroke-width="2"/>
-          <text x="62" y="1569" fill="#0f172a" font-size="14" font-weight="700">T-0022</text>
-          <text x="264" y="1569" text-anchor="end" fill="#475569" font-size="12">进行中/长期</text>
-          <text x="62" y="1591" fill="#111827" font-size="14">写 MuP 博客</text>
-          <text x="62" y="1621" fill="#64748b" font-size="12">截止 - · #blog #mup</text>
-        </g>
-        <g id="T_0023">
-          <rect x="333" y="1548" width="230" height="86" rx="12" fill="#f1f5f9" stroke="#94a3b8" stroke-width="2"/>
-          <text x="347" y="1569" fill="#0f172a" font-size="14" font-weight="700">T-0023</text>
-          <text x="549" y="1569" text-anchor="end" fill="#475569" font-size="12">已完成/短期</text>
-          <text x="347" y="1591" fill="#111827" font-size="14">初探 MuP</text>
-          <text x="347" y="1621" fill="#64748b" font-size="12">截止 - · #blog #mup</text>
-        </g>
-        <g id="T_0024">
-          <rect x="618" y="1548" width="230" height="86" rx="12" fill="#f1f5f9" stroke="#94a3b8" stroke-width="2"/>
-          <text x="632" y="1569" fill="#0f172a" font-size="14" font-weight="700">T-0024</text>
-          <text x="834" y="1569" text-anchor="end" fill="#475569" font-size="12">已完成/短期</text>
-          <text x="632" y="1591" fill="#111827" font-size="14">高阶 MuP</text>
-          <text x="632" y="1621" fill="#64748b" font-size="12">截止 - · #blog #mup</text>
-        </g>
-        <g id="T_0025">
-          <rect x="903" y="1548" width="230" height="86" rx="12" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
-          <text x="917" y="1569" fill="#0f172a" font-size="14" font-weight="700">T-0025</text>
-          <text x="1119" y="1569" text-anchor="end" fill="#475569" font-size="12">待办/短期</text>
-          <text x="917" y="1591" fill="#111827" font-size="14">MuP 之上 1</text>
-          <text x="917" y="1621" fill="#64748b" font-size="12">截止 - · #blog #mup</text>
-        </g>
-        <g id="T_0026">
-          <rect x="1188" y="1548" width="230" height="86" rx="12" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
-          <text x="1202" y="1569" fill="#0f172a" font-size="14" font-weight="700">T-0026</text>
-          <text x="1404" y="1569" text-anchor="end" fill="#475569" font-size="12">待办/短期</text>
-          <text x="1202" y="1591" fill="#111827" font-size="14">MuP 之上 2</text>
-          <text x="1202" y="1621" fill="#64748b" font-size="12">截止 - · #blog #mup</text>
-        </g>
-        <g id="T_0027">
-          <rect x="1473" y="1548" width="230" height="86" rx="12" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
-          <text x="1487" y="1569" fill="#0f172a" font-size="14" font-weight="700">T-0027</text>
-          <text x="1689" y="1569" text-anchor="end" fill="#475569" font-size="12">待办/短期</text>
-          <text x="1487" y="1591" fill="#111827" font-size="14">MuP 之上 3</text>
-          <text x="1487" y="1621" fill="#64748b" font-size="12">截止 - · #blog #mup</text>
-        </g>
-        <g id="T_0028">
-          <rect x="1758" y="1548" width="230" height="86" rx="12" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
-          <text x="1772" y="1569" fill="#0f172a" font-size="14" font-weight="700">T-0028</text>
-          <text x="1974" y="1569" text-anchor="end" fill="#475569" font-size="12">待办/短期</text>
-          <text x="1772" y="1591" fill="#111827" font-size="14">MuP 之上 4</text>
-          <text x="1772" y="1621" fill="#64748b" font-size="12">截止 - · #blog #mup</text>
-        </g>
-        <g id="T_0029">
-          <rect x="618" y="1818" width="230" height="86" rx="12" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
-          <text x="632" y="1839" fill="#0f172a" font-size="14" font-weight="700">T-0029</text>
-          <text x="834" y="1839" text-anchor="end" fill="#475569" font-size="12">待办/短期</text>
-          <text x="632" y="1861" fill="#111827" font-size="14">编写 UCX 源码解读博客</text>
-          <text x="632" y="1891" fill="#64748b" font-size="12">截止 - · #blog #ucx</text>
-        </g>
-        <g id="T_0030">
-          <rect x="333" y="1008" width="230" height="86" rx="12" fill="#f1f5f9" stroke="#94a3b8" stroke-width="2"/>
-          <text x="347" y="1029" fill="#0f172a" font-size="14" font-weight="700">T-0030</text>
-          <text x="549" y="1029" text-anchor="end" fill="#475569" font-size="12">已完成/短期</text>
-          <text x="347" y="1051" fill="#111827" font-size="14">实现 v0.1 已完成任务收</text>
-          <text x="347" y="1068" fill="#111827" font-size="14">获提取</text>
-          <text x="347" y="1081" fill="#64748b" font-size="12">截止 05-05 · #task-appender #feature</text>
-        </g>
-        <g id="T_0031">
-          <rect x="618" y="1008" width="230" height="86" rx="12" fill="#f1f5f9" stroke="#94a3b8" stroke-width="2"/>
-          <text x="632" y="1029" fill="#0f172a" font-size="14" font-weight="700">T-0031</text>
-          <text x="834" y="1029" text-anchor="end" fill="#475569" font-size="12">已完成/短期</text>
-          <text x="632" y="1051" fill="#111827" font-size="14">实现 v0.1 成长计分板和</text>
-          <text x="632" y="1068" fill="#111827" font-size="14">经验等级导出</text>
-          <text x="632" y="1081" fill="#64748b" font-size="12">截止 05-05 · #task-appender #feature</text>
-        </g>
-        <g id="T_0032">
-          <rect x="903" y="764" width="230" height="86" rx="12" fill="#f1f5f9" stroke="#94a3b8" stroke-width="2"/>
-          <text x="917" y="785" fill="#0f172a" font-size="14" font-weight="700">T-0032</text>
-          <text x="1119" y="785" text-anchor="end" fill="#475569" font-size="12">已完成/里程碑</text>
-          <text x="917" y="807" fill="#111827" font-size="14">发布 task_appender v0.</text>
-          <text x="917" y="824" fill="#111827" font-size="14">1</text>
-          <text x="917" y="837" fill="#64748b" font-size="12">截止 05-05 · #task-appender #release</text>
-        </g>
-        <g id="T_0033">
-          <rect x="1188" y="764" width="230" height="86" rx="12" fill="#f1f5f9" stroke="#94a3b8" stroke-width="2"/>
-          <text x="1202" y="785" fill="#0f172a" font-size="14" font-weight="700">T-0033</text>
-          <text x="1404" y="785" text-anchor="end" fill="#475569" font-size="12">已完成/短期</text>
-          <text x="1202" y="807" fill="#111827" font-size="14">实现 v0.1.0rc1 技能树</text>
-          <text x="1202" y="824" fill="#111827" font-size="14">和段位标志补丁</text>
-          <text x="1202" y="837" fill="#64748b" font-size="12">截止 05-05 · #task-appender #feature</text>
-        </g>
-        <g id="T_0034">
-          <rect x="1473" y="764" width="230" height="86" rx="12" fill="#f1f5f9" stroke="#94a3b8" stroke-width="2"/>
-          <text x="1487" y="785" fill="#0f172a" font-size="14" font-weight="700">T-0034</text>
-          <text x="1689" y="785" text-anchor="end" fill="#475569" font-size="12">已完成/里程碑</text>
-          <text x="1487" y="807" fill="#111827" font-size="14">发布 task_appender v0.</text>
-          <text x="1487" y="824" fill="#111827" font-size="14">1.0rc1</text>
-          <text x="1487" y="837" fill="#64748b" font-size="12">截止 05-05 · #task-appender #release</text>
-        </g>
-      </svg>
+          </svg>
+        </section>
+        <aside class="task-inspector" id="task-inspector" aria-live="polite">
+          <h2 id="inspector-title">任务详情</h2>
+          <p class="inspector-id" id="inspector-id">未选择</p>
+          <dl>
+            <dt>状态</dt><dd id="inspector-status">-</dd>
+            <dt>类型</dt><dd id="inspector-kind">-</dd>
+            <dt>截止</dt><dd id="inspector-due">-</dd>
+            <dt>标签</dt><dd id="inspector-tags">-</dd>
+            <dt>父任务</dt><dd id="inspector-parent">-</dd>
+            <dt>依赖</dt><dd id="inspector-deps">-</dd>
+            <dt>子任务</dt><dd id="inspector-children">-</dd>
+          </dl>
+        </aside>
+      </div>
+      <div class="task-context-menu" id="task-context-menu" hidden>
+        <button type="button" data-action="edit">编辑任务</button>
+        <button type="button" data-status="todo">标为待办</button>
+        <button type="button" data-status="doing">标为进行中</button>
+        <button type="button" data-status="blocked">标为阻塞</button>
+        <button type="button" data-status="done">标为完成</button>
+        <button type="button" data-status="archived">标为归档</button>
+      </div>
+      <div class="task-dialog-backdrop" id="task-dialog-backdrop" hidden>
+        <form class="task-dialog" id="new-task-form">
+          <h2 id="task-dialog-title">新建任务</h2>
+          <label>标题 <input name="title" id="new-task-title" required maxlength="160"></label>
+          <div class="dialog-grid">
+            <label>类型
+              <select name="kind">
+                <option value="short">短期</option>
+                <option value="long">长期</option>
+                <option value="daily">每日</option>
+                <option value="milestone">里程碑</option>
+              </select>
+            </label>
+            <label>状态
+              <select name="status">
+                <option value="todo">待办</option>
+                <option value="doing">进行中</option>
+                <option value="blocked">被阻塞</option>
+                <option value="done">已完成</option>
+                <option value="archived">已归档</option>
+              </select>
+            </label>
+            <label>截止 <input name="due_at" type="date"></label>
+            <label>优先级 <input name="priority" type="number" min="1" max="5" step="1" value="3"></label>
+            <label>父任务 <input name="parent" placeholder="T-0001"></label>
+            <label>子任务 <input name="children" placeholder="T-0002, T-0003"></label>
+            <label>标签 <input name="tags" placeholder="tag1, tag2"></label>
+            <label>依赖 <input name="depends_on" placeholder="T-0002, T-0003"></label>
+            <label>每日时间 <input name="time" placeholder="21:00"></label>
+          </div>
+          <label>备注 <textarea name="notes"></textarea></label>
+          <div class="dialog-actions">
+            <button type="button" id="cancel-new-task">取消</button>
+            <button type="submit" class="primary" id="task-dialog-submit">创建</button>
+          </div>
+        </form>
+      </div>
     </section>
     <h2>任务明细</h2>
     <table>
@@ -837,12 +1330,12 @@
       </thead>
       <tbody>
         <tr><td><code>T-0001</code></td><td>进行中</td><td>长期</td><td>2026-05-19</td><td>学习 KVCache 分布式推理调度</td><td>-</td><td>T-0002, T-0003</td><td><code>kvcache</code> <code>inference</code> <code>scheduling</code></td></tr>
-        <tr><td><code>T-0018</code></td><td>进行中</td><td>长期</td><td>-</td><td>学习 KVCache 调度</td><td>-</td><td>T-0001, T-0019</td><td><code>kvcache</code> <code>scheduling</code> <code>inference</code></td></tr>
+        <tr><td><code>T-0018</code></td><td>进行中</td><td>长期</td><td>-</td><td>学习 KVCache 调度</td><td>-</td><td>T-0001</td><td><code>kvcache</code> <code>scheduling</code> <code>inference</code></td></tr>
         <tr><td><code>T-0020</code></td><td>进行中</td><td>长期</td><td>-</td><td>llm推理</td><td>-</td><td>T-0018</td><td><code>llm</code> <code>inference</code></td></tr>
         <tr><td><code>T-0022</code></td><td>进行中</td><td>长期</td><td>-</td><td>写 MuP 博客</td><td>-</td><td>T-0023, T-0024, T-0025, T-0026, T-0027, T-0028</td><td><code>blog</code> <code>mup</code></td></tr>
+        <tr><td><code>T-0003</code></td><td>被阻塞</td><td>短期</td><td>2026-05-12</td><td>学习 UCX</td><td>-</td><td>-</td><td><code>ucx</code> <code>rdma</code> <code>transport</code></td></tr>
         <tr><td><code>T-0004</code></td><td>待办</td><td>短期</td><td>2026-05-03</td><td>学习 P/D 分离的基础</td><td>-</td><td>-</td><td><code>pd-disaggregation</code> <code>inference</code> <code>foundation</code></td></tr>
         <tr><td><code>T-0002</code></td><td>待办</td><td>短期</td><td>2026-05-10</td><td>学习 Mooncake</td><td>T-0004</td><td>-</td><td><code>mooncake</code> <code>kvcache</code> <code>pd-disaggregation</code></td></tr>
-        <tr><td><code>T-0003</code></td><td>待办</td><td>短期</td><td>2026-05-12</td><td>学习 UCX</td><td>-</td><td>-</td><td><code>ucx</code> <code>rdma</code> <code>transport</code></td></tr>
         <tr><td><code>T-0005</code></td><td>待办</td><td>长期</td><td>-</td><td>学习 nccl-gin</td><td>-</td><td>T-0006, T-0007</td><td><code>nccl-gin</code></td></tr>
         <tr><td><code>T-0006</code></td><td>待办</td><td>短期</td><td>-</td><td>学习 nccl-gin 具体源码</td><td>-</td><td>-</td><td><code>nccl-gin</code></td></tr>
         <tr><td><code>T-0007</code></td><td>待办</td><td>短期</td><td>-</td><td>学习 nccl-gin 原理</td><td>-</td><td>-</td><td><code>nccl-gin</code></td></tr>
@@ -856,12 +1349,25 @@
         <tr><td><code>T-0015</code></td><td>待办</td><td>短期</td><td>-</td><td>支持每日任务分时提醒</td><td>T-0014</td><td>-</td><td><code>task-appender</code> <code>daily</code> <code>reminder</code></td></tr>
         <tr><td><code>T-0016</code></td><td>待办</td><td>短期</td><td>-</td><td>支持 DDL 日期手动修改</td><td>-</td><td>-</td><td><code>task-appender</code> <code>ddl</code> <code>feature</code></td></tr>
         <tr><td><code>T-0017</code></td><td>待办</td><td>短期</td><td>-</td><td>支持 DDL 日期自动修改策略</td><td>T-0016</td><td>-</td><td><code>task-appender</code> <code>ddl</code> <code>automation</code></td></tr>
-        <tr><td><code>T-0019</code></td><td>待办</td><td>短期</td><td>-</td><td>学习 PagedAttention(vLLM) 和 Radix Tree(SGLang) 对 KV 的管理</td><td>-</td><td>-</td><td><code>kvcache</code> <code>vllm</code> <code>sglang</code> <code>paged-attention</code></td></tr>
         <tr><td><code>T-0025</code></td><td>待办</td><td>短期</td><td>-</td><td>MuP 之上 1</td><td>T-0024</td><td>-</td><td><code>blog</code> <code>mup</code></td></tr>
         <tr><td><code>T-0026</code></td><td>待办</td><td>短期</td><td>-</td><td>MuP 之上 2</td><td>T-0025</td><td>-</td><td><code>blog</code> <code>mup</code></td></tr>
         <tr><td><code>T-0027</code></td><td>待办</td><td>短期</td><td>-</td><td>MuP 之上 3</td><td>T-0026</td><td>-</td><td><code>blog</code> <code>mup</code></td></tr>
         <tr><td><code>T-0028</code></td><td>待办</td><td>短期</td><td>-</td><td>MuP 之上 4</td><td>T-0027</td><td>-</td><td><code>blog</code> <code>mup</code></td></tr>
         <tr><td><code>T-0029</code></td><td>待办</td><td>短期</td><td>-</td><td>编写 UCX 源码解读博客</td><td>T-0003</td><td>-</td><td><code>blog</code> <code>ucx</code> <code>source-reading</code></td></tr>
+        <tr><td><code>T-0035</code></td><td>待办</td><td>短期</td><td>-</td><td>支持个人博客中英文双语</td><td>-</td><td>-</td><td><code>blog</code> <code>i18n</code> <code>bilingual</code></td></tr>
+        <tr><td><code>T-0036</code></td><td>待办</td><td>长期</td><td>-</td><td>学习推理框架里面 KVCache 的寻址</td><td>-</td><td>T-0037, T-0038, T-0039, T-0040, T-0041, T-0042</td><td><code>kvcache</code> <code>inference</code> <code>attention</code> <code>serving</code></td></tr>
+        <tr><td><code>T-0038</code></td><td>待办</td><td>短期</td><td>-</td><td>学习 RadixAttention</td><td>-</td><td>-</td><td><code>kvcache</code> <code>radixattention</code> <code>attention</code></td></tr>
+        <tr><td><code>T-0039</code></td><td>待办</td><td>短期</td><td>-</td><td>学习 pico-vLLM 的 PA+RA</td><td>T-0037, T-0038</td><td>-</td><td><code>kvcache</code> <code>pico-vllm</code> <code>pagedattention</code> <code>radixattention</code></td></tr>
+        <tr><td><code>T-0040</code></td><td>待办</td><td>短期</td><td>-</td><td>学习正统 vLLM 的 PagedAttention</td><td>T-0037</td><td>-</td><td><code>kvcache</code> <code>vllm</code> <code>pagedattention</code></td></tr>
+        <tr><td><code>T-0041</code></td><td>待办</td><td>短期</td><td>-</td><td>学习正统 SGLang 的 RadixAttention</td><td>T-0038</td><td>-</td><td><code>kvcache</code> <code>sglang</code> <code>radixattention</code></td></tr>
+        <tr><td><code>T-0042</code></td><td>待办</td><td>短期</td><td>-</td><td>学习其他不成熟但开放的 KVCache 管理方案</td><td>T-0039, T-0040, T-0041</td><td>-</td><td><code>kvcache</code> <code>serving</code> <code>research</code> <code>open-source</code></td></tr>
+        <tr><td><code>T-0043</code></td><td>待办</td><td>长期</td><td>-</td><td>Pico-vLLM开发</td><td>-</td><td>T-0044, T-0045, T-0046</td><td><code>pico-vllm</code> <code>inference</code> <code>development</code></td></tr>
+        <tr><td><code>T-0045</code></td><td>待办</td><td>短期</td><td>-</td><td>Pico-vLLM profiling 和 memtrack 插件支持</td><td>-</td><td>-</td><td><code>pico-vllm</code> <code>profiling</code> <code>memtrack</code> <code>plugin</code></td></tr>
+        <tr><td><code>T-0046</code></td><td>待办</td><td>短期</td><td>-</td><td>Pico-vLLM blockManager 重构</td><td>-</td><td>-</td><td><code>pico-vllm</code> <code>block-manager</code> <code>storage</code> <code>mla</code> <code>attention</code></td></tr>
+        <tr><td><code>T-0047</code></td><td>待办</td><td>长期</td><td>-</td><td>强化学习框架攻关</td><td>-</td><td>T-0048, T-0049, T-0050</td><td><code>reinforcement-learning</code> <code>rl-framework</code> <code>post-training</code></td></tr>
+        <tr><td><code>T-0048</code></td><td>待办</td><td>短期</td><td>-</td><td>学习 LLM 后训练强化学习流程</td><td>-</td><td>-</td><td><code>reinforcement-learning</code> <code>llm</code> <code>post-training</code></td></tr>
+        <tr><td><code>T-0049</code></td><td>待办</td><td>短期</td><td>-</td><td>学习 verl 框架大致骨架</td><td>T-0048</td><td>-</td><td><code>reinforcement-learning</code> <code>verl</code> <code>framework</code></td></tr>
+        <tr><td><code>T-0050</code></td><td>待办</td><td>短期</td><td>-</td><td>实现自研 RL 框架原型</td><td>T-0049</td><td>-</td><td><code>reinforcement-learning</code> <code>femotron</code> <code>pico-vllm</code> <code>training</code> <code>inference</code></td></tr>
         <tr><td><code>T-0030</code></td><td>已完成</td><td>短期</td><td>2026-05-05</td><td>实现 v0.1 已完成任务收获提取</td><td>-</td><td>-</td><td><code>task-appender</code> <code>feature</code> <code>analytics</code> <code>release</code></td></tr>
         <tr><td><code>T-0031</code></td><td>已完成</td><td>短期</td><td>2026-05-05</td><td>实现 v0.1 成长计分板和经验等级导出</td><td>T-0030</td><td>-</td><td><code>task-appender</code> <code>feature</code> <code>scoreboard</code> <code>release</code></td></tr>
         <tr><td><code>T-0032</code></td><td>已完成</td><td>里程碑</td><td>2026-05-05</td><td>发布 task_appender v0.1</td><td>T-0030, T-0031</td><td>-</td><td><code>task-appender</code> <code>release</code></td></tr>
@@ -870,8 +1376,521 @@
         <tr><td><code>T-0021</code></td><td>已完成</td><td>长期</td><td>-</td><td>搭建个人博客</td><td>-</td><td>-</td><td><code>blog</code></td></tr>
         <tr><td><code>T-0023</code></td><td>已完成</td><td>短期</td><td>-</td><td>初探 MuP</td><td>-</td><td>-</td><td><code>blog</code> <code>mup</code></td></tr>
         <tr><td><code>T-0024</code></td><td>已完成</td><td>短期</td><td>-</td><td>高阶 MuP</td><td>T-0023</td><td>-</td><td><code>blog</code> <code>mup</code></td></tr>
+        <tr><td><code>T-0037</code></td><td>已完成</td><td>短期</td><td>-</td><td>学习 PagedAttention</td><td>-</td><td>-</td><td><code>kvcache</code> <code>pagedattention</code> <code>attention</code></td></tr>
+        <tr><td><code>T-0044</code></td><td>已完成</td><td>短期</td><td>-</td><td>Pico-vLLM CPU 推理支持</td><td>-</td><td>-</td><td><code>pico-vllm</code> <code>cpu</code> <code>inference</code></td></tr>
+        <tr><td><code>T-0051</code></td><td>已完成</td><td>长期</td><td>-</td><td>学习模型训练动力学-SMD</td><td>-</td><td>-</td><td><code>theory</code> <code>training-dynamics</code> <code>smd</code></td></tr>
       </tbody>
     </table>
   </main>
+  <script>
+(function () {
+    const root = document.querySelector("[data-task-graph-ui]");
+    if (!root) return;
+
+    const svg = root.querySelector("svg.task-graph");
+    if (!svg) return;
+
+    const apiEnabled = root.dataset.apiEnabled === "1";
+    const nodeWidth = Number(svg.dataset.nodeWidth || 230);
+    const nodeHeight = Number(svg.dataset.nodeHeight || 86);
+    const nodes = Array.from(svg.querySelectorAll(".task-node"));
+    const edges = Array.from(svg.querySelectorAll(".graph-edge"));
+    const nodeMap = new Map(nodes.map((node) => [node.dataset.taskId, node]));
+    const layoutKey = svg.dataset.layoutKey || "taskmgr:graph-layout";
+    const searchInput = root.querySelector("#graph-search");
+    const kindFilter = root.querySelector("#kind-filter");
+    const statusFilter = root.querySelector("#status-filter");
+    const newTaskButton = root.querySelector("#new-task");
+    const undoButton = root.querySelector("#undo-change");
+    const saveButton = root.querySelector("#save-layout");
+    const resetButton = root.querySelector("#reset-layout");
+    const zoomInput = root.querySelector("#graph-zoom");
+    const zoomValue = root.querySelector("#zoom-value");
+    const layoutStatus = root.querySelector("#layout-status");
+    const contextMenu = root.querySelector("#task-context-menu");
+    const taskDialog = root.querySelector("#task-dialog-backdrop");
+    const taskForm = root.querySelector("#new-task-form");
+    const taskDialogTitle = root.querySelector("#task-dialog-title");
+    const taskDialogSubmit = root.querySelector("#task-dialog-submit");
+    const cancelNewTask = root.querySelector("#cancel-new-task");
+    const newTaskTitle = root.querySelector("#new-task-title");
+    const inspector = {
+      title: root.querySelector("#inspector-title"),
+      id: root.querySelector("#inspector-id"),
+      status: root.querySelector("#inspector-status"),
+      kind: root.querySelector("#inspector-kind"),
+      due: root.querySelector("#inspector-due"),
+      tags: root.querySelector("#inspector-tags"),
+      parent: root.querySelector("#inspector-parent"),
+      deps: root.querySelector("#inspector-deps"),
+      children: root.querySelector("#inspector-children"),
+    };
+    const baseWidth = Number(svg.getAttribute("width") || 1120);
+    const baseHeight = Number(svg.getAttribute("height") || 720);
+    let zoom = 1;
+    let drag = null;
+    let selected = null;
+    let statusTimer = null;
+    let contextNode = null;
+    let dialogMode = "create";
+    let editingTaskId = null;
+
+    function asNumber(value, fallback) {
+      const number = Number(value);
+      return Number.isFinite(number) ? number : fallback;
+    }
+
+    function readPosition(node) {
+      return {
+        x: asNumber(node.dataset.x, asNumber(node.dataset.defaultX, 0)),
+        y: asNumber(node.dataset.y, asNumber(node.dataset.defaultY, 0)),
+      };
+    }
+
+    function setPosition(node, x, y) {
+      const nextX = Math.max(0, Math.round(x));
+      const nextY = Math.max(0, Math.round(y));
+      node.dataset.x = String(nextX);
+      node.dataset.y = String(nextY);
+      node.setAttribute("transform", "translate(" + nextX + " " + nextY + ")");
+    }
+
+    function edgePath(start, end) {
+      let x1 = start.x + nodeWidth;
+      let y1 = start.y + nodeHeight / 2;
+      let x2 = end.x;
+      let y2 = end.y + nodeHeight / 2;
+      if (x2 <= x1) {
+        x1 = start.x + nodeWidth / 2;
+        y1 = start.y + nodeHeight;
+        x2 = end.x + nodeWidth / 2;
+        y2 = end.y;
+      }
+      const mid = Math.max(x1 + 42, (x1 + x2) / 2);
+      return "M " + x1 + " " + y1 + " C " + mid + " " + y1 + ", " + mid + " " + y2 + ", " + x2 + " " + y2;
+    }
+
+    function updateEdges() {
+      for (const edge of edges) {
+        const from = nodeMap.get(edge.dataset.from);
+        const to = nodeMap.get(edge.dataset.to);
+        if (!from || !to) continue;
+        edge.setAttribute("d", edgePath(readPosition(from), readPosition(to)));
+      }
+    }
+
+    function collectLayout() {
+      const layout = {};
+      for (const node of nodes) {
+        layout[node.dataset.taskId] = readPosition(node);
+      }
+      return layout;
+    }
+
+    function showStatus(message) {
+      if (!layoutStatus) return;
+      layoutStatus.textContent = message;
+      window.clearTimeout(statusTimer);
+      statusTimer = window.setTimeout(() => {
+        layoutStatus.textContent = "布局已就绪";
+      }, 1800);
+    }
+
+    function requireApi() {
+      if (apiEnabled) return true;
+      showStatus("请用 serve 启动后写入任务库");
+      return false;
+    }
+
+    async function apiRequest(path, options) {
+      if (!requireApi()) return null;
+      const response = await window.fetch(path, {
+        ...options,
+        headers: {
+          "Content-Type": "application/json",
+          ...(options && options.headers ? options.headers : {}),
+        },
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(payload.error || "请求失败");
+      }
+      return payload;
+    }
+
+    function saveLayout(message) {
+      try {
+        window.localStorage.setItem(layoutKey, JSON.stringify(collectLayout()));
+        showStatus(message || "布局已保存");
+      } catch (error) {
+        showStatus("本地存储不可用");
+      }
+    }
+
+    function loadLayout() {
+      try {
+        const raw = window.localStorage.getItem(layoutKey);
+        if (!raw) return;
+        const layout = JSON.parse(raw);
+        for (const [taskId, position] of Object.entries(layout)) {
+          const node = nodeMap.get(taskId);
+          if (!node || !position) continue;
+          setPosition(node, asNumber(position.x, asNumber(node.dataset.defaultX, 0)), asNumber(position.y, asNumber(node.dataset.defaultY, 0)));
+        }
+        showStatus("已载入布局");
+      } catch (error) {
+        showStatus("布局载入失败");
+      }
+    }
+
+    function resetLayout() {
+      for (const node of nodes) {
+        setPosition(node, asNumber(node.dataset.defaultX, 0), asNumber(node.dataset.defaultY, 0));
+      }
+      try {
+        window.localStorage.removeItem(layoutKey);
+      } catch (error) {
+        // Ignore storage failures; the visible layout is already reset.
+      }
+      updateEdges();
+      showStatus("布局已重置");
+    }
+
+    function selectNode(node) {
+      if (!node) return;
+      if (selected) selected.classList.remove("is-selected");
+      selected = node;
+      node.classList.add("is-selected");
+      inspector.title.textContent = node.dataset.title || "任务详情";
+      inspector.id.textContent = node.dataset.taskId || "-";
+      inspector.status.textContent = node.dataset.statusLabel || "-";
+      inspector.kind.textContent = node.dataset.kindLabel || "-";
+      inspector.due.textContent = node.dataset.due || "-";
+      inspector.tags.textContent = node.dataset.tags || "-";
+      inspector.parent.textContent = node.dataset.parent || "-";
+      inspector.deps.textContent = node.dataset.deps || "-";
+      inspector.children.textContent = node.dataset.children || "-";
+    }
+
+    function closestTaskNode(target) {
+      if (!target || !target.closest) return null;
+      return target.closest(".task-node");
+    }
+
+    function hideContextMenu() {
+      if (!contextMenu) return;
+      contextMenu.hidden = true;
+      contextNode = null;
+    }
+
+    function openContextMenu(node, event) {
+      if (!contextMenu) return;
+      event.preventDefault();
+      contextNode = node;
+      selectNode(node);
+      contextMenu.hidden = false;
+      const width = contextMenu.offsetWidth || 150;
+      const height = contextMenu.offsetHeight || 180;
+      const x = Math.min(event.clientX, window.innerWidth - width - 8);
+      const y = Math.min(event.clientY, window.innerHeight - height - 8);
+      contextMenu.style.left = Math.max(8, x) + "px";
+      contextMenu.style.top = Math.max(8, y) + "px";
+    }
+
+    function cleanDash(value) {
+      const text = String(value || "").trim();
+      return text === "-" ? "" : text;
+    }
+
+    function setFormValue(name, value) {
+      if (!taskForm || !taskForm.elements[name]) return;
+      taskForm.elements[name].value = cleanDash(value);
+    }
+
+    function openTaskDialog(node) {
+      if (!requireApi() || !taskDialog || !taskForm) return;
+      hideContextMenu();
+      taskForm.reset();
+      if (node) {
+        dialogMode = "edit";
+        editingTaskId = node.dataset.taskId;
+        if (taskDialogTitle) taskDialogTitle.textContent = "编辑任务";
+        if (taskDialogSubmit) taskDialogSubmit.textContent = "保存";
+        setFormValue("title", node.dataset.title);
+        setFormValue("kind", node.dataset.kind);
+        setFormValue("status", node.dataset.status);
+        setFormValue("due_at", node.dataset.due);
+        setFormValue("priority", node.dataset.priority || "3");
+        setFormValue("parent", node.dataset.parent);
+        setFormValue("children", node.dataset.children);
+        setFormValue("tags", node.dataset.tags);
+        setFormValue("depends_on", node.dataset.deps);
+        setFormValue("time", node.dataset.time);
+        setFormValue("notes", node.dataset.notes);
+      } else {
+        dialogMode = "create";
+        editingTaskId = null;
+        if (taskDialogTitle) taskDialogTitle.textContent = "新建任务";
+        if (taskDialogSubmit) taskDialogSubmit.textContent = "创建";
+        setFormValue("kind", "short");
+        setFormValue("status", "todo");
+        setFormValue("priority", "3");
+      }
+      taskDialog.hidden = false;
+      window.setTimeout(() => {
+        if (newTaskTitle) newTaskTitle.focus();
+      }, 0);
+    }
+
+    function closeTaskDialog() {
+      if (taskDialog) taskDialog.hidden = true;
+      dialogMode = "create";
+      editingTaskId = null;
+    }
+
+    function splitRefs(value) {
+      return String(value || "")
+        .split(/[,\s，、]+/)
+        .map((item) => item.trim())
+        .filter(Boolean);
+    }
+
+    async function changeTaskStatus(taskId, status) {
+      try {
+        showStatus("正在写入状态");
+        await apiRequest("/api/tasks/" + encodeURIComponent(taskId), {
+          method: "PATCH",
+          body: JSON.stringify({ status }),
+        });
+        showStatus("状态已写入");
+        window.location.reload();
+      } catch (error) {
+        showStatus(error.message || "状态写入失败");
+      }
+    }
+
+    async function undoLastChange() {
+      try {
+        showStatus("正在撤销");
+        await apiRequest("/api/undo", {
+          method: "POST",
+          body: JSON.stringify({}),
+        });
+        showStatus("已撤销");
+        window.location.reload();
+      } catch (error) {
+        showStatus(error.message || "无法撤销");
+      }
+    }
+
+    function payloadFromForm() {
+      const form = new FormData(taskForm);
+      return {
+        title: String(form.get("title") || "").trim(),
+        kind: String(form.get("kind") || "short"),
+        status: String(form.get("status") || "todo"),
+        due_at: String(form.get("due_at") || "").trim() || null,
+        priority: Number(form.get("priority") || 3),
+        parent: String(form.get("parent") || "").trim() || null,
+        children: splitRefs(form.get("children")),
+        tags: splitRefs(form.get("tags")),
+        depends_on: splitRefs(form.get("depends_on")),
+        time: String(form.get("time") || "").trim() || null,
+        notes: String(form.get("notes") || "").trim(),
+      };
+    }
+
+    async function saveTaskFromForm(event) {
+      event.preventDefault();
+      if (!taskForm) return;
+      const payload = payloadFromForm();
+      if (!payload.title) {
+        showStatus("标题不能为空");
+        return;
+      }
+      try {
+        const isEdit = dialogMode === "edit" && editingTaskId;
+        showStatus(isEdit ? "正在保存任务" : "正在创建任务");
+        if (isEdit) {
+          await apiRequest("/api/tasks/" + encodeURIComponent(editingTaskId), {
+            method: "PATCH",
+            body: JSON.stringify(payload),
+          });
+        } else {
+          await apiRequest("/api/tasks", {
+            method: "POST",
+            body: JSON.stringify(payload),
+          });
+        }
+        closeTaskDialog();
+        showStatus(isEdit ? "任务已保存" : "任务已创建");
+        window.location.reload();
+      } catch (error) {
+        showStatus(error.message || "任务保存失败");
+      }
+    }
+
+    function textForSearch(node) {
+      return [
+        node.dataset.taskId,
+        node.dataset.title,
+        node.dataset.tags,
+        node.dataset.notes,
+        node.dataset.parent,
+        node.dataset.deps,
+        node.dataset.children,
+      ].join(" ").toLowerCase();
+    }
+
+    function nodeMatches(node) {
+      const query = (searchInput && searchInput.value ? searchInput.value : "").trim().toLowerCase();
+      const kind = kindFilter && kindFilter.value;
+      const status = statusFilter && statusFilter.value;
+      if (kind && node.dataset.kind !== kind) return false;
+      if (status && node.dataset.status !== status) return false;
+      if (query && !textForSearch(node).includes(query)) return false;
+      return true;
+    }
+
+    function applyFilters() {
+      const visible = new Set();
+      for (const node of nodes) {
+        const matched = nodeMatches(node);
+        node.classList.toggle("is-hidden", !matched);
+        if (matched) visible.add(node.dataset.taskId);
+      }
+      for (const edge of edges) {
+        edge.classList.toggle("is-hidden", !(visible.has(edge.dataset.from) && visible.has(edge.dataset.to)));
+      }
+      if (selected && selected.classList.contains("is-hidden")) {
+        selectNode(nodes.find((node) => !node.classList.contains("is-hidden")));
+      }
+    }
+
+    function applyZoom() {
+      zoom = Math.max(0.7, Math.min(1.5, Number(zoomInput && zoomInput.value ? zoomInput.value : 100) / 100));
+      svg.style.width = Math.round(baseWidth * zoom) + "px";
+      svg.style.height = Math.round(baseHeight * zoom) + "px";
+      if (zoomValue) zoomValue.textContent = Math.round(zoom * 100) + "%";
+    }
+
+    function moveNodeByKeyboard(node, event) {
+      const keySteps = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
+      const direction = keySteps[event.key];
+      if (!direction) return;
+      event.preventDefault();
+      const current = readPosition(node);
+      const step = event.shiftKey ? 40 : 16;
+      setPosition(node, current.x + direction[0] * step, current.y + direction[1] * step);
+      updateEdges();
+      saveLayout("布局已保存");
+    }
+
+    function isEditableTarget(target) {
+      if (!target || !target.closest) return false;
+      return Boolean(target.closest("input, textarea, select, [contenteditable='true']"));
+    }
+
+    function endDrag() {
+      if (!drag) return;
+      drag.node.classList.remove("dragging");
+      if (drag.moved) saveLayout("布局已保存");
+      drag = null;
+    }
+
+    for (const node of nodes) {
+      node.addEventListener("pointerdown", (event) => {
+        if (event.button !== 0) return;
+        const current = readPosition(node);
+        drag = {
+          node,
+          startX: event.clientX,
+          startY: event.clientY,
+          originX: current.x,
+          originY: current.y,
+          moved: false,
+        };
+        node.setPointerCapture(event.pointerId);
+        node.classList.add("dragging");
+        selectNode(node);
+      });
+      node.addEventListener("pointermove", (event) => {
+        if (!drag || drag.node !== node) return;
+        const dx = (event.clientX - drag.startX) / zoom;
+        const dy = (event.clientY - drag.startY) / zoom;
+        if (Math.abs(dx) > 1 || Math.abs(dy) > 1) drag.moved = true;
+        setPosition(node, drag.originX + dx, drag.originY + dy);
+        updateEdges();
+      });
+      node.addEventListener("pointerup", endDrag);
+      node.addEventListener("pointercancel", endDrag);
+      node.addEventListener("click", () => selectNode(node));
+      node.addEventListener("contextmenu", (event) => openContextMenu(node, event));
+      node.addEventListener("keydown", (event) => moveNodeByKeyboard(node, event));
+    }
+
+    svg.addEventListener("contextmenu", (event) => {
+      if (closestTaskNode(event.target)) return;
+      event.preventDefault();
+      openTaskDialog(null);
+    });
+    document.addEventListener("click", (event) => {
+      if (contextMenu && !contextMenu.hidden && !contextMenu.contains(event.target)) {
+        hideContextMenu();
+      }
+    });
+    document.addEventListener("keydown", (event) => {
+      if ((event.ctrlKey || event.metaKey) && !event.shiftKey && event.key.toLowerCase() === "z" && !isEditableTarget(event.target)) {
+        event.preventDefault();
+        undoLastChange();
+        return;
+      }
+      if (event.key === "Escape") {
+        hideContextMenu();
+        closeTaskDialog();
+      }
+    });
+    if (contextMenu) {
+      const editButton = contextMenu.querySelector("button[data-action='edit']");
+      if (editButton) {
+        editButton.addEventListener("click", () => {
+          const node = contextNode || selected;
+          hideContextMenu();
+          if (!node) return;
+          openTaskDialog(node);
+        });
+      }
+      for (const button of contextMenu.querySelectorAll("button[data-status]")) {
+        button.addEventListener("click", () => {
+          const node = contextNode || selected;
+          hideContextMenu();
+          if (!node) return;
+          changeTaskStatus(node.dataset.taskId, button.dataset.status);
+        });
+      }
+    }
+    if (newTaskButton) newTaskButton.addEventListener("click", () => openTaskDialog(null));
+    if (undoButton) undoButton.addEventListener("click", undoLastChange);
+    if (cancelNewTask) cancelNewTask.addEventListener("click", closeTaskDialog);
+    if (taskDialog) {
+      taskDialog.addEventListener("click", (event) => {
+        if (event.target === taskDialog) closeTaskDialog();
+      });
+    }
+    if (taskForm) taskForm.addEventListener("submit", saveTaskFromForm);
+    if (searchInput) searchInput.addEventListener("input", applyFilters);
+    if (kindFilter) kindFilter.addEventListener("change", applyFilters);
+    if (statusFilter) statusFilter.addEventListener("change", applyFilters);
+    if (saveButton) saveButton.addEventListener("click", () => saveLayout("布局已保存"));
+    if (resetButton) resetButton.addEventListener("click", resetLayout);
+    if (zoomInput) zoomInput.addEventListener("input", applyZoom);
+
+    applyZoom();
+    loadLayout();
+    updateEdges();
+    applyFilters();
+    selectNode(nodes[0]);
+  })();
+  </script>
 </body>
 </html>
