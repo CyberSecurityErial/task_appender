@@ -34,6 +34,10 @@
 data/tasks.yaml
 ```
 
+`data/tasks.yaml`、`TASK_INBOX.md` 和 `exports/` 都属于本地个人数据，默认由
+`.gitignore` 排除，不会进入后续 Git 提交。CLI 会在需要时创建任务库和导出目录。
+如果这些文件曾经被提交过，仍需从 Git 索引移除；历史提交中的内容不会被普通删除提交清除。
+
 导出文件存放在：
 
 ```text

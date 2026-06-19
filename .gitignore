@@ -23,3 +23,8 @@ exports/
 .worktrees/
 tests/
 docs/superpowers/
+
+# Personal task state and generated task pages stay local.
+/TASK_INBOX.md
+/data/tasks.yaml
+/exports/
