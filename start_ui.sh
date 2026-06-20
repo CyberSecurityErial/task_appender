@@ -10,4 +10,4 @@ echo "Starting task_appender UI..."
 echo "Open: http://${HOST}:${PORT}/"
 echo "Stop: press Ctrl-C in this terminal"
 
-exec python3 -m taskmgr.cli serve --host "$HOST" --port "$PORT"
+exec conda run -n agent python -m taskmgr.cli serve --host "$HOST" --port "$PORT"

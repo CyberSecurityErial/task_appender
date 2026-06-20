@@ -111,6 +111,40 @@ python -m taskmgr.cli add --kind short --title "整理拓扑搜索笔记" --pare
 python -m taskmgr.cli add --kind daily --title "每天复盘工程实验" --time "23:00" --tag daily
 ```
 
+## 任务提醒
+
+推荐从唯一日常入口启动：
+
+```bash
+./start_ui.sh
+```
+
+服务启动后会在同一进程内运行提醒检查器。关闭 UI 服务后不再检查提醒，也不会在登录时自动启动。
+
+在 Web UI 的任务编辑弹窗中，有截止日期的任务可以添加多条提醒规则。每条规则由“提前天数”和“时间”组成；`0` 天表示截止当天。每日任务仍使用“每日时间”，第一版每天提醒一次。
+
+CLI 规则格式为 `Nd@HH:MM`：
+
+```bash
+conda run -n agent python -m taskmgr.cli add --kind short --title "交作业" --due 2026-07-04 --reminder 1d@09:00
+conda run -n agent python -m taskmgr.cli reminders set --task T-0001 --rule 1d@09:00 --rule 0d@09:00
+conda run -n agent python -m taskmgr.cli reminders clear --task T-0001
+```
+
+通知设置包括总开关、时区、默认声音、错过提醒的补发窗口和检查间隔。默认总开关关闭、时区为 `Asia/Shanghai`、补发窗口为 120 分钟、检查间隔为 60 秒。
+
+首次使用应在 Web UI 的“通知设置”中依次执行“初始化通知 App”和“发送测试通知”。命令成功只能证明通知请求已提交；macOS 通知权限、横幅样式和专注模式仍由系统控制。
+
+默认数据库对应：
+
+```text
+data/settings.yaml
+data/reminder_state.json
+build/Notification Agent.app
+```
+
+这些文件均为本地运行状态。任务提醒规则本身仍保存在 `data/tasks.yaml`，修改后会按仓库规则重建全部导出。
+
 ## 依赖关系
 
 建立依赖关系：

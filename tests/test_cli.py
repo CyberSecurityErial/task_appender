@@ -408,6 +408,14 @@ class CliTests(unittest.TestCase):
             self.assertTrue(is_loopback_client("::1"))
             self.assertFalse(is_loopback_client("192.0.2.1"))
 
+    def test_start_ui_uses_agent_environment(self):
+        script = (Path(__file__).resolve().parents[1] / "start_ui.sh").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn("conda run -n agent python -m taskmgr.cli serve", script)
+        self.assertNotIn("exec python3", script)
+
 
 if __name__ == "__main__":
     unittest.main()
