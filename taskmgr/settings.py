@@ -20,11 +20,11 @@ DEFAULT_SETTINGS: dict[str, Any] = {
 
 
 def settings_path_for_db(db_path: Path) -> Path:
-    return Path(db_path).expanduser().resolve().with_name("settings.yaml")
+    return Path(db_path).expanduser().with_name("settings.yaml")
 
 
 def state_path_for_db(db_path: Path) -> Path:
-    return Path(db_path).expanduser().resolve().with_name("reminder_state.json")
+    return Path(db_path).expanduser().with_name("reminder_state.json")
 
 
 def load_settings(db_path: Path) -> dict[str, Any]:
