@@ -3,8 +3,6 @@ from __future__ import annotations
 import hashlib
 import sys
 import threading
-import sys
-import threading
 from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta, tzinfo
 from pathlib import Path
@@ -20,39 +18,6 @@ from .store import load_data, normalize_for_save
 ACTIVE_STATUSES = {"todo", "doing", "blocked"}
 RETRY_MINUTES = (1, 5, 15, 30)
 LEDGER_RETENTION_DAYS = 90
-
-
-class ReminderWorker(threading.Thread):
-    def __init__(self, db_path: Path, *, scan=None, interval_loader=None):
-        super().__init__(name="taskmgr-reminders", daemon=True)
-        self.db_path = Path(db_path)
-        self.scan = scan
-        self.interval_loader = interval_loader or (
-            lambda path: load_settings(path)["check_interval_seconds"]
-        )
-        self.stop_event = threading.Event()
-        self.scan_lock = threading.Lock()
-
-    def stop(self) -> None:
-        self.stop_event.set()
-
-    def run(self) -> None:
-        scan = self.scan or run_reminder_scan
-        while not self.stop_event.is_set():
-            if self.scan_lock.acquire(blocking=False):
-                try:
-                    scan(self.db_path)
-                except Exception as exc:
-                    print(f"reminder worker: {exc}", file=sys.stderr)
-                finally:
-                    self.scan_lock.release()
-            try:
-                interval = max(0.01, float(self.interval_loader(self.db_path)))
-            except Exception as exc:
-                print(f"reminder worker interval: {exc}", file=sys.stderr)
-                interval = 60.0
-            if self.stop_event.wait(interval):
-                return
 
 
 @dataclass(frozen=True)
@@ -310,6 +275,10 @@ class ReminderWorker(threading.Thread):
                     print(f"reminder worker: {exc}", file=sys.stderr)
                 finally:
                     self.scan_lock.release()
-            interval = max(0.01, float(self.interval_loader(self.db_path)))
+            try:
+                interval = max(0.01, float(self.interval_loader(self.db_path)))
+            except Exception as exc:
+                print(f"reminder worker interval: {exc}", file=sys.stderr)
+                interval = 60.0
             if self.stop_event.wait(interval):
                 return
