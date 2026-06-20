@@ -21,3 +21,4 @@ data/
 exports/
 .superpowers/
 .worktrees/
+tests/
