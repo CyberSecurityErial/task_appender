@@ -5,7 +5,18 @@ import unittest
 from pathlib import Path
 
 from taskmgr.cli import main
-from taskmgr.server import create_task, mutate_data, undo_last_change, update_task
+from taskmgr.server import (
+    create_task,
+    get_notification_settings,
+    is_loopback_client,
+    mutate_data,
+    notification_status,
+    put_notification_settings,
+    setup_notification,
+    test_notification as submit_test_notification,
+    undo_last_change,
+    update_task,
+)
 from taskmgr.store import empty_data, load_data, normalize_for_save, tasks_by_id
 
 
@@ -314,6 +325,7 @@ class CliTests(unittest.TestCase):
                 "parent": parent["id"],
                 "depends_on": [dependency["id"]],
                 "notes": "edited in map",
+                "reminders": [{"days_before": 1, "time": "09:00"}],
             },
         )
         normalize_for_save(data)
@@ -332,6 +344,7 @@ class CliTests(unittest.TestCase):
         self.assertEqual(index["T-0002"]["tags"], ["ui", "edit"])
         self.assertEqual(index["T-0002"]["depends_on"], ["T-0003"])
         self.assertEqual(index["T-0002"]["notes"], "edited in map")
+        self.assertEqual(index["T-0002"]["reminders"], [{"days_before": 1, "time": "09:00"}])
         self.assertIsNone(index["T-0002"]["parent"])
         self.assertEqual(index["T-0001"]["children"], ["T-0003"])
         self.assertEqual(index["T-0003"]["parent"], "T-0001")
@@ -348,6 +361,44 @@ class CliTests(unittest.TestCase):
 
             self.assertEqual(data["tasks"], [])
             self.assertEqual(load_data(db)["tasks"], [])
+
+    def test_notification_settings_and_native_helpers(self):
+        class FakeNotifier:
+            def __init__(self):
+                self.setup_calls = 0
+                self.sent = []
+
+            def status(self):
+                return {"app_built": self.setup_calls > 0}
+
+            def setup(self):
+                self.setup_calls += 1
+
+            def send(self, title, message, sound=""):
+                self.sent.append((title, message, sound))
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            db = Path(tmpdir) / "tasks.yaml"
+            saved = put_notification_settings(
+                db,
+                {
+                    "enabled": True,
+                    "timezone": "Asia/Shanghai",
+                    "default_sound": "Glass",
+                    "missed_grace_minutes": 120,
+                    "check_interval_seconds": 60,
+                },
+            )
+            notifier = FakeNotifier()
+
+            self.assertEqual(get_notification_settings(db), saved)
+            self.assertEqual(notification_status(notifier), {"app_built": False})
+            self.assertTrue(setup_notification(notifier)["submitted"])
+            self.assertTrue(submit_test_notification(notifier, saved)["submitted"])
+            self.assertEqual(notifier.sent[0][2], "Glass")
+            self.assertTrue(is_loopback_client("127.0.0.1"))
+            self.assertTrue(is_loopback_client("::1"))
+            self.assertFalse(is_loopback_client("192.0.2.1"))
 
 
 if __name__ == "__main__":

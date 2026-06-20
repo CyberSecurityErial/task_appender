@@ -1,5 +1,9 @@
 import unittest
 import tempfile
+import contextlib
+import io
+import threading
+import time
 from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -8,7 +12,7 @@ import yaml
 
 from taskmgr.model import TaskError
 from taskmgr.reminder_rules import format_reminders, parse_reminder_rule, validate_reminders
-from taskmgr.reminders import build_occurrences, run_reminder_scan
+from taskmgr.reminders import ReminderWorker, build_occurrences, run_reminder_scan
 from taskmgr.settings import load_ledger, save_ledger, save_settings
 
 
@@ -223,6 +227,67 @@ class ReminderScanTests(unittest.TestCase):
         run_reminder_scan(self.db, now=self.now, notifier=FakeNotifier())
 
         self.assertEqual(load_ledger(self.db)["events"], {})
+
+
+class WorkerTests(unittest.TestCase):
+    def test_worker_scans_immediately_and_stops(self):
+        called = threading.Event()
+        worker = ReminderWorker(
+            Path("tasks.yaml"),
+            scan=lambda _: called.set(),
+            interval_loader=lambda _: 3600,
+        )
+
+        worker.start()
+        self.assertTrue(called.wait(1))
+        worker.stop()
+        worker.join(1)
+
+        self.assertFalse(worker.is_alive())
+
+    def test_worker_contains_scan_errors(self):
+        calls = []
+
+        def failing_scan(_):
+            calls.append(1)
+            raise RuntimeError("boom")
+
+        worker = ReminderWorker(
+            Path("tasks.yaml"),
+            scan=failing_scan,
+            interval_loader=lambda _: 0.01,
+        )
+        stderr = io.StringIO()
+        with contextlib.redirect_stderr(stderr):
+            worker.start()
+            time.sleep(0.04)
+            worker.stop()
+            worker.join(1)
+
+        self.assertGreaterEqual(len(calls), 2)
+        self.assertIn("reminder worker: boom", stderr.getvalue())
+
+    def test_worker_survives_invalid_interval_settings(self):
+        called = threading.Event()
+
+        def invalid_interval(_):
+            raise TaskError("invalid interval")
+
+        worker = ReminderWorker(
+            Path("tasks.yaml"),
+            scan=lambda _: called.set(),
+            interval_loader=invalid_interval,
+        )
+        stderr = io.StringIO()
+        with contextlib.redirect_stderr(stderr):
+            worker.start()
+            self.assertTrue(called.wait(1))
+            time.sleep(0.02)
+            self.assertTrue(worker.is_alive())
+            worker.stop()
+            worker.join(1)
+
+        self.assertIn("reminder worker interval", stderr.getvalue())
 
 
 if __name__ == "__main__":
