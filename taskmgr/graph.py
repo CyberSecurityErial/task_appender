@@ -6,6 +6,7 @@ from typing import Any
 
 from .model import VALID_KINDS, VALID_STATUSES
 from .recurrence import validate_recurrence
+from .reminder_rules import validate_reminders
 
 
 @dataclass
@@ -61,6 +62,10 @@ def validate_data(data: dict[str, Any]) -> ValidationResult:
         if not isinstance(task.get("children"), list):
             result.errors.append(f"{task_id} children must be a list")
         for error in validate_recurrence(str(task.get("kind")), task.get("recurrence")):
+            result.errors.append(f"{task_id} {error}")
+        for error in validate_reminders(
+            str(task.get("kind")), task.get("due_at"), task.get("reminders")
+        ):
             result.errors.append(f"{task_id} {error}")
         if task.get("kind") == "short" and not task.get("due_at"):
             result.warnings.append(f"{task_id} short task has no due_at")

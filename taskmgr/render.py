@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import html
+import json
 from datetime import date
 from pathlib import Path
 from typing import Any
 
 from .analytics import build_progress, format_skill_tree_cli
 from .model import task_sort_key
+from .reminder_rules import format_reminders
 
 
 KIND_LABELS = {
@@ -142,7 +144,11 @@ def render_markdown(data: dict[str, Any]) -> str:
         kind = KIND_LABELS.get(task.get("kind"), task.get("kind"))
         lines.append(f"- **{task['id']}** [{status}/{kind}] {task['title']}")
         completed_at = task.get("completed_at") or "-"
-        lines.append(f"  截止：{due}；完成：{completed_at}；优先级：{task.get('priority', 3)}；标签：{tags}")
+        reminder_summary = format_reminders(task.get("reminders"))
+        lines.append(
+            f"  截止：{due}；提醒：{reminder_summary}；完成：{completed_at}；"
+            f"优先级：{task.get('priority', 3)}；标签：{tags}"
+        )
         if task.get("depends_on"):
             lines.append(f"  前置依赖：{', '.join(task['depends_on'])}")
         if task.get("children"):
@@ -478,6 +484,30 @@ def render_html(data: dict[str, Any], *, live_api: bool = False) -> str:
       background: #2563eb;
       color: #fff;
     }}
+    .reminder-editor {{
+      display: grid;
+      gap: 8px;
+      padding: 10px;
+      border: 1px solid #e2e8f0;
+      border-radius: 7px;
+      background: #f8fafc;
+    }}
+    .reminder-heading, .reminder-row {{
+      display: flex;
+      gap: 8px;
+      align-items: end;
+    }}
+    .reminder-heading {{ justify-content: space-between; align-items: center; font-weight: 650; }}
+    .reminder-row label {{ flex: 1; }}
+    .reminder-row button, .reminder-heading button {{
+      min-height: 34px;
+      padding: 6px 10px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      background: #fff;
+      cursor: pointer;
+    }}
+    .notification-note {{ margin: 0; color: var(--muted); font-size: 12px; }}
     .legend {{
       display: flex;
       flex-wrap: wrap;
@@ -578,6 +608,7 @@ def render_html(data: dict[str, Any], *, live_api: bool = False) -> str:
           <option value="archived">已归档</option>
         </select>
         <button type="button" id="new-task" class="primary">新增任务</button>
+        <button type="button" id="notification-settings-button">通知设置</button>
         <button type="button" id="undo-change">撤销</button>
         <button type="button" id="save-layout">保存布局</button>
         <button type="button" id="reset-layout">重置布局</button>
@@ -595,6 +626,7 @@ def render_html(data: dict[str, Any], *, live_api: bool = False) -> str:
             <dt>状态</dt><dd id="inspector-status">-</dd>
             <dt>类型</dt><dd id="inspector-kind">-</dd>
             <dt>截止</dt><dd id="inspector-due">-</dd>
+            <dt>提醒</dt><dd id="inspector-reminders">-</dd>
             <dt>标签</dt><dd id="inspector-tags">-</dd>
             <dt>父任务</dt><dd id="inspector-parent">-</dd>
             <dt>依赖</dt><dd id="inspector-deps">-</dd>
@@ -640,6 +672,13 @@ def render_html(data: dict[str, Any], *, live_api: bool = False) -> str:
             <label>依赖 <input name="depends_on" placeholder="T-0002, T-0003"></label>
             <label>每日时间 <input name="time" placeholder="21:00"></label>
           </div>
+          <section class="reminder-editor" id="reminder-editor">
+            <div class="reminder-heading">
+              <span>截止提醒</span>
+              <button type="button" id="add-reminder-rule">＋ 添加提醒</button>
+            </div>
+            <div id="reminder-rules"></div>
+          </section>
           <label>备注 <textarea name="notes"></textarea></label>
           <div class="dialog-actions">
             <button type="button" id="cancel-new-task">取消</button>
@@ -647,11 +686,29 @@ def render_html(data: dict[str, Any], *, live_api: bool = False) -> str:
           </div>
         </form>
       </div>
+      <div class="task-dialog-backdrop" id="notification-settings" hidden>
+        <form class="task-dialog" id="notification-settings-form">
+          <h2>通知设置</h2>
+          <label><span><input name="enabled" type="checkbox"> 启用任务通知</span></label>
+          <label>时区 <input name="timezone" value="Asia/Shanghai" required></label>
+          <label>默认声音 <input name="default_sound" value="Glass"></label>
+          <label>错过后补发窗口（分钟） <input name="missed_grace_minutes" type="number" min="0" max="1440" value="120"></label>
+          <label>检查间隔（秒） <input name="check_interval_seconds" type="number" min="15" max="3600" value="60"></label>
+          <p class="notification-note">请求提交成功不代表横幅一定可见；macOS 通知权限与专注模式仍可能延迟或抑制显示。</p>
+          <p id="notification-app-status" class="notification-note">通知 App 状态未知</p>
+          <div class="dialog-actions">
+            <button type="button" id="setup-notification-app">初始化通知 App</button>
+            <button type="button" id="test-notification">发送测试通知</button>
+            <button type="button" id="cancel-notification-settings">取消</button>
+            <button type="submit" class="primary">保存</button>
+          </div>
+        </form>
+      </div>
     </section>
     <h2>任务明细</h2>
     <table>
       <thead>
-        <tr><th>ID</th><th>状态</th><th>类型</th><th>截止</th><th>标题</th><th>前置依赖</th><th>子任务</th><th>标签</th></tr>
+        <tr><th>ID</th><th>状态</th><th>类型</th><th>截止</th><th>提醒</th><th>标题</th><th>前置依赖</th><th>子任务</th><th>标签</th></tr>
       </thead>
       <tbody>
 {task_rows}
@@ -698,12 +755,23 @@ def graph_ui_script() -> str:
     const taskDialogSubmit = root.querySelector("#task-dialog-submit");
     const cancelNewTask = root.querySelector("#cancel-new-task");
     const newTaskTitle = root.querySelector("#new-task-title");
+    const reminderEditor = root.querySelector("#reminder-editor");
+    const reminderRules = root.querySelector("#reminder-rules");
+    const addReminderRuleButton = root.querySelector("#add-reminder-rule");
+    const notificationSettingsButton = root.querySelector("#notification-settings-button");
+    const notificationSettings = root.querySelector("#notification-settings");
+    const notificationSettingsForm = root.querySelector("#notification-settings-form");
+    const cancelNotificationSettings = root.querySelector("#cancel-notification-settings");
+    const setupNotificationApp = root.querySelector("#setup-notification-app");
+    const testNotificationButton = root.querySelector("#test-notification");
+    const notificationAppStatus = root.querySelector("#notification-app-status");
     const inspector = {
       title: root.querySelector("#inspector-title"),
       id: root.querySelector("#inspector-id"),
       status: root.querySelector("#inspector-status"),
       kind: root.querySelector("#inspector-kind"),
       due: root.querySelector("#inspector-due"),
+      reminders: root.querySelector("#inspector-reminders"),
       tags: root.querySelector("#inspector-tags"),
       parent: root.querySelector("#inspector-parent"),
       deps: root.querySelector("#inspector-deps"),
@@ -850,6 +918,7 @@ def graph_ui_script() -> str:
       inspector.status.textContent = node.dataset.statusLabel || "-";
       inspector.kind.textContent = node.dataset.kindLabel || "-";
       inspector.due.textContent = node.dataset.due || "-";
+      inspector.reminders.textContent = reminderSummary(parseReminderData(node.dataset.reminders));
       inspector.tags.textContent = node.dataset.tags || "-";
       inspector.parent.textContent = node.dataset.parent || "-";
       inspector.deps.textContent = node.dataset.deps || "-";
@@ -891,10 +960,64 @@ def graph_ui_script() -> str:
       taskForm.elements[name].value = cleanDash(value);
     }
 
+    function parseReminderData(value) {
+      try {
+        const parsed = JSON.parse(String(value || "[]"));
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (error) {
+        return [];
+      }
+    }
+
+    function reminderSummary(rules) {
+      if (!rules.length) return "-";
+      return rules.map((rule) => {
+        const days = Number(rule.days_before || 0);
+        return (days === 0 ? "当天" : "提前 " + days + " 天") + " " + String(rule.time || "");
+      }).join("；");
+    }
+
+    function addReminderRow(rule) {
+      if (!reminderRules) return;
+      const row = document.createElement("div");
+      row.className = "reminder-row";
+      row.innerHTML = '<label>提前天数 <input name="reminder_days_before" type="number" min="0" max="3650"></label>' +
+        '<label>时间 <input name="reminder_time" type="time"></label>' +
+        '<button type="button" class="remove-reminder">移除</button>';
+      row.querySelector('[name="reminder_days_before"]').value = String(rule && rule.days_before != null ? rule.days_before : 0);
+      row.querySelector('[name="reminder_time"]').value = String(rule && rule.time ? rule.time : "09:00");
+      row.querySelector(".remove-reminder").addEventListener("click", () => row.remove());
+      reminderRules.appendChild(row);
+    }
+
+    function setReminderRows(rules) {
+      if (!reminderRules) return;
+      reminderRules.replaceChildren();
+      for (const rule of rules) addReminderRow(rule);
+    }
+
+    function collectReminders() {
+      if (!reminderRules) return [];
+      return Array.from(reminderRules.querySelectorAll(".reminder-row")).map((row) => ({
+        days_before: Number(row.querySelector('[name="reminder_days_before"]').value),
+        time: String(row.querySelector('[name="reminder_time"]').value),
+      }));
+    }
+
+    function syncReminderEditor() {
+      if (!taskForm || !reminderEditor) return;
+      const due = String(taskForm.elements.due_at.value || "");
+      const kind = String(taskForm.elements.kind.value || "short");
+      const enabled = Boolean(due) && kind !== "daily";
+      reminderEditor.hidden = !enabled;
+      if (!enabled) setReminderRows([]);
+    }
+
     function openTaskDialog(node) {
       if (!requireApi() || !taskDialog || !taskForm) return;
       hideContextMenu();
       taskForm.reset();
+      setReminderRows([]);
       if (node) {
         dialogMode = "edit";
         editingTaskId = node.dataset.taskId;
@@ -911,6 +1034,7 @@ def graph_ui_script() -> str:
         setFormValue("depends_on", node.dataset.deps);
         setFormValue("time", node.dataset.time);
         setFormValue("notes", node.dataset.notes);
+        setReminderRows(parseReminderData(node.dataset.reminders));
       } else {
         dialogMode = "create";
         editingTaskId = null;
@@ -920,6 +1044,7 @@ def graph_ui_script() -> str:
         setFormValue("status", "todo");
         setFormValue("priority", "3");
       }
+      syncReminderEditor();
       taskDialog.hidden = false;
       window.setTimeout(() => {
         if (newTaskTitle) newTaskTitle.focus();
@@ -930,6 +1055,67 @@ def graph_ui_script() -> str:
       if (taskDialog) taskDialog.hidden = true;
       dialogMode = "create";
       editingTaskId = null;
+    }
+
+    function closeNotificationSettings() {
+      if (notificationSettings) notificationSettings.hidden = true;
+    }
+
+    async function openNotificationSettings() {
+      if (!requireApi() || !notificationSettings || !notificationSettingsForm) return;
+      try {
+        const [settingsPayload, statusPayload] = await Promise.all([
+          apiRequest("/api/settings/notifications", { method: "GET" }),
+          apiRequest("/api/notifications/status", { method: "GET" }),
+        ]);
+        const settings = settingsPayload.notifications || {};
+        notificationSettingsForm.elements.enabled.checked = Boolean(settings.enabled);
+        notificationSettingsForm.elements.timezone.value = String(settings.timezone || "Asia/Shanghai");
+        notificationSettingsForm.elements.default_sound.value = String(settings.default_sound || "");
+        notificationSettingsForm.elements.missed_grace_minutes.value = String(settings.missed_grace_minutes ?? 120);
+        notificationSettingsForm.elements.check_interval_seconds.value = String(settings.check_interval_seconds ?? 60);
+        if (notificationAppStatus) {
+          notificationAppStatus.textContent = statusPayload.app_built ? "通知 App 已初始化" : "通知 App 尚未初始化";
+        }
+        notificationSettings.hidden = false;
+      } catch (error) {
+        showStatus(error.message || "通知设置载入失败");
+      }
+    }
+
+    async function saveNotificationSettings(event) {
+      event.preventDefault();
+      const form = new FormData(notificationSettingsForm);
+      const notifications = {
+        enabled: notificationSettingsForm.elements.enabled.checked,
+        timezone: String(form.get("timezone") || "").trim(),
+        default_sound: String(form.get("default_sound") || ""),
+        missed_grace_minutes: Number(form.get("missed_grace_minutes")),
+        check_interval_seconds: Number(form.get("check_interval_seconds")),
+      };
+      try {
+        await apiRequest("/api/settings/notifications", {
+          method: "PUT",
+          body: JSON.stringify({ notifications }),
+        });
+        closeNotificationSettings();
+        showStatus("通知设置已保存");
+      } catch (error) {
+        showStatus(error.message || "通知设置保存失败");
+      }
+    }
+
+    async function runNotificationAction(path, promptText) {
+      if (!window.confirm(promptText)) return;
+      try {
+        await apiRequest(path, { method: "POST", body: JSON.stringify({}) });
+        showStatus("通知请求已提交");
+        if (notificationAppStatus && path.endsWith("/setup")) {
+          notificationAppStatus.textContent = "通知 App 已初始化";
+        }
+      } catch (error) {
+        showStatus(error.message || "通知操作失败");
+      }
     }
 
     function splitRefs(value) {
@@ -980,6 +1166,7 @@ def graph_ui_script() -> str:
         tags: splitRefs(form.get("tags")),
         depends_on: splitRefs(form.get("depends_on")),
         time: String(form.get("time") || "").trim() || null,
+        reminders: collectReminders(),
         notes: String(form.get("notes") || "").trim(),
       };
     }
@@ -1132,6 +1319,7 @@ def graph_ui_script() -> str:
       if (event.key === "Escape") {
         hideContextMenu();
         closeTaskDialog();
+        closeNotificationSettings();
       }
     });
     if (contextMenu) {
@@ -1154,6 +1342,9 @@ def graph_ui_script() -> str:
       }
     }
     if (newTaskButton) newTaskButton.addEventListener("click", () => openTaskDialog(null));
+    if (addReminderRuleButton) addReminderRuleButton.addEventListener("click", () => addReminderRow(null));
+    if (taskForm && taskForm.elements.due_at) taskForm.elements.due_at.addEventListener("change", syncReminderEditor);
+    if (taskForm && taskForm.elements.kind) taskForm.elements.kind.addEventListener("change", syncReminderEditor);
     if (undoButton) undoButton.addEventListener("click", undoLastChange);
     if (cancelNewTask) cancelNewTask.addEventListener("click", closeTaskDialog);
     if (taskDialog) {
@@ -1162,6 +1353,22 @@ def graph_ui_script() -> str:
       });
     }
     if (taskForm) taskForm.addEventListener("submit", saveTaskFromForm);
+    if (notificationSettingsButton) notificationSettingsButton.addEventListener("click", openNotificationSettings);
+    if (cancelNotificationSettings) cancelNotificationSettings.addEventListener("click", closeNotificationSettings);
+    if (notificationSettingsForm) notificationSettingsForm.addEventListener("submit", saveNotificationSettings);
+    if (setupNotificationApp) setupNotificationApp.addEventListener("click", () => runNotificationAction(
+      "/api/notifications/setup",
+      "将构建并启动 Notification Agent.app，macOS 可能请求通知权限。继续吗？"
+    ));
+    if (testNotificationButton) testNotificationButton.addEventListener("click", () => runNotificationAction(
+      "/api/notifications/test",
+      "将发送一条 task_appender 测试通知。继续吗？"
+    ));
+    if (notificationSettings) {
+      notificationSettings.addEventListener("click", (event) => {
+        if (event.target === notificationSettings) closeNotificationSettings();
+      });
+    }
     if (searchInput) searchInput.addEventListener("input", applyFilters);
     if (kindFilter) kindFilter.addEventListener("change", applyFilters);
     if (statusFilter) statusFilter.addEventListener("change", applyFilters);
@@ -1778,12 +1985,14 @@ def render_svg_node(task: dict[str, Any], x: int, y: int, width: int, height: in
     recurrence_time = ""
     if isinstance(task.get("recurrence"), dict):
         recurrence_time = str(task["recurrence"].get("time") or "")
+    reminders_json = json.dumps(task.get("reminders", []), ensure_ascii=False, separators=(",", ":"))
     text_parts = [
         f'          <g id="{svg_escape(safe_node(task["id"]))}" class="task-node" tabindex="0" role="button" aria-label="{svg_escape(task["id"] + " " + title)}" '
         f'data-task-id="{svg_escape(task["id"])}" data-title="{svg_escape(title)}" data-kind="{svg_escape(str(task.get("kind", "")))}" '
         f'data-kind-label="{svg_escape(str(kind))}" data-status="{svg_escape(str(task.get("status", "")))}" data-status-label="{svg_escape(str(status))}" '
         f'data-due="{svg_escape(str(task.get("due_at") or "-"))}" data-priority="{svg_escape(str(task.get("priority", 3)))}" '
-        f'data-time="{svg_escape(recurrence_time)}" data-tags="{svg_escape(all_tags)}" data-notes="{svg_escape(notes)}" '
+        f'data-time="{svg_escape(recurrence_time)}" data-reminders="{svg_escape(reminders_json)}" '
+        f'data-tags="{svg_escape(all_tags)}" data-notes="{svg_escape(notes)}" '
         f'data-parent="{svg_escape(str(task.get("parent") or "-"))}" data-deps="{svg_escape(dependencies or "-")}" data-children="{svg_escape(children or "-")}" '
         f'data-default-x="{x}" data-default-y="{y}" data-x="{x}" data-y="{y}" transform="translate({x} {y})">',
         f'            <rect class="node-card" x="0" y="0" width="{width}" height="{height}" rx="8" fill="{fill}" stroke="{stroke}" stroke-width="2"/>',
@@ -1814,12 +2023,14 @@ def svg_node_colors(task: dict[str, Any]) -> tuple[str, str]:
 
 def render_html_task_row(task: dict[str, Any]) -> str:
     tags = " ".join(f"<code>{html.escape(str(tag))}</code>" for tag in task.get("tags", [])) or "-"
+    reminders = html.escape(format_reminders(task.get("reminders")))
     return (
         "        <tr>"
         f"<td><code>{html.escape(str(task.get('id', '')))}</code></td>"
         f"<td>{html.escape(str(STATUS_LABELS.get(task.get('status'), task.get('status'))))}</td>"
         f"<td>{html.escape(str(KIND_LABELS.get(task.get('kind'), task.get('kind'))))}</td>"
         f"<td>{html.escape(str(task.get('due_at') or '-'))}</td>"
+        f"<td>{reminders}</td>"
         f"<td>{html.escape(str(task.get('title', '')))}</td>"
         f"<td>{html.escape(', '.join(task.get('depends_on', [])) or '-')}</td>"
         f"<td>{html.escape(', '.join(task.get('children', [])) or '-')}</td>"

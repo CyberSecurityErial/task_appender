@@ -11,6 +11,7 @@ from .graph import validate_data
 from .analytics import build_progress, format_progress_cli
 from .model import Task, TaskError, VALID_KINDS, VALID_STATUSES, dedupe, task_sort_key, today_iso
 from .recurrence import parse_daily_time, parse_due_text
+from .reminder_rules import parse_reminder_rule
 from .render import write_rendered
 from .store import (
     APP_ROOT,
@@ -60,8 +61,19 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--priority", type=int, default=3)
     p.add_argument("--status", choices=sorted(VALID_STATUSES), default="todo")
     p.add_argument("--time", help="daily recurrence time, HH:MM or natural Chinese time")
+    p.add_argument("--reminder", action="append", default=[], help="due reminder as Nd@HH:MM")
     p.add_argument("--notes", default="")
     p.set_defaults(func=cmd_add)
+
+    p = sub.add_parser("reminders", help="replace or clear due reminder rules")
+    reminder_sub = p.add_subparsers(dest="reminder_command", required=True)
+    reminder_set = reminder_sub.add_parser("set", help="replace all reminder rules")
+    reminder_set.add_argument("--task", required=True)
+    reminder_set.add_argument("--rule", action="append", required=True)
+    reminder_set.set_defaults(func=cmd_reminders_set)
+    reminder_clear = reminder_sub.add_parser("clear", help="remove all reminder rules")
+    reminder_clear.add_argument("--task", required=True)
+    reminder_clear.set_defaults(func=cmd_reminders_clear)
 
     p = sub.add_parser("list", help="list tasks")
     p.add_argument("--kind", choices=sorted(VALID_KINDS))
@@ -140,6 +152,7 @@ def cmd_add(args: argparse.Namespace, db_path: Path) -> int:
         tags=dedupe([tag.strip() for tag in args.tag if tag.strip()]),
         parent=parent,
         depends_on=dependencies,
+        reminders=[parse_reminder_rule(value) for value in args.reminder],
         recurrence=recurrence,
         completed_at=today_iso() if args.status == "done" else None,
         notes=args.notes,
@@ -150,6 +163,30 @@ def cmd_add(args: argparse.Namespace, db_path: Path) -> int:
     save_data_and_autosync(data, db_path)
     print(f"created {task.id}: {task.title}")
     return 0
+
+
+def cmd_reminders_set(args: argparse.Namespace, db_path: Path) -> int:
+    rules = [parse_reminder_rule(value) for value in args.rule]
+    task_id = replace_reminders(db_path, args.task, rules)
+    print(f"updated reminders {task_id}")
+    return 0
+
+
+def cmd_reminders_clear(args: argparse.Namespace, db_path: Path) -> int:
+    task_id = replace_reminders(db_path, args.task, [])
+    print(f"cleared reminders {task_id}")
+    return 0
+
+
+def replace_reminders(db_path: Path, ref: str, rules: list[dict[str, Any]]) -> str:
+    data = load_data(db_path)
+    normalize_for_save(data)
+    task_id = resolve_task(data, ref)
+    tasks_by_id(data)[task_id]["reminders"] = rules
+    normalize_for_save(data)
+    ensure_valid(data)
+    save_data_and_autosync(data, db_path)
+    return task_id
 
 
 def cmd_list(args: argparse.Namespace, db_path: Path) -> int:

@@ -17,3 +17,9 @@ tasks.json
 dist/
 build/
 *.egg-info/
+data/
+exports/
+.superpowers/
+.worktrees/
+tests/
+docs/superpowers/

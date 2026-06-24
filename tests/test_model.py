@@ -23,6 +23,19 @@ class TaskModelTests(unittest.TestCase):
         self.assertEqual(restored.depends_on, ["T-0002"])
         self.assertEqual(restored.completed_at, "2026-05-05")
 
+    def test_legacy_task_normalizes_missing_reminders(self):
+        raw = {
+            "id": "T-0001",
+            "title": "学习 Triton",
+            "kind": "long",
+            "status": "todo",
+            "created_at": "2026-06-20",
+        }
+
+        normalized = Task.from_dict(raw).to_dict()
+
+        self.assertEqual(normalized["reminders"], [])
+
 
 if __name__ == "__main__":
     unittest.main()

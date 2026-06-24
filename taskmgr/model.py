@@ -4,15 +4,14 @@ from dataclasses import dataclass, field
 from datetime import date
 from typing import Any
 
+from .errors import TaskError
+from .reminder_rules import normalize_reminders
+
 
 VALID_KINDS = {"short", "long", "daily", "milestone"}
 VALID_STATUSES = {"todo", "doing", "blocked", "done", "archived"}
 DEFAULT_KIND = "short"
 DEFAULT_STATUS = "todo"
-
-
-class TaskError(Exception):
-    """Raised for invalid task graph operations."""
 
 
 def today_iso() -> str:
@@ -43,6 +42,7 @@ class Task:
     parent: str | None = None
     depends_on: list[str] = field(default_factory=list)
     children: list[str] = field(default_factory=list)
+    reminders: list[dict[str, Any]] = field(default_factory=list)
     recurrence: dict[str, Any] | None = None
     completed_at: str | None = None
     notes: str = ""
@@ -61,6 +61,7 @@ class Task:
             parent=none_if_empty(raw.get("parent")),
             depends_on=dedupe([str(ref).strip() for ref in raw.get("depends_on", []) if str(ref).strip()]),
             children=dedupe([str(ref).strip() for ref in raw.get("children", []) if str(ref).strip()]),
+            reminders=normalize_reminders(raw.get("reminders")),
             recurrence=raw.get("recurrence"),
             completed_at=none_if_empty(raw.get("completed_at")),
             notes=str(raw.get("notes", "")),
@@ -79,6 +80,7 @@ class Task:
             "parent": self.parent,
             "depends_on": list(self.depends_on),
             "children": list(self.children),
+            "reminders": self.reminders,
             "recurrence": self.recurrence,
             "completed_at": self.completed_at,
             "notes": self.notes,

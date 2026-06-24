@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ipaddress
 import json
 import re
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -9,8 +10,12 @@ from urllib.parse import unquote, urlparse
 
 from .graph import validate_data
 from .model import Task, TaskError, VALID_KINDS, VALID_STATUSES, dedupe, today_iso
+from .notifier import NativeNotifier
 from .recurrence import parse_daily_time
+from .reminder_rules import normalize_reminders
+from .reminders import ReminderWorker
 from .render import render_html, write_rendered
+from .settings import load_settings, save_settings
 from .store import (
     APP_ROOT,
     DEFAULT_DATA_PATH,
@@ -37,6 +42,7 @@ class TaskGraphHTTPServer(HTTPServer):
         super().__init__(server_address, TaskGraphHandler)
         self.db_path = db_path
         self.undo_stack: list[str] = []
+        self.notifier = NativeNotifier()
 
 
 class TaskGraphHandler(BaseHTTPRequestHandler):
@@ -52,6 +58,12 @@ class TaskGraphHandler(BaseHTTPRequestHandler):
             if path == "/api/tasks":
                 data = load_normalized_data(self.server.db_path)
                 self.send_json({"tasks": data.get("tasks", [])})
+                return
+            if path == "/api/settings/notifications":
+                self.send_json({"notifications": get_notification_settings(self.server.db_path)})
+                return
+            if path == "/api/notifications/status":
+                self.send_json(notification_status(self.server.notifier))
                 return
             if path == "/api/health":
                 self.send_json({"ok": True})
@@ -74,6 +86,20 @@ class TaskGraphHandler(BaseHTTPRequestHandler):
                 data = undo_last_change(self.server.db_path, self.server.undo_stack)
                 self.send_json({"tasks": data.get("tasks", [])})
                 return
+            if path in {"/api/notifications/setup", "/api/notifications/test"}:
+                if not is_loopback_client(self.client_address[0]):
+                    self.send_json({"error": "notification actions require a loopback client"}, status=403)
+                    return
+                if path.endswith("/setup"):
+                    self.send_json(setup_notification(self.server.notifier))
+                else:
+                    self.send_json(
+                        test_notification(
+                            self.server.notifier,
+                            get_notification_settings(self.server.db_path),
+                        )
+                    )
+                return
             self.send_error(404, "not found")
         except TaskError as exc:
             self.send_json({"error": str(exc)}, status=400)
@@ -89,6 +115,19 @@ class TaskGraphHandler(BaseHTTPRequestHandler):
                 payload = self.read_json()
                 task = mutate_data(self.server.db_path, lambda data: update_task(data, task_id, payload), self.server.undo_stack)
                 self.send_json({"task": task})
+                return
+            self.send_error(404, "not found")
+        except TaskError as exc:
+            self.send_json({"error": str(exc)}, status=400)
+        except Exception as exc:
+            self.send_json({"error": str(exc)}, status=500)
+
+    def do_PUT(self) -> None:
+        path = urlparse(self.path).path
+        try:
+            if path == "/api/settings/notifications":
+                settings = put_notification_settings(self.server.db_path, self.read_json())
+                self.send_json({"notifications": settings})
                 return
             self.send_error(404, "not found")
         except TaskError as exc:
@@ -133,14 +172,18 @@ class TaskGraphHandler(BaseHTTPRequestHandler):
 
 def serve(db_path: Path, *, host: str = "127.0.0.1", port: int = 8765) -> None:
     server = TaskGraphHTTPServer((host, port), db_path.expanduser())
+    worker = ReminderWorker(db_path.expanduser())
     actual_host, actual_port = server.server_address
     print(f"serving task graph UI at http://{actual_host}:{actual_port}/")
     print("press Ctrl-C to stop")
+    worker.start()
     try:
         server.serve_forever()
     except KeyboardInterrupt:
         print("\nstopped")
     finally:
+        worker.stop()
+        worker.join(timeout=5)
         server.server_close()
 
 
@@ -203,6 +246,7 @@ def create_task(data: dict[str, Any], payload: dict[str, Any]) -> dict[str, Any]
         tags=dedupe(normalize_refs(payload.get("tags"))),
         parent=parent,
         depends_on=dependencies,
+        reminders=normalize_reminders(payload.get("reminders")),
         recurrence=recurrence,
         completed_at=today_iso() if status in {"done", "archived"} else None,
         notes=str(payload.get("notes") or ""),
@@ -262,6 +306,8 @@ def update_task(data: dict[str, Any], task_id: str, payload: dict[str, Any]) -> 
         task["children"] = dedupe(children)
     if "notes" in payload:
         task["notes"] = str(payload.get("notes") or "")
+    if "reminders" in payload:
+        task["reminders"] = normalize_reminders(payload.get("reminders"))
     if task.get("kind") == "daily":
         existing_time = "21:00"
         if isinstance(task.get("recurrence"), dict):
@@ -292,6 +338,44 @@ def none_if_blank(value: Any) -> str | None:
         return None
     text = str(value).strip()
     return text or None
+
+
+def get_notification_settings(db_path: Path) -> dict[str, Any]:
+    return load_settings(db_path)
+
+
+def put_notification_settings(db_path: Path, payload: dict[str, Any]) -> dict[str, Any]:
+    source = payload.get("notifications", payload)
+    if not isinstance(source, dict):
+        raise TaskError("notifications settings must be an object")
+    return save_settings(db_path, source)
+
+
+def notification_status(notifier: NativeNotifier) -> dict[str, Any]:
+    return notifier.status()
+
+
+def setup_notification(notifier: NativeNotifier) -> dict[str, Any]:
+    notifier.setup()
+    return {**notifier.status(), "submitted": True}
+
+
+def test_notification(
+    notifier: NativeNotifier, settings: dict[str, Any]
+) -> dict[str, Any]:
+    notifier.send(
+        "task_appender 测试通知",
+        "通知请求已由 task_appender 提交。",
+        str(settings["default_sound"]),
+    )
+    return {"submitted": True}
+
+
+def is_loopback_client(address: str) -> bool:
+    try:
+        return ipaddress.ip_address(address).is_loopback
+    except ValueError:
+        return False
 
 
 def ensure_valid(data: dict[str, Any]) -> None:

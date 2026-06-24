@@ -63,6 +63,29 @@ class GraphValidationTests(unittest.TestCase):
         self.assertFalse(result.ok)
         self.assertTrue(any("parent does not exist" in error for error in result.errors))
 
+    def test_reminder_validation_errors_include_task_id(self):
+        data = {
+            "version": 1,
+            "next_id": 2,
+            "tasks": [
+                base_task(
+                    "T-0001",
+                    "Invalid reminder",
+                    reminders=[{"days_before": 0, "time": "25:00"}],
+                )
+            ],
+        }
+
+        result = validate_data(data)
+
+        self.assertFalse(result.ok)
+        self.assertTrue(
+            any(
+                error.startswith("T-0001 reminders[0].time")
+                for error in result.errors
+            )
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

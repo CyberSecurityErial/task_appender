@@ -188,6 +188,30 @@ python task_appender.py validate
 
 Codex 应该优先通过 CLI 修改任务图。只有当 CLI 缺少必要能力时，才允许补充最小功能或直接编辑数据文件。
 
+## macOS 定时提醒
+
+`./start_ui.sh` 现在会同时启动 Web UI 和提醒检查器。提醒检查器只在该进程运行期间工作：关闭终端或按 `Ctrl-C` 后，Web UI 与提醒都会停止；本项目不会安装 `launchd` 或其他系统常驻服务。
+
+首次使用：
+
+1. 运行 `./start_ui.sh` 并打开页面。
+2. 点击“通知设置”→“初始化通知 App”。macOS 如弹出通知权限请求，请允许。
+3. 点击“发送测试通知”。成功只表示 macOS 接受了请求，专注模式或通知设置仍可能抑制横幅。
+4. 打开“启用任务通知”并保存。
+5. 在有截止日期的任务中添加一条或多条“提前天数 + 时间”提醒。
+
+每日任务继续使用 `recurrence.time`，每天提醒一次。有截止日期的任务可配置多条提醒，例如提前一天和截止当天。默认仅补发最近 120 分钟内错过的提醒，已完成或已归档任务不会提醒。
+
+CLI 也可修改截止提醒：
+
+```bash
+conda run -n agent python -m taskmgr.cli add --kind short --title "交作业" --due 2026-07-04 --reminder 1d@09:00 --reminder 0d@09:00
+conda run -n agent python -m taskmgr.cli reminders set --task T-0001 --rule 2d@20:00 --rule 0d@09:00
+conda run -n agent python -m taskmgr.cli reminders clear --task T-0001
+```
+
+本地设置保存在任务库旁的 `settings.yaml`，投递去重状态保存在 `reminder_state.json`。二者都不属于任务图导出物。
+
 ## 发布规则
 
 每次发布新版本都必须更新 `RELEASE_NOTES.md`，写清楚该版本的 release note。

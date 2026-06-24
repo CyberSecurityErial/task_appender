@@ -5,7 +5,18 @@ import unittest
 from pathlib import Path
 
 from taskmgr.cli import main
-from taskmgr.server import create_task, mutate_data, undo_last_change, update_task
+from taskmgr.server import (
+    create_task,
+    get_notification_settings,
+    is_loopback_client,
+    mutate_data,
+    notification_status,
+    put_notification_settings,
+    setup_notification,
+    test_notification as submit_test_notification,
+    undo_last_change,
+    update_task,
+)
 from taskmgr.store import empty_data, load_data, normalize_for_save, tasks_by_id
 
 
@@ -37,6 +48,8 @@ class CliTests(unittest.TestCase):
                 "T-0001",
                 "--due",
                 "2026-05-01",
+                "--reminder",
+                "1d@09:00",
             )
             self.assertEqual(code, 0, err)
             self.assertTrue((Path(tmpdir) / "exports" / "scoreboard.html").exists())
@@ -61,7 +74,23 @@ class CliTests(unittest.TestCase):
             self.assertIn("save-layout", html)
             self.assertIn("new-task", html)
             self.assertIn("task-context-menu", html)
+            self.assertIn('id="notification-settings"', html)
+            self.assertIn('id="notification-settings-form"', html)
+            self.assertIn('id="reminder-rules"', html)
+            self.assertIn('id="add-reminder-rule"', html)
+            self.assertIn("/api/settings/notifications", html)
+            self.assertIn("/api/notifications/setup", html)
+            self.assertIn("/api/notifications/test", html)
+            self.assertIn('data-reminders="', html)
             self.assertIn("学习 Triton", html)
+            self.assertIn("提前 1 天 09:00", html)
+
+            markdown_out = Path(tmpdir) / "tasks.md"
+            code, _, err = self.run_cli(
+                "--db", str(db), "render", "--format", "markdown", "--output", str(markdown_out)
+            )
+            self.assertEqual(code, 0, err)
+            self.assertIn("提前 1 天 09:00", markdown_out.read_text(encoding="utf-8"))
 
             scoreboard_out = Path(tmpdir) / "scoreboard.html"
             code, _, err = self.run_cli("--db", str(db), "render", "--format", "scoreboard", "--output", str(scoreboard_out))
@@ -108,6 +137,83 @@ class CliTests(unittest.TestCase):
             self.assertIn("最近收获", stdout)
             self.assertIn("星核主干", stdout)
             self.assertIn("等级谱", stdout)
+
+    def test_add_set_and_clear_reminders(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            db = Path(tmpdir) / "tasks.yaml"
+
+            code, _, err = self.run_cli(
+                "--db",
+                str(db),
+                "add",
+                "--kind",
+                "short",
+                "--title",
+                "交作业",
+                "--due",
+                "2026-07-04",
+                "--reminder",
+                "1d@09:00",
+                "--reminder",
+                "0d@09:00",
+            )
+
+            self.assertEqual(code, 0, err)
+            self.assertEqual(
+                tasks_by_id(load_data(db))["T-0001"]["reminders"],
+                [
+                    {"days_before": 1, "time": "09:00"},
+                    {"days_before": 0, "time": "09:00"},
+                ],
+            )
+
+            code, _, err = self.run_cli(
+                "--db",
+                str(db),
+                "reminders",
+                "set",
+                "--task",
+                "T-0001",
+                "--rule",
+                "2d@20:00",
+            )
+            self.assertEqual(code, 0, err)
+            self.assertEqual(
+                tasks_by_id(load_data(db))["T-0001"]["reminders"],
+                [{"days_before": 2, "time": "20:00"}],
+            )
+
+            code, _, err = self.run_cli(
+                "--db", str(db), "reminders", "clear", "--task", "T-0001"
+            )
+            self.assertEqual(code, 0, err)
+            self.assertEqual(tasks_by_id(load_data(db))["T-0001"]["reminders"], [])
+
+    def test_render_includes_reminder_summary(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            db = Path(tmpdir) / "tasks.yaml"
+            self.assertEqual(
+                self.run_cli(
+                    "--db",
+                    str(db),
+                    "add",
+                    "--kind",
+                    "short",
+                    "--title",
+                    "交作业",
+                    "--due",
+                    "2026-07-04",
+                    "--reminder",
+                    "1d@09:00",
+                )[0],
+                0,
+            )
+
+            markdown = (Path(tmpdir) / "exports" / "tasks.md").read_text(encoding="utf-8")
+            html = (Path(tmpdir) / "exports" / "graph.html").read_text(encoding="utf-8")
+            self.assertIn("提前 1 天 09:00", markdown)
+            self.assertIn("提前 1 天 09:00", html)
+            self.assertIn('data-reminders="', html)
 
     def test_reject_cycle(self):
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -227,6 +333,7 @@ class CliTests(unittest.TestCase):
                 "parent": parent["id"],
                 "depends_on": [dependency["id"]],
                 "notes": "edited in map",
+                "reminders": [{"days_before": 1, "time": "09:00"}],
             },
         )
         normalize_for_save(data)
@@ -245,6 +352,7 @@ class CliTests(unittest.TestCase):
         self.assertEqual(index["T-0002"]["tags"], ["ui", "edit"])
         self.assertEqual(index["T-0002"]["depends_on"], ["T-0003"])
         self.assertEqual(index["T-0002"]["notes"], "edited in map")
+        self.assertEqual(index["T-0002"]["reminders"], [{"days_before": 1, "time": "09:00"}])
         self.assertIsNone(index["T-0002"]["parent"])
         self.assertEqual(index["T-0001"]["children"], ["T-0003"])
         self.assertEqual(index["T-0003"]["parent"], "T-0001")
@@ -261,6 +369,52 @@ class CliTests(unittest.TestCase):
 
             self.assertEqual(data["tasks"], [])
             self.assertEqual(load_data(db)["tasks"], [])
+
+    def test_notification_settings_and_native_helpers(self):
+        class FakeNotifier:
+            def __init__(self):
+                self.setup_calls = 0
+                self.sent = []
+
+            def status(self):
+                return {"app_built": self.setup_calls > 0}
+
+            def setup(self):
+                self.setup_calls += 1
+
+            def send(self, title, message, sound=""):
+                self.sent.append((title, message, sound))
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            db = Path(tmpdir) / "tasks.yaml"
+            saved = put_notification_settings(
+                db,
+                {
+                    "enabled": True,
+                    "timezone": "Asia/Shanghai",
+                    "default_sound": "Glass",
+                    "missed_grace_minutes": 120,
+                    "check_interval_seconds": 60,
+                },
+            )
+            notifier = FakeNotifier()
+
+            self.assertEqual(get_notification_settings(db), saved)
+            self.assertEqual(notification_status(notifier), {"app_built": False})
+            self.assertTrue(setup_notification(notifier)["submitted"])
+            self.assertTrue(submit_test_notification(notifier, saved)["submitted"])
+            self.assertEqual(notifier.sent[0][2], "Glass")
+            self.assertTrue(is_loopback_client("127.0.0.1"))
+            self.assertTrue(is_loopback_client("::1"))
+            self.assertFalse(is_loopback_client("192.0.2.1"))
+
+    def test_start_ui_uses_agent_environment(self):
+        script = (Path(__file__).resolve().parents[1] / "start_ui.sh").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn("conda run -n agent python -m taskmgr.cli serve", script)
+        self.assertNotIn("exec python3", script)
 
 
 if __name__ == "__main__":
