@@ -7,6 +7,7 @@ def task(task_id, title, **overrides):
     raw = {
         "id": task_id,
         "title": title,
+        "channel": "自我提升",
         "kind": "short",
         "status": "todo",
         "created_at": "2026-05-01",
@@ -28,6 +29,7 @@ class AnalyticsTests(unittest.TestCase):
     def test_progress_extracts_outputs_and_gains(self):
         data = {
             "version": 1,
+            "channels": ["自我提升", "公司任务"],
             "next_id": 3,
             "tasks": [
                 task(

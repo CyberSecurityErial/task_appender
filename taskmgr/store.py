@@ -6,7 +6,7 @@ from typing import Any
 
 import yaml
 
-from .model import Task, TaskError, dedupe
+from .model import DEFAULT_CHANNELS, Task, TaskError, channels_from_data, dedupe
 
 
 APP_ROOT = Path(__file__).resolve().parent.parent
@@ -15,7 +15,7 @@ STORE_VERSION = 1
 
 
 def empty_data() -> dict[str, Any]:
-    return {"version": STORE_VERSION, "next_id": 1, "tasks": []}
+    return {"version": STORE_VERSION, "channels": list(DEFAULT_CHANNELS), "next_id": 1, "tasks": []}
 
 
 def load_data(path: Path | str = DEFAULT_DATA_PATH) -> dict[str, Any]:
@@ -31,6 +31,7 @@ def load_data(path: Path | str = DEFAULT_DATA_PATH) -> dict[str, Any]:
     if not isinstance(loaded, dict):
         raise TaskError(f"Task store must be a mapping: {db_path}")
     loaded.setdefault("version", STORE_VERSION)
+    loaded.setdefault("channels", list(DEFAULT_CHANNELS))
     loaded.setdefault("next_id", 1)
     loaded.setdefault("tasks", [])
     if not isinstance(loaded["tasks"], list):
@@ -42,7 +43,17 @@ def save_data(data: dict[str, Any], path: Path | str = DEFAULT_DATA_PATH) -> Non
     db_path = Path(path)
     db_path.parent.mkdir(parents=True, exist_ok=True)
     data["tasks"] = sorted(data.get("tasks", []), key=lambda task: str(task.get("id", "")))
-    payload = yaml.safe_dump(data, allow_unicode=True, sort_keys=False, width=1000)
+    data["channels"] = channels_from_data(data)
+    ordered = {
+        "version": data.get("version", STORE_VERSION),
+        "channels": data["channels"],
+        "next_id": data.get("next_id", 1),
+        "tasks": data["tasks"],
+    }
+    for key, value in data.items():
+        if key not in ordered:
+            ordered[key] = value
+    payload = yaml.safe_dump(ordered, allow_unicode=True, sort_keys=False, width=1000)
     tmp_path = db_path.with_suffix(db_path.suffix + ".tmp")
     tmp_path.write_text(payload, encoding="utf-8")
     tmp_path.replace(db_path)
@@ -53,6 +64,7 @@ def tasks_by_id(data: dict[str, Any]) -> dict[str, dict[str, Any]]:
 
 
 def normalize_for_save(data: dict[str, Any]) -> None:
+    data["channels"] = channels_from_data(data)
     normalized: list[dict[str, Any]] = []
     for raw in data.get("tasks", []):
         if not isinstance(raw, dict):

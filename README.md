@@ -19,6 +19,13 @@
 - `done`：已完成。
 - `archived`：已归档。
 
+任务 channel：
+
+- `自我提升`：个人学习、博客、工具和长期能力建设任务。
+- `公司任务`：工作交付、公司项目和组织内协作任务。
+
+新增任务或从收件箱导入任务时必须显式指定 channel。
+
 关系类型：
 
 - `parent` / `children`：目标拆解关系，例如长期目标下面拆出多个短期任务。
@@ -79,19 +86,19 @@ taskmgr/cli.py         # CLI 入口
 新增长期目标：
 
 ```bash
-python -m taskmgr.cli add --kind long --title "学习 Triton" --tag triton
+python -m taskmgr.cli add --kind long --title "学习 Triton" --channel 自我提升 --tag triton
 ```
 
 新增短期任务，并挂到父任务下面：
 
 ```bash
-python -m taskmgr.cli add --kind short --title "写 matmul demo" --parent T-0001 --due 2026-05-01 --tag triton
+python -m taskmgr.cli add --kind short --title "写 matmul demo" --channel 自我提升 --parent T-0001 --due 2026-05-01 --tag triton
 ```
 
 新增每日任务：
 
 ```bash
-python -m taskmgr.cli add --kind daily --title "每天复盘工程实验" --time "23:00" --tag daily
+python -m taskmgr.cli add --kind daily --title "每天复盘工程实验" --channel 自我提升 --time "23:00" --tag daily
 ```
 
 建立执行依赖：
@@ -111,6 +118,7 @@ python -m taskmgr.cli move --task T-0002 --root
 
 ```bash
 python -m taskmgr.cli list
+python -m taskmgr.cli list --channel 公司任务
 python -m taskmgr.cli list --blocked
 python -m taskmgr.cli today
 python -m taskmgr.cli scoreboard
@@ -122,7 +130,7 @@ python -m taskmgr.cli scoreboard
 ./start_ui.sh
 ```
 
-默认地址是 `http://127.0.0.1:8765/`。在这个页面里可以拖动任务块、右键任务块修改状态或编辑标题、类型、状态、截止、优先级、父任务、子任务、依赖、标签和备注，也可以在图上新建任务。写入后会复用任务库校验并自动重建全部导出文件；误操作后可按 `Ctrl-Z` 撤销最近一次 UI 写入。CLI 的 `add`、`link`、`done`、`move` 等命令仍然保留。
+默认地址是 `http://127.0.0.1:8765/`。在这个页面里可以拖动任务块、右键任务块修改状态或编辑标题、channel、类型、状态、截止、优先级、父任务、子任务、依赖、标签和备注，也可以在图上新建任务。写入后会复用任务库校验并自动重建全部导出文件；误操作后可按 `Ctrl-Z` 撤销最近一次 UI 写入。CLI 的 `add`、`link`、`done`、`move`、`channel` 等命令仍然保留。
 
 校验和导出：
 
@@ -171,7 +179,7 @@ v0.1.0rc1 调整成长计分板表现：
 从收件箱导入自然语言任务：
 
 ```bash
-python -m taskmgr.cli apply-inbox TASK_INBOX.md
+python -m taskmgr.cli apply-inbox TASK_INBOX.md --channel 自我提升
 ```
 
 兼容入口仍然可用：

@@ -9,7 +9,7 @@ from typing import Any
 
 from .graph import validate_data
 from .analytics import build_progress, format_progress_cli
-from .model import Task, TaskError, VALID_KINDS, VALID_STATUSES, dedupe, task_sort_key, today_iso
+from .model import Task, TaskError, VALID_KINDS, VALID_STATUSES, channels_from_data, dedupe, task_sort_key, today_iso
 from .recurrence import parse_daily_time, parse_due_text
 from .reminder_rules import parse_reminder_rule
 from .render import write_rendered
@@ -37,7 +37,10 @@ DEFAULT_EXPORTS = {
 
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
-    args = parser.parse_args(argv)
+    try:
+        args = parser.parse_args(argv)
+    except SystemExit as exc:
+        return int(exc.code or 0)
     db_path = Path(args.db).expanduser()
     try:
         return args.func(args, db_path)
@@ -54,6 +57,7 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("add", help="add a task")
     p.add_argument("--kind", required=True, choices=sorted(VALID_KINDS))
     p.add_argument("--title", required=True)
+    p.add_argument("--channel", required=True, help="task channel, for example 自我提升 or 公司任务")
     p.add_argument("--due", "--due-at", dest="due_at")
     p.add_argument("--parent")
     p.add_argument("--depends-on", action="append", default=[])
@@ -76,6 +80,7 @@ def build_parser() -> argparse.ArgumentParser:
     reminder_clear.set_defaults(func=cmd_reminders_clear)
 
     p = sub.add_parser("list", help="list tasks")
+    p.add_argument("--channel")
     p.add_argument("--kind", choices=sorted(VALID_KINDS))
     p.add_argument("--status", choices=sorted(VALID_STATUSES))
     p.add_argument("--tag")
@@ -109,6 +114,11 @@ def build_parser() -> argparse.ArgumentParser:
     parent_group.add_argument("--root", "--clear-parent", action="store_true", help="move task to root level")
     p.set_defaults(func=cmd_move)
 
+    p = sub.add_parser("channel", help="set a task channel")
+    p.add_argument("--task", required=True)
+    p.add_argument("--channel", required=True)
+    p.set_defaults(func=cmd_channel)
+
     p = sub.add_parser("validate", help="validate task graph")
     p.set_defaults(func=cmd_validate)
 
@@ -128,6 +138,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     p = sub.add_parser("apply-inbox", help="parse markdown inbox bullets into tasks")
     p.add_argument("path", nargs="?", default=str(APP_ROOT / "TASK_INBOX.md"))
+    p.add_argument("--channel", required=True, help="channel assigned to imported tasks")
     p.set_defaults(func=cmd_apply_inbox)
 
     return parser
@@ -136,6 +147,7 @@ def build_parser() -> argparse.ArgumentParser:
 def cmd_add(args: argparse.Namespace, db_path: Path) -> int:
     data = load_data(db_path)
     normalize_for_save(data)
+    channel = resolve_channel(data, args.channel)
     parent = resolve_task(data, args.parent) if args.parent else None
     dependencies = [resolve_task(data, ref) for ref in args.depends_on]
     recurrence = None
@@ -144,6 +156,7 @@ def cmd_add(args: argparse.Namespace, db_path: Path) -> int:
     task = Task(
         id=allocate_id(data),
         title=args.title.strip(),
+        channel=channel,
         kind=args.kind,
         status=args.status,
         created_at=today_iso(),
@@ -193,6 +206,9 @@ def cmd_list(args: argparse.Namespace, db_path: Path) -> int:
     data = load_data(db_path)
     normalize_for_save(data)
     tasks = list(data.get("tasks", []))
+    if args.channel:
+        channel = resolve_channel(data, args.channel)
+        tasks = [task for task in tasks if task.get("channel") == channel]
     if args.kind:
         tasks = [task for task in tasks if task.get("kind") == args.kind]
     if args.status:
@@ -283,6 +299,19 @@ def cmd_move(args: argparse.Namespace, db_path: Path) -> int:
     return 0
 
 
+def cmd_channel(args: argparse.Namespace, db_path: Path) -> int:
+    data = load_data(db_path)
+    normalize_for_save(data)
+    task_id = resolve_task(data, args.task)
+    channel = resolve_channel(data, args.channel)
+    tasks_by_id(data)[task_id]["channel"] = channel
+    normalize_for_save(data)
+    ensure_valid(data)
+    save_data_and_autosync(data, db_path)
+    print(f"moved {task_id} to channel {channel}")
+    return 0
+
+
 def cmd_validate(args: argparse.Namespace, db_path: Path) -> int:
     data = load_data(db_path)
     result = validate_data(data)
@@ -335,9 +364,11 @@ def cmd_apply_inbox(args: argparse.Namespace, db_path: Path) -> int:
         raise TaskError(f"inbox not found: {inbox_path}")
     data = load_data(db_path)
     normalize_for_save(data)
+    channel = resolve_channel(data, args.channel)
     created: list[str] = []
     for item in parse_inbox(inbox_path.read_text(encoding="utf-8")):
         spec = infer_inbox_task(item)
+        spec["channel"] = channel
         if find_title(data, spec["title"]):
             continue
         task = Task(id=allocate_id(data), created_at=today_iso(), **spec)
@@ -383,6 +414,7 @@ def print_tasks(data: dict[str, Any], tasks: list[dict[str, Any]], *, show_block
         rows.append(
             [
                 task["id"],
+                task.get("channel", "-"),
                 task["status"],
                 task["kind"],
                 task.get("due_at") or "-",
@@ -391,7 +423,7 @@ def print_tasks(data: dict[str, Any], tasks: list[dict[str, Any]], *, show_block
                 blockers,
             ]
         )
-    headers = ["ID", "STATUS", "KIND", "DUE", "TAGS", "TITLE"]
+    headers = ["ID", "CHANNEL", "STATUS", "KIND", "DUE", "TAGS", "TITLE"]
     if show_blockers:
         headers.append("BLOCKED_BY")
     else:
@@ -414,6 +446,17 @@ def blocking_reasons(data: dict[str, Any], task: dict[str, Any]) -> list[str]:
         if other and other.get("status") != "done":
             blockers.append(ref)
     return blockers
+
+
+def resolve_channel(data: dict[str, Any], value: str | None) -> str:
+    channel = str(value or "").strip()
+    if not channel:
+        raise TaskError("channel is required")
+    channels = channels_from_data(data)
+    if channel not in channels:
+        choices = ", ".join(channels)
+        raise TaskError(f"invalid channel: {channel}; choose one of: {choices}")
+    return channel
 
 
 def parse_inbox(text: str) -> list[str]:

@@ -47,12 +47,18 @@ python -m taskmgr.cli scoreboard
 ./start_ui.sh
 ```
 
-默认打开 `http://127.0.0.1:8765/`。服务模式可以写回 `data/tasks.yaml`：右键任务块修改状态或打开编辑表单，点击“新增任务”或在图空白处右键新建任务。编辑表单支持标题、类型、状态、截止、优先级、父任务、子任务、依赖、标签和备注。写入后会自动校验并重新生成全部导出文件；按 `Ctrl-Z` 可以撤销最近一次 UI 写入。
+默认打开 `http://127.0.0.1:8765/`。服务模式可以写回 `data/tasks.yaml`：右键任务块修改状态或打开编辑表单，点击“新增任务”或在图空白处右键新建任务。编辑表单支持标题、channel、类型、状态、截止、优先级、父任务、子任务、依赖、标签和备注。写入后会自动校验并重新生成全部导出文件；按 `Ctrl-Z` 可以撤销最近一次 UI 写入。
 
 查看被前置任务阻塞的任务：
 
 ```bash
 python -m taskmgr.cli list --blocked
+```
+
+按 channel 查看任务：
+
+```bash
+python -m taskmgr.cli list --channel 公司任务
 ```
 
 校验任务图：
@@ -87,28 +93,36 @@ python -m taskmgr.cli sync
 
 ## 新增任务
 
+新增任务必须显式指定 channel。内置 channel 包含 `自我提升` 和 `公司任务`。
+
 新增长期目标：
 
 ```bash
-python -m taskmgr.cli add --kind long --title "系统学习 GPU 通信库设计" --tag nccl --tag rdma
+python -m taskmgr.cli add --kind long --title "系统学习 GPU 通信库设计" --channel 自我提升 --tag nccl --tag rdma
 ```
 
 新增短期任务：
 
 ```bash
-python -m taskmgr.cli add --kind short --title "阅读 ncclTopoCompute" --due 2026-05-03 --tag nccl
+python -m taskmgr.cli add --kind short --title "阅读 ncclTopoCompute" --channel 自我提升 --due 2026-05-03 --tag nccl
 ```
 
 新增子任务：
 
 ```bash
-python -m taskmgr.cli add --kind short --title "整理拓扑搜索笔记" --parent T-0001 --due 2026-05-05 --tag nccl
+python -m taskmgr.cli add --kind short --title "整理拓扑搜索笔记" --channel 自我提升 --parent T-0001 --due 2026-05-05 --tag nccl
 ```
 
 新增每日任务：
 
 ```bash
-python -m taskmgr.cli add --kind daily --title "每天复盘工程实验" --time "23:00" --tag daily
+python -m taskmgr.cli add --kind daily --title "每天复盘工程实验" --channel 自我提升 --time "23:00" --tag daily
+```
+
+调整既有任务 channel：
+
+```bash
+python -m taskmgr.cli channel --task T-0003 --channel 公司任务
 ```
 
 ## 任务提醒
@@ -212,7 +226,7 @@ python -m taskmgr.cli done T-0003
 然后运行：
 
 ```bash
-python -m taskmgr.cli apply-inbox TASK_INBOX.md
+python -m taskmgr.cli apply-inbox TASK_INBOX.md --channel 自我提升
 python -m taskmgr.cli validate
 python -m taskmgr.cli render --format mermaid
 ```

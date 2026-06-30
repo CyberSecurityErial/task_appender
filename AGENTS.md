@@ -19,16 +19,18 @@
 5. 每个任务必须包含：
    - `id`
    - `title`
+   - `channel`
    - `kind`
    - `status`
    - `created_at`
-6. 任务类型只能是 `short`、`long`、`daily`、`milestone`。
-7. 任务状态只能是 `todo`、`doing`、`blocked`、`done`、`archived`。
-8. 用 `parent` / `children` 表达目标拆解，用 `depends_on` 表达执行依赖。
-9. `daily` 任务必须包含 `recurrence` 元数据。
-10. 禁止并行执行会写入任务库或导出文件的命令。所有 `add`、`link`、`unlink`、`done`、`apply-inbox`、`render`、`sync` 必须串行运行，避免 ID 分配、父子关系、依赖关系、成长计分板或导出文件被覆盖。
-11. `data/tasks.yaml` 是任务图源数据；`exports/graph.mmd`、`exports/graph.dot`、`exports/tasks.md`、`exports/graph.html`、`exports/scoreboard.html` 都是它的依赖产物。任何任务数据、关系、渲染逻辑、任务模型或成长计分规则变化后，必须重新生成全部导出文件，禁止只更新其中一个。
-12. 修改代码或任务数据后，运行：
+6. 任务 channel 必须来自 `channels` 目录；默认目录必须包含 `自我提升` 和 `公司任务`。新增或导入任务必须显式指定 channel，例如 `--channel 自我提升` 或 `--channel 公司任务`。
+7. 任务类型只能是 `short`、`long`、`daily`、`milestone`。
+8. 任务状态只能是 `todo`、`doing`、`blocked`、`done`、`archived`。
+9. 用 `parent` / `children` 表达目标拆解，用 `depends_on` 表达执行依赖。
+10. `daily` 任务必须包含 `recurrence` 元数据。
+11. 禁止并行执行会写入任务库或导出文件的命令。所有 `add`、`link`、`unlink`、`done`、`move`、`channel`、`apply-inbox`、`render`、`sync` 必须串行运行，避免 ID 分配、父子关系、依赖关系、成长计分板或导出文件被覆盖。
+12. `data/tasks.yaml` 是任务图源数据；`exports/graph.mmd`、`exports/graph.dot`、`exports/tasks.md`、`exports/graph.html`、`exports/scoreboard.html` 都是它的依赖产物。任何任务数据、关系、渲染逻辑、任务模型或成长计分规则变化后，必须重新生成全部导出文件，禁止只更新其中一个。
+13. 修改代码或任务数据后，运行：
     - `python -m taskmgr.cli validate`
     - `python -m taskmgr.cli render --format mermaid`
     - `python -m taskmgr.cli render --format dot`

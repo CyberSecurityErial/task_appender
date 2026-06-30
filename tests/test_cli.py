@@ -5,6 +5,7 @@ import unittest
 from pathlib import Path
 
 from taskmgr.cli import main
+from taskmgr.model import TaskError
 from taskmgr.server import (
     create_task,
     get_notification_settings,
@@ -20,6 +21,9 @@ from taskmgr.server import (
 from taskmgr.store import empty_data, load_data, normalize_for_save, tasks_by_id
 
 
+CHANNEL = "自我提升"
+
+
 class CliTests(unittest.TestCase):
     def run_cli(self, *args):
         stdout = io.StringIO()
@@ -28,12 +32,23 @@ class CliTests(unittest.TestCase):
             code = main(list(args))
         return code, stdout.getvalue(), stderr.getvalue()
 
+    def test_add_requires_channel(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            db = Path(tmpdir) / "tasks.yaml"
+
+            code, _, err = self.run_cli("--db", str(db), "add", "--kind", "short", "--title", "A", "--due", "2026-05-01")
+
+            self.assertEqual(code, 2)
+            self.assertIn("--channel", err)
+
     def test_add_validate_render(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             db = Path(tmpdir) / "tasks.yaml"
             out = Path(tmpdir) / "graph.mmd"
 
-            code, _, err = self.run_cli("--db", str(db), "add", "--kind", "long", "--title", "学习 Triton", "--tag", "triton")
+            code, _, err = self.run_cli(
+                "--db", str(db), "add", "--kind", "long", "--title", "学习 Triton", "--channel", CHANNEL, "--tag", "triton"
+            )
             self.assertEqual(code, 0, err)
 
             code, _, err = self.run_cli(
@@ -44,6 +59,8 @@ class CliTests(unittest.TestCase):
                 "short",
                 "--title",
                 "写 matmul demo",
+                "--channel",
+                CHANNEL,
                 "--parent",
                 "T-0001",
                 "--due",
@@ -83,6 +100,7 @@ class CliTests(unittest.TestCase):
             self.assertIn("/api/notifications/test", html)
             self.assertIn('data-reminders="', html)
             self.assertIn("学习 Triton", html)
+            self.assertIn("自我提升", html)
             self.assertIn("提前 1 天 09:00", html)
 
             markdown_out = Path(tmpdir) / "tasks.md"
@@ -113,6 +131,8 @@ class CliTests(unittest.TestCase):
                     "short",
                     "--title",
                     "写 MuP 博客",
+                    "--channel",
+                    CHANNEL,
                     "--due",
                     "2026-05-01",
                     "--tag",
@@ -150,6 +170,8 @@ class CliTests(unittest.TestCase):
                 "short",
                 "--title",
                 "交作业",
+                "--channel",
+                CHANNEL,
                 "--due",
                 "2026-07-04",
                 "--reminder",
@@ -201,6 +223,8 @@ class CliTests(unittest.TestCase):
                     "short",
                     "--title",
                     "交作业",
+                    "--channel",
+                    CHANNEL,
                     "--due",
                     "2026-07-04",
                     "--reminder",
@@ -218,8 +242,18 @@ class CliTests(unittest.TestCase):
     def test_reject_cycle(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             db = Path(tmpdir) / "tasks.yaml"
-            self.assertEqual(self.run_cli("--db", str(db), "add", "--kind", "short", "--title", "A", "--due", "2026-05-01")[0], 0)
-            self.assertEqual(self.run_cli("--db", str(db), "add", "--kind", "short", "--title", "B", "--due", "2026-05-01")[0], 0)
+            self.assertEqual(
+                self.run_cli(
+                    "--db", str(db), "add", "--kind", "short", "--title", "A", "--channel", CHANNEL, "--due", "2026-05-01"
+                )[0],
+                0,
+            )
+            self.assertEqual(
+                self.run_cli(
+                    "--db", str(db), "add", "--kind", "short", "--title", "B", "--channel", CHANNEL, "--due", "2026-05-01"
+                )[0],
+                0,
+            )
             self.assertEqual(self.run_cli("--db", str(db), "link", "--task", "T-0001", "--depends-on", "T-0002")[0], 0)
 
             code, _, err = self.run_cli("--db", str(db), "link", "--task", "T-0002", "--depends-on", "T-0001")
@@ -230,8 +264,8 @@ class CliTests(unittest.TestCase):
     def test_move_rebuilds_parent_children(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             db = Path(tmpdir) / "tasks.yaml"
-            self.assertEqual(self.run_cli("--db", str(db), "add", "--kind", "long", "--title", "A")[0], 0)
-            self.assertEqual(self.run_cli("--db", str(db), "add", "--kind", "long", "--title", "B")[0], 0)
+            self.assertEqual(self.run_cli("--db", str(db), "add", "--kind", "long", "--title", "A", "--channel", CHANNEL)[0], 0)
+            self.assertEqual(self.run_cli("--db", str(db), "add", "--kind", "long", "--title", "B", "--channel", CHANNEL)[0], 0)
             self.assertEqual(
                 self.run_cli(
                     "--db",
@@ -241,6 +275,8 @@ class CliTests(unittest.TestCase):
                     "short",
                     "--title",
                     "C",
+                    "--channel",
+                    CHANNEL,
                     "--parent",
                     "T-0001",
                     "--due",
@@ -269,8 +305,13 @@ class CliTests(unittest.TestCase):
     def test_move_rejects_parent_cycle(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             db = Path(tmpdir) / "tasks.yaml"
-            self.assertEqual(self.run_cli("--db", str(db), "add", "--kind", "long", "--title", "A")[0], 0)
-            self.assertEqual(self.run_cli("--db", str(db), "add", "--kind", "long", "--title", "B", "--parent", "T-0001")[0], 0)
+            self.assertEqual(self.run_cli("--db", str(db), "add", "--kind", "long", "--title", "A", "--channel", CHANNEL)[0], 0)
+            self.assertEqual(
+                self.run_cli("--db", str(db), "add", "--kind", "long", "--title", "B", "--channel", CHANNEL, "--parent", "T-0001")[
+                    0
+                ],
+                0,
+            )
 
             code, _, err = self.run_cli("--db", str(db), "move", "--task", "T-0001", "--parent", "T-0002")
 
@@ -281,7 +322,7 @@ class CliTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             db = Path(tmpdir) / "tasks.yaml"
             output_dir = Path(tmpdir) / "exports"
-            self.assertEqual(self.run_cli("--db", str(db), "add", "--kind", "long", "--title", "A")[0], 0)
+            self.assertEqual(self.run_cli("--db", str(db), "add", "--kind", "long", "--title", "A", "--channel", CHANNEL)[0], 0)
 
             code, stdout, err = self.run_cli("--db", str(db), "sync", "--output-dir", str(output_dir))
 
@@ -308,7 +349,7 @@ class CliTests(unittest.TestCase):
                 encoding="utf-8",
             )
 
-            code, stdout, err = self.run_cli("--db", str(db), "apply-inbox", str(inbox))
+            code, stdout, err = self.run_cli("--db", str(db), "apply-inbox", str(inbox), "--channel", CHANNEL)
 
             self.assertEqual(code, 0, err)
             self.assertIn("created 3", stdout)
@@ -317,15 +358,19 @@ class CliTests(unittest.TestCase):
     def test_server_create_and_update_task_helpers(self):
         data = empty_data()
 
-        parent = create_task(data, {"title": "父任务", "kind": "long", "status": "todo"})
-        child = create_task(data, {"title": "从 UI 新建任务", "kind": "short", "status": "todo", "tags": ["ui"]})
-        dependency = create_task(data, {"title": "依赖任务", "kind": "short", "status": "todo"})
+        with self.assertRaises(TaskError):
+            create_task(data, {"title": "缺少 channel", "kind": "short"})
+
+        parent = create_task(data, {"title": "父任务", "channel": CHANNEL, "kind": "long", "status": "todo"})
+        child = create_task(data, {"title": "从 UI 新建任务", "channel": CHANNEL, "kind": "short", "status": "todo", "tags": ["ui"]})
+        dependency = create_task(data, {"title": "依赖任务", "channel": CHANNEL, "kind": "short", "status": "todo"})
         normalize_for_save(data)
         updated = update_task(
             data,
             child["id"],
             {
                 "title": "从 UI 编辑任务",
+                "channel": "公司任务",
                 "status": "done",
                 "due_at": "2026-06-01",
                 "priority": 1,
@@ -345,6 +390,7 @@ class CliTests(unittest.TestCase):
         self.assertEqual(parent["id"], "T-0001")
         self.assertEqual(child["id"], "T-0002")
         self.assertEqual(index["T-0002"]["title"], "从 UI 编辑任务")
+        self.assertEqual(index["T-0002"]["channel"], "公司任务")
         self.assertEqual(updated["status"], "done")
         self.assertRegex(updated["completed_at"], r"^\d{4}-\d{2}-\d{2}$")
         self.assertEqual(index["T-0002"]["due_at"], "2026-06-01")
@@ -362,7 +408,7 @@ class CliTests(unittest.TestCase):
             db = Path(tmpdir) / "tasks.yaml"
             undo_stack: list[str] = []
 
-            mutate_data(db, lambda data: create_task(data, {"title": "UI task", "kind": "short"}), undo_stack)
+            mutate_data(db, lambda data: create_task(data, {"title": "UI task", "channel": CHANNEL, "kind": "short"}), undo_stack)
             self.assertIn("UI task", db.read_text(encoding="utf-8"))
 
             data = undo_last_change(db, undo_stack)

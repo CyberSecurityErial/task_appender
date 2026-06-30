@@ -9,7 +9,7 @@ from typing import Any
 from urllib.parse import unquote, urlparse
 
 from .graph import validate_data
-from .model import Task, TaskError, VALID_KINDS, VALID_STATUSES, dedupe, today_iso
+from .model import Task, TaskError, VALID_KINDS, VALID_STATUSES, channels_from_data, dedupe, today_iso
 from .notifier import NativeNotifier
 from .recurrence import parse_daily_time
 from .reminder_rules import normalize_reminders
@@ -227,6 +227,7 @@ def create_task(data: dict[str, Any], payload: dict[str, Any]) -> dict[str, Any]
     title = str(payload.get("title") or "").strip()
     if not title:
         raise TaskError("title is required")
+    channel = resolve_channel(data, payload.get("channel"))
     kind = normalize_choice(payload.get("kind") or "short", VALID_KINDS, "kind")
     status = normalize_choice(payload.get("status") or "todo", VALID_STATUSES, "status")
     parent = resolve_task(data, str(payload["parent"])) if payload.get("parent") else None
@@ -238,6 +239,7 @@ def create_task(data: dict[str, Any], payload: dict[str, Any]) -> dict[str, Any]
     task = Task(
         id=allocate_id(data),
         title=title,
+        channel=channel,
         kind=kind,
         status=status,
         created_at=today_iso(),
@@ -270,6 +272,8 @@ def update_task(data: dict[str, Any], task_id: str, payload: dict[str, Any]) -> 
         task["title"] = title
     if "kind" in payload:
         task["kind"] = normalize_choice(payload.get("kind"), VALID_KINDS, "kind")
+    if "channel" in payload:
+        task["channel"] = resolve_channel(data, payload.get("channel"))
     if "status" in payload:
         status = normalize_choice(payload.get("status"), VALID_STATUSES, "status")
         task["status"] = status
@@ -323,6 +327,17 @@ def normalize_choice(value: Any, valid: set[str], field: str) -> str:
     if text not in valid:
         raise TaskError(f"invalid {field}: {text}")
     return text
+
+
+def resolve_channel(data: dict[str, Any], value: Any) -> str:
+    channel = str(value or "").strip()
+    if not channel:
+        raise TaskError("channel is required")
+    channels = channels_from_data(data)
+    if channel not in channels:
+        choices = ", ".join(channels)
+        raise TaskError(f"invalid channel: {channel}; choose one of: {choices}")
+    return channel
 
 
 def normalize_refs(value: Any) -> list[str]:

@@ -8,6 +8,7 @@ class TaskModelTests(unittest.TestCase):
         task = Task(
             id="T-0001",
             title="学习 Triton",
+            channel="自我提升",
             kind="long",
             tags=["triton", "gpu", "triton"],
             depends_on=["T-0002", "T-0002"],
@@ -19,6 +20,7 @@ class TaskModelTests(unittest.TestCase):
 
         self.assertEqual(restored.id, "T-0001")
         self.assertEqual(restored.title, "学习 Triton")
+        self.assertEqual(restored.channel, "自我提升")
         self.assertEqual(restored.tags, ["triton", "gpu"])
         self.assertEqual(restored.depends_on, ["T-0002"])
         self.assertEqual(restored.completed_at, "2026-05-05")

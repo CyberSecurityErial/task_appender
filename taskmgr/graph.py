@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from datetime import date
 from typing import Any
 
-from .model import VALID_KINDS, VALID_STATUSES
+from .model import DEFAULT_CHANNELS, VALID_KINDS, VALID_STATUSES, dedupe
 from .recurrence import validate_recurrence
 from .reminder_rules import validate_reminders
 
@@ -21,6 +21,18 @@ class ValidationResult:
 
 def validate_data(data: dict[str, Any]) -> ValidationResult:
     result = ValidationResult()
+    raw_channels = data.get("channels")
+    if not isinstance(raw_channels, list):
+        result.errors.append("channels must be a list")
+        channels = list(DEFAULT_CHANNELS)
+    else:
+        channels = dedupe([str(channel).strip() for channel in raw_channels if str(channel).strip()])
+        if not channels:
+            result.errors.append("channels must not be empty")
+        for required_channel in DEFAULT_CHANNELS:
+            if required_channel not in channels:
+                result.errors.append(f"missing required channel: {required_channel}")
+
     raw_tasks = data.get("tasks")
     if not isinstance(raw_tasks, list):
         result.errors.append("tasks must be a list")
@@ -41,9 +53,12 @@ def validate_data(data: dict[str, Any]) -> ValidationResult:
         seen.add(task_id)
         tasks[task_id] = task
 
-        for field_name in ("title", "kind", "status", "created_at"):
+        for field_name in ("title", "channel", "kind", "status", "created_at"):
             if not str(task.get(field_name, "")).strip():
                 result.errors.append(f"{task_id} missing required field: {field_name}")
+        channel = str(task.get("channel", "")).strip()
+        if channel and channel not in channels:
+            result.errors.append(f"{task_id} invalid channel: {channel}")
         if task.get("kind") not in VALID_KINDS:
             result.errors.append(f"{task_id} invalid kind: {task.get('kind')}")
         if task.get("status") not in VALID_STATUSES:

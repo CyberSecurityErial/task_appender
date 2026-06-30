@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from .analytics import build_progress, format_skill_tree_cli
-from .model import task_sort_key
+from .model import channels_from_data, task_sort_key
 from .reminder_rules import format_reminders
 
 
@@ -49,7 +49,8 @@ def render_mermaid(data: dict[str, Any]) -> str:
         if not task.get("parent") and any(child_id in by_id for child_id in task.get("children", []))
     ]
     for parent in parents:
-        lines.append(f'  subgraph SG_{safe_node(parent["id"])}["{escape(parent["id"] + " " + parent["title"])}"]')
+        group_label = f'{parent.get("channel", "-")} / {parent["id"]} {parent["title"]}'
+        lines.append(f'  subgraph SG_{safe_node(parent["id"])}["{escape(group_label)}"]')
         lines.append("    direction TB")
         lines.append(f"    {node_line(parent)}")
         rendered.add(parent["id"])
@@ -93,7 +94,7 @@ def render_dot(data: dict[str, Any]) -> str:
         '  node [shape=box, style="rounded,filled", fillcolor="#f8fafc", color="#475569"];',
     ]
     for task in tasks:
-        label = escape_dot(f'{task["id"]}\\n{task["title"]}')
+        label = escape_dot(f'{task["id"]}\\n{task.get("channel", "-")}\\n{task["title"]}')
         lines.append(f'  "{task["id"]}" [label="{label}"];')
     for task in tasks:
         for child_id in task.get("children", []):
@@ -107,6 +108,8 @@ def render_dot(data: dict[str, Any]) -> str:
 def render_markdown(data: dict[str, Any]) -> str:
     progress = build_progress(data)
     level = progress["level"]
+    channels = channels_from_data(data)
+    channel_counts = count_by(data.get("tasks", []), "channel")
     lines = [
         "# 任务列表",
         "",
@@ -118,6 +121,7 @@ def render_markdown(data: dict[str, Any]) -> str:
         f"- 下一级进度：{level['current_xp']}/{level['next_level_xp']} XP，还差 {level['remaining_xp']} XP",
         f"- 任务完成：{progress['completed_tasks']}/{progress['total_tasks']}（{progress['completion_rate']}%）",
         f"- 任务池待领取：{progress['available_xp']} XP",
+        "- Channel：" + "；".join(f"{channel} {channel_counts.get(channel, 0)}" for channel in channels),
     ]
     if progress["artifacts"]:
         artifacts = "；".join(f"{item['label']} x{item['count']}（+{item['xp']} XP）" for item in progress["artifacts"])
@@ -142,7 +146,8 @@ def render_markdown(data: dict[str, Any]) -> str:
         due = task.get("due_at") or "-"
         status = STATUS_LABELS.get(task.get("status"), task.get("status"))
         kind = KIND_LABELS.get(task.get("kind"), task.get("kind"))
-        lines.append(f"- **{task['id']}** [{status}/{kind}] {task['title']}")
+        channel = task.get("channel") or "-"
+        lines.append(f"- **{task['id']}** [{channel}/{status}/{kind}] {task['title']}")
         completed_at = task.get("completed_at") or "-"
         reminder_summary = format_reminders(task.get("reminders"))
         lines.append(
@@ -182,6 +187,17 @@ def render_html(data: dict[str, Any], *, live_api: bool = False) -> str:
     progress = build_progress(data)
     svg = render_svg_graph(data)
     task_rows = "\n".join(render_html_task_row(task) for task in sorted(tasks, key=task_sort_key))
+    channels = channels_from_data(data)
+    channel_counts = count_by(tasks, "channel")
+    channel_pills = "\n      ".join(
+        f'<span class="pill">{html.escape(channel)} {channel_counts.get(channel, 0)}</span>' for channel in channels
+    )
+    channel_options = "\n".join(
+        f'                <option value="{html.escape(channel)}">{html.escape(channel)}</option>' for channel in channels
+    )
+    channel_filter_options = "\n".join(
+        f'          <option value="{html.escape(channel)}">{html.escape(channel)}</option>' for channel in channels
+    )
     counts = count_by(tasks, "kind")
     status_counts = count_by(tasks, "status")
     today = date.today().isoformat()
@@ -372,6 +388,11 @@ def render_html(data: dict[str, Any], *, live_api: bool = False) -> str:
     .task-node.is-hidden {{
       opacity: 0.13;
       pointer-events: none;
+    }}
+    .task-node.is-channel-hidden,
+    .graph-section.is-channel-hidden,
+    .graph-edge.is-channel-hidden {{
+      display: none;
     }}
     .graph-edge {{
       transition: opacity 0.12s ease;
@@ -572,6 +593,7 @@ def render_html(data: dict[str, Any], *, live_api: bool = False) -> str:
     <div class="meta">生成日期：{html.escape(today)}；{html.escape(mode_label)}；数据源：<code>data/tasks.yaml</code>；文本图：<code>exports/graph.mmd</code> / <code>exports/graph.dot</code></div>
     <div class="summary">
       <span class="pill">总任务 {len(tasks)}</span>
+      {channel_pills}
       <span class="pill">短期 {counts.get("short", 0)}</span>
       <span class="pill">长期 {counts.get("long", 0)}</span>
       <span class="pill">每日 {counts.get("daily", 0)}</span>
@@ -589,9 +611,13 @@ def render_html(data: dict[str, Any], *, live_api: bool = False) -> str:
       <span><i class="swatch child"></i>父子拆解</span>
       <span><i class="swatch dependency"></i>执行依赖</span>
     </div>
-    <section class="graph-ui" data-task-graph-ui data-api-enabled="{api_enabled}">
+    <section class="graph-ui" data-task-graph-ui data-api-enabled="{api_enabled}" data-default-channel="{html.escape(channels[0])}">
       <div class="graph-toolbar" aria-label="任务图工具栏">
         <input id="graph-search" type="search" placeholder="搜索任务、标签、备注" autocomplete="off">
+        <select id="channel-filter" aria-label="Channel 筛选">
+          <option value="">全部 Channel</option>
+{channel_filter_options}
+        </select>
         <select id="kind-filter" aria-label="任务类型筛选">
           <option value="">全部类型</option>
           <option value="short">短期</option>
@@ -623,6 +649,7 @@ def render_html(data: dict[str, Any], *, live_api: bool = False) -> str:
           <h2 id="inspector-title">任务详情</h2>
           <p class="inspector-id" id="inspector-id">未选择</p>
           <dl>
+            <dt>Channel</dt><dd id="inspector-channel">-</dd>
             <dt>状态</dt><dd id="inspector-status">-</dd>
             <dt>类型</dt><dd id="inspector-kind">-</dd>
             <dt>截止</dt><dd id="inspector-due">-</dd>
@@ -647,6 +674,11 @@ def render_html(data: dict[str, Any], *, live_api: bool = False) -> str:
           <h2 id="task-dialog-title">新建任务</h2>
           <label>标题 <input name="title" id="new-task-title" required maxlength="160"></label>
           <div class="dialog-grid">
+            <label>Channel
+              <select name="channel" required>
+{channel_options}
+              </select>
+            </label>
             <label>类型
               <select name="kind">
                 <option value="short">短期</option>
@@ -708,7 +740,7 @@ def render_html(data: dict[str, Any], *, live_api: bool = False) -> str:
     <h2>任务明细</h2>
     <table>
       <thead>
-        <tr><th>ID</th><th>状态</th><th>类型</th><th>截止</th><th>提醒</th><th>标题</th><th>前置依赖</th><th>子任务</th><th>标签</th></tr>
+        <tr><th>ID</th><th>Channel</th><th>状态</th><th>类型</th><th>截止</th><th>提醒</th><th>标题</th><th>前置依赖</th><th>子任务</th><th>标签</th></tr>
       </thead>
       <tbody>
 {task_rows}
@@ -732,13 +764,16 @@ def graph_ui_script() -> str:
     if (!svg) return;
 
     const apiEnabled = root.dataset.apiEnabled === "1";
+    const defaultChannel = root.dataset.defaultChannel || "自我提升";
     const nodeWidth = Number(svg.dataset.nodeWidth || 230);
     const nodeHeight = Number(svg.dataset.nodeHeight || 86);
     const nodes = Array.from(svg.querySelectorAll(".task-node"));
     const edges = Array.from(svg.querySelectorAll(".graph-edge"));
+    const sections = Array.from(svg.querySelectorAll(".graph-section"));
     const nodeMap = new Map(nodes.map((node) => [node.dataset.taskId, node]));
     const layoutKey = svg.dataset.layoutKey || "taskmgr:graph-layout";
     const searchInput = root.querySelector("#graph-search");
+    const channelFilter = root.querySelector("#channel-filter");
     const kindFilter = root.querySelector("#kind-filter");
     const statusFilter = root.querySelector("#status-filter");
     const newTaskButton = root.querySelector("#new-task");
@@ -768,6 +803,7 @@ def graph_ui_script() -> str:
     const inspector = {
       title: root.querySelector("#inspector-title"),
       id: root.querySelector("#inspector-id"),
+      channel: root.querySelector("#inspector-channel"),
       status: root.querySelector("#inspector-status"),
       kind: root.querySelector("#inspector-kind"),
       due: root.querySelector("#inspector-due"),
@@ -915,6 +951,7 @@ def graph_ui_script() -> str:
       node.classList.add("is-selected");
       inspector.title.textContent = node.dataset.title || "任务详情";
       inspector.id.textContent = node.dataset.taskId || "-";
+      inspector.channel.textContent = node.dataset.channel || "-";
       inspector.status.textContent = node.dataset.statusLabel || "-";
       inspector.kind.textContent = node.dataset.kindLabel || "-";
       inspector.due.textContent = node.dataset.due || "-";
@@ -1024,6 +1061,7 @@ def graph_ui_script() -> str:
         if (taskDialogTitle) taskDialogTitle.textContent = "编辑任务";
         if (taskDialogSubmit) taskDialogSubmit.textContent = "保存";
         setFormValue("title", node.dataset.title);
+        setFormValue("channel", node.dataset.channel);
         setFormValue("kind", node.dataset.kind);
         setFormValue("status", node.dataset.status);
         setFormValue("due_at", node.dataset.due);
@@ -1040,6 +1078,7 @@ def graph_ui_script() -> str:
         editingTaskId = null;
         if (taskDialogTitle) taskDialogTitle.textContent = "新建任务";
         if (taskDialogSubmit) taskDialogSubmit.textContent = "创建";
+        setFormValue("channel", defaultChannel);
         setFormValue("kind", "short");
         setFormValue("status", "todo");
         setFormValue("priority", "3");
@@ -1157,6 +1196,7 @@ def graph_ui_script() -> str:
       const form = new FormData(taskForm);
       return {
         title: String(form.get("title") || "").trim(),
+        channel: String(form.get("channel") || "").trim(),
         kind: String(form.get("kind") || "short"),
         status: String(form.get("status") || "todo"),
         due_at: String(form.get("due_at") || "").trim() || null,
@@ -1204,6 +1244,7 @@ def graph_ui_script() -> str:
     function textForSearch(node) {
       return [
         node.dataset.taskId,
+        node.dataset.channel,
         node.dataset.title,
         node.dataset.tags,
         node.dataset.notes,
@@ -1215,8 +1256,10 @@ def graph_ui_script() -> str:
 
     function nodeMatches(node) {
       const query = (searchInput && searchInput.value ? searchInput.value : "").trim().toLowerCase();
+      const channel = channelFilter && channelFilter.value;
       const kind = kindFilter && kindFilter.value;
       const status = statusFilter && statusFilter.value;
+      if (channel && node.dataset.channel !== channel) return false;
       if (kind && node.dataset.kind !== kind) return false;
       if (status && node.dataset.status !== status) return false;
       if (query && !textForSearch(node).includes(query)) return false;
@@ -1225,16 +1268,26 @@ def graph_ui_script() -> str:
 
     function applyFilters() {
       const visible = new Set();
+      const channelVisible = new Set();
+      const channel = channelFilter && channelFilter.value;
+      for (const section of sections) {
+        section.classList.toggle("is-channel-hidden", Boolean(channel && section.dataset.channel !== channel));
+      }
       for (const node of nodes) {
+        const channelHidden = Boolean(channel && node.dataset.channel !== channel);
         const matched = nodeMatches(node);
-        node.classList.toggle("is-hidden", !matched);
+        node.classList.toggle("is-channel-hidden", channelHidden);
+        node.classList.toggle("is-hidden", !channelHidden && !matched);
+        if (!channelHidden) channelVisible.add(node.dataset.taskId);
         if (matched) visible.add(node.dataset.taskId);
       }
       for (const edge of edges) {
-        edge.classList.toggle("is-hidden", !(visible.has(edge.dataset.from) && visible.has(edge.dataset.to)));
+        const channelHidden = !(channelVisible.has(edge.dataset.from) && channelVisible.has(edge.dataset.to));
+        edge.classList.toggle("is-channel-hidden", channelHidden);
+        edge.classList.toggle("is-hidden", !channelHidden && !(visible.has(edge.dataset.from) && visible.has(edge.dataset.to)));
       }
-      if (selected && selected.classList.contains("is-hidden")) {
-        selectNode(nodes.find((node) => !node.classList.contains("is-hidden")));
+      if (selected && (selected.classList.contains("is-hidden") || selected.classList.contains("is-channel-hidden"))) {
+        selectNode(nodes.find((node) => !node.classList.contains("is-hidden") && !node.classList.contains("is-channel-hidden")));
       }
     }
 
@@ -1370,6 +1423,7 @@ def graph_ui_script() -> str:
       });
     }
     if (searchInput) searchInput.addEventListener("input", applyFilters);
+    if (channelFilter) channelFilter.addEventListener("change", applyFilters);
     if (kindFilter) kindFilter.addEventListener("change", applyFilters);
     if (statusFilter) statusFilter.addEventListener("change", applyFilters);
     if (saveButton) saveButton.addEventListener("click", () => saveLayout("布局已保存"));
@@ -1797,21 +1851,34 @@ def render_svg_graph(data: dict[str, Any]) -> str:
         return '          <svg class="task-graph" viewBox="0 0 760 220" width="760" height="220" role="img" aria-label="空任务图"><text x="40" y="90" fill="#64748b">暂无任务</text></svg>'
 
     by_id = {task["id"]: task for task in tasks}
-    grouped_ids: set[str] = set()
-    sections: list[tuple[str, list[dict[str, Any]]]] = []
+    sections: list[tuple[str, str, list[dict[str, Any]]]] = []
+    task_channels = channels_from_data(data)
     for task in tasks:
-        children = [by_id[child_id] for child_id in task.get("children", []) if child_id in by_id]
-        if not task.get("parent") and children:
-            group_tasks = [task, *children]
-            sections.append((f'{task["id"]} {task["title"]}', group_tasks))
-            grouped_ids.update(child["id"] for child in group_tasks)
+        channel = str(task.get("channel") or "")
+        if channel and channel not in task_channels:
+            task_channels.append(channel)
+    for channel in task_channels:
+        channel_tasks = [task for task in tasks if task.get("channel") == channel]
+        if not channel_tasks:
+            continue
+        grouped_ids: set[str] = set()
+        for task in channel_tasks:
+            children = [
+                by_id[child_id]
+                for child_id in task.get("children", [])
+                if child_id in by_id and by_id[child_id].get("channel") == channel
+            ]
+            if not task.get("parent") and children:
+                group_tasks = [task, *children]
+                sections.append((channel, f'{channel} / {task["id"]} {task["title"]}', group_tasks))
+                grouped_ids.update(child["id"] for child in group_tasks)
 
-    standalone = [task for task in tasks if task["id"] not in grouped_ids]
-    if standalone:
-        sections.append(("独立任务和跨组依赖", standalone))
+        standalone = [task for task in channel_tasks if task["id"] not in grouped_ids]
+        if standalone:
+            sections.append((channel, f"{channel} / 独立任务和跨组依赖", standalone))
 
     positions: dict[str, tuple[int, int]] = {}
-    section_boxes: list[tuple[str, int, int, int, int]] = []
+    section_boxes: list[tuple[str, str, int, int, int, int]] = []
     width = 1120
     y_cursor = 30
     node_w = 230
@@ -1820,7 +1887,7 @@ def render_svg_graph(data: dict[str, Any]) -> str:
     y_gap = 122
     left = 48
 
-    for title, section_tasks in sections:
+    for channel, title, section_tasks in sections:
         section_ids = {task["id"] for task in section_tasks}
         levels = compute_section_levels(section_tasks, by_id, section_ids)
         rows_by_level: dict[int, int] = {}
@@ -1835,7 +1902,7 @@ def render_svg_graph(data: dict[str, Any]) -> str:
         max_rows = max(rows_by_level.values(), default=1)
         section_w = max(760, left * 2 + (max_level + 1) * node_w + max_level * (x_gap - node_w))
         section_h = 112 + max_rows * y_gap
-        section_boxes.append((title, 24, y_cursor, section_w, section_h))
+        section_boxes.append((channel, title, 24, y_cursor, section_w, section_h))
         width = max(width, section_w + 48)
         y_cursor += section_h + 36
 
@@ -1848,9 +1915,11 @@ def render_svg_graph(data: dict[str, Any]) -> str:
         '          <marker id="arrow-orange" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#d97706"/></marker>',
         "        </defs>",
     ]
-    for title, x, y, w, h in section_boxes:
-        parts.append(f'        <rect x="{x}" y="{y}" width="{w}" height="{h}" rx="18" fill="#f8fafc" stroke="#dbe3ef"/>')
-        parts.append(f'        <text x="{x + 18}" y="{y + 31}" fill="#334155" font-size="17" font-weight="700">{svg_escape(title)}</text>')
+    for channel, title, x, y, w, h in section_boxes:
+        parts.append(f'        <g class="graph-section" data-channel="{svg_escape(channel)}">')
+        parts.append(f'          <rect x="{x}" y="{y}" width="{w}" height="{h}" rx="18" fill="#f8fafc" stroke="#dbe3ef"/>')
+        parts.append(f'          <text x="{x + 18}" y="{y + 31}" fill="#334155" font-size="17" font-weight="700">{svg_escape(title)}</text>')
+        parts.append("        </g>")
 
     parts.append('        <g class="graph-edges">')
     parts.extend(render_svg_edges(tasks, by_id, positions, node_w, node_h))
@@ -1973,6 +2042,7 @@ def svg_edge(
 def render_svg_node(task: dict[str, Any], x: int, y: int, width: int, height: int) -> str:
     fill, stroke = svg_node_colors(task)
     title_lines = split_display_text(str(task.get("title", "")), 22, 2)
+    channel = str(task.get("channel") or "-")
     status = STATUS_LABELS.get(task.get("status"), task.get("status"))
     kind = KIND_LABELS.get(task.get("kind"), task.get("kind"))
     due = short_due(task.get("due_at"))
@@ -1988,7 +2058,7 @@ def render_svg_node(task: dict[str, Any], x: int, y: int, width: int, height: in
     reminders_json = json.dumps(task.get("reminders", []), ensure_ascii=False, separators=(",", ":"))
     text_parts = [
         f'          <g id="{svg_escape(safe_node(task["id"]))}" class="task-node" tabindex="0" role="button" aria-label="{svg_escape(task["id"] + " " + title)}" '
-        f'data-task-id="{svg_escape(task["id"])}" data-title="{svg_escape(title)}" data-kind="{svg_escape(str(task.get("kind", "")))}" '
+        f'data-task-id="{svg_escape(task["id"])}" data-title="{svg_escape(title)}" data-channel="{svg_escape(channel)}" data-kind="{svg_escape(str(task.get("kind", "")))}" '
         f'data-kind-label="{svg_escape(str(kind))}" data-status="{svg_escape(str(task.get("status", "")))}" data-status-label="{svg_escape(str(status))}" '
         f'data-due="{svg_escape(str(task.get("due_at") or "-"))}" data-priority="{svg_escape(str(task.get("priority", 3)))}" '
         f'data-time="{svg_escape(recurrence_time)}" data-reminders="{svg_escape(reminders_json)}" '
@@ -2002,7 +2072,7 @@ def render_svg_node(task: dict[str, Any], x: int, y: int, width: int, height: in
     title_y = 43
     for index, line in enumerate(title_lines):
         text_parts.append(f'            <text x="14" y="{title_y + index * 17}" fill="#111827" font-size="14">{svg_escape(line)}</text>')
-    meta = f"{due}" + (f" · {tags}" if tags else "")
+    meta = f"{channel} · {due}" + (f" · {tags}" if tags else "")
     text_parts.append(f'            <text x="14" y="{height - 13}" fill="#64748b" font-size="12">{svg_escape(meta)}</text>')
     text_parts.append("          </g>")
     return "\n".join(text_parts)
@@ -2027,6 +2097,7 @@ def render_html_task_row(task: dict[str, Any]) -> str:
     return (
         "        <tr>"
         f"<td><code>{html.escape(str(task.get('id', '')))}</code></td>"
+        f"<td>{html.escape(str(task.get('channel') or '-'))}</td>"
         f"<td>{html.escape(str(STATUS_LABELS.get(task.get('status'), task.get('status'))))}</td>"
         f"<td>{html.escape(str(KIND_LABELS.get(task.get('kind'), task.get('kind'))))}</td>"
         f"<td>{html.escape(str(task.get('due_at') or '-'))}</td>"
@@ -2089,7 +2160,7 @@ def node_line(task: dict[str, Any]) -> str:
     label = "\\n".join(
         [
             str(task.get("title", "")),
-            f"{task.get('id')} · {kind} · {short_due(task.get('due_at'))}",
+            f"{task.get('id')} · {task.get('channel', '-')} · {kind} · {short_due(task.get('due_at'))}",
         ]
     )
     return f'{safe_node(task["id"])}["{escape(label)}"]'

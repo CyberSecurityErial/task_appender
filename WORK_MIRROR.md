@@ -43,10 +43,10 @@
 - 新增 `python -m taskmgr.cli serve`，默认服务地址 `http://127.0.0.1:8765/`。
 - 平时启动方式固定为仓库根目录下的 `./start_ui.sh`。脚本使用 `python3 -m taskmgr.cli serve --host ${HOST:-127.0.0.1} --port ${PORT:-8765}`，并在终端打印浏览器地址。
 - 新增 `taskmgr/server.py`，用标准库 `HTTPServer` 提供本地页面和 `/api/tasks` 写接口；服务器单线程处理请求，避免并行写任务库和导出文件。
-- 服务模式的任务图支持右键任务块修改状态，右键“编辑任务”可修改标题、类型、状态、截止、优先级、父任务、子任务、依赖、标签和备注；点击“新增任务”或右键图空白区域新建任务。写入路径复用 `Task`、`allocate_id`、`normalize_for_save`、`validate_data` 和全量导出重建。
+- 服务模式的任务图支持右键任务块修改状态，右键“编辑任务”可修改标题、channel、类型、状态、截止、优先级、父任务、子任务、依赖、标签和备注；点击“新增任务”或右键图空白区域新建任务。写入路径复用 `Task`、`allocate_id`、`normalize_for_save`、`validate_data` 和全量导出重建。
 - UI 写入前会把当前 `data/tasks.yaml` 文本压入服务内存 undo 栈，最多保留 20 步。浏览器中按 `Ctrl-Z` 或点“撤销”会调用 `/api/undo` 恢复最近一次 UI 写入并重建全部导出。服务重启后 undo 栈清空。
 - 静态 `exports/graph.html` 仍可拖动和保存浏览器本地布局，但不会直接写 `data/tasks.yaml`；需要写任务库时使用 `serve`。
-- 原有 CLI 创建/修改方式保留：`add`、`done`、`link`、`unlink`、`move`、`apply-inbox` 没有被替换。
+- 原有 CLI 创建/修改方式保留：`add`、`done`、`link`、`unlink`、`move`、`channel`、`apply-inbox` 没有被替换。
 
 发布记录：
 
@@ -59,6 +59,7 @@
 
 - `id`：任务 ID，例如 `T-0001`。
 - `title`：任务标题。
+- `channel`：任务 channel，必须来自顶层 `channels` 目录。默认目录包含 `自我提升` 和 `公司任务`，新增或导入任务必须显式指定。
 - `kind`：任务类型，只能是 `short`、`long`、`daily`、`milestone`。
 - `status`：任务状态，只能是 `todo`、`doing`、`blocked`、`done`、`archived`。
 - `created_at`：创建日期。
@@ -92,6 +93,7 @@ python -m taskmgr.cli <command>
 - `list`：列出任务。
 - `today`：列出今天需要关注的任务。
 - `done`：标记任务完成。
+- `channel`：调整既有任务 channel。
 - `link`：建立依赖。
 - `unlink`：移除依赖。
 - `validate`：校验任务图。

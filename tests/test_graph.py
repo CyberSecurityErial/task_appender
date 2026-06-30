@@ -3,10 +3,14 @@ import unittest
 from taskmgr.graph import validate_data
 
 
+CHANNELS = ["自我提升", "公司任务"]
+
+
 def base_task(task_id, title, **overrides):
     task = {
         "id": task_id,
         "title": title,
+        "channel": "自我提升",
         "kind": "short",
         "status": "todo",
         "created_at": "2026-04-29",
@@ -27,6 +31,7 @@ class GraphValidationTests(unittest.TestCase):
     def test_valid_parent_and_dependency_graph(self):
         data = {
             "version": 1,
+            "channels": CHANNELS,
             "next_id": 3,
             "tasks": [
                 base_task("T-0001", "长期目标", kind="long", due_at=None, children=["T-0002"]),
@@ -39,6 +44,7 @@ class GraphValidationTests(unittest.TestCase):
     def test_reject_dependency_cycle(self):
         data = {
             "version": 1,
+            "channels": CHANNELS,
             "next_id": 3,
             "tasks": [
                 base_task("T-0001", "A", depends_on=["T-0002"]),
@@ -54,6 +60,7 @@ class GraphValidationTests(unittest.TestCase):
     def test_reject_missing_parent(self):
         data = {
             "version": 1,
+            "channels": CHANNELS,
             "next_id": 2,
             "tasks": [base_task("T-0001", "Child", parent="T-9999")],
         }
@@ -66,6 +73,7 @@ class GraphValidationTests(unittest.TestCase):
     def test_reminder_validation_errors_include_task_id(self):
         data = {
             "version": 1,
+            "channels": CHANNELS,
             "next_id": 2,
             "tasks": [
                 base_task(
@@ -85,6 +93,21 @@ class GraphValidationTests(unittest.TestCase):
                 for error in result.errors
             )
         )
+
+    def test_reject_missing_channel(self):
+        task = base_task("T-0001", "Missing channel")
+        del task["channel"]
+        data = {
+            "version": 1,
+            "channels": CHANNELS,
+            "next_id": 2,
+            "tasks": [task],
+        }
+
+        result = validate_data(data)
+
+        self.assertFalse(result.ok)
+        self.assertTrue(any("missing required field: channel" in error for error in result.errors))
 
 
 if __name__ == "__main__":

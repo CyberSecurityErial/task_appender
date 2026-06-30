@@ -10,6 +10,8 @@ from .reminder_rules import normalize_reminders
 
 VALID_KINDS = {"short", "long", "daily", "milestone"}
 VALID_STATUSES = {"todo", "doing", "blocked", "done", "archived"}
+DEFAULT_CHANNELS = ("自我提升", "公司任务")
+DEFAULT_CHANNEL = DEFAULT_CHANNELS[0]
 DEFAULT_KIND = "short"
 DEFAULT_STATUS = "todo"
 
@@ -33,6 +35,7 @@ def dedupe(values: list[str]) -> list[str]:
 class Task:
     id: str
     title: str
+    channel: str = DEFAULT_CHANNEL
     kind: str = DEFAULT_KIND
     status: str = DEFAULT_STATUS
     created_at: str = field(default_factory=today_iso)
@@ -52,6 +55,7 @@ class Task:
         return cls(
             id=str(raw.get("id", "")).strip(),
             title=str(raw.get("title", "")).strip(),
+            channel=str(raw.get("channel", DEFAULT_CHANNEL)).strip() or DEFAULT_CHANNEL,
             kind=str(raw.get("kind", DEFAULT_KIND)).strip(),
             status=str(raw.get("status", DEFAULT_STATUS)).strip(),
             created_at=str(raw.get("created_at", today_iso())).strip(),
@@ -71,6 +75,7 @@ class Task:
         return {
             "id": self.id,
             "title": self.title,
+            "channel": self.channel,
             "kind": self.kind,
             "status": self.status,
             "created_at": self.created_at,
@@ -94,7 +99,20 @@ def none_if_empty(value: Any) -> str | None:
     return text or None
 
 
-def task_sort_key(task: dict[str, Any]) -> tuple[int, str, str]:
+def channels_from_data(data: dict[str, Any]) -> list[str]:
+    raw_channels = data.get("channels", list(DEFAULT_CHANNELS))
+    if not isinstance(raw_channels, list):
+        raw_channels = list(DEFAULT_CHANNELS)
+    channels = dedupe([str(channel).strip() for channel in raw_channels if str(channel).strip()])
+    for channel in DEFAULT_CHANNELS:
+        if channel not in channels:
+            channels.append(channel)
+    return channels
+
+
+def task_sort_key(task: dict[str, Any]) -> tuple[int, int, str, str]:
+    channel_order = {channel: index for index, channel in enumerate(DEFAULT_CHANNELS)}
     status_order = {"doing": 0, "blocked": 1, "todo": 2, "done": 3, "archived": 4}
+    channel = str(task.get("channel") or DEFAULT_CHANNEL)
     due = str(task.get("due_at") or "9999-12-31")
-    return (status_order.get(str(task.get("status", "todo")), 9), due, str(task.get("id", "")))
+    return (channel_order.get(channel, len(channel_order)), status_order.get(str(task.get("status", "todo")), 9), due, str(task.get("id", "")))
